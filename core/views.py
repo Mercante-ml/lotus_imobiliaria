@@ -29,6 +29,10 @@ def sobre(request):
 
 def lista_imoveis(request):
     
+    # Salva a URL da busca atual na sessão para o botão "voltar"
+    if request.GET:
+        request.session['last_search_url'] = request.get_full_path()
+
     imoveis = Imovel.objects.filter(valor__isnull=False).order_by('-data_atualizacao')
     
     bairros = Bairro.objects.all().order_by('nome')
@@ -149,9 +153,13 @@ def detalhe_imovel(request, imovel_id):
     mensagem = f"Olá, eu vi o imóvel '{imovel.titulo}' no site ({imovel_url}) e gostaria de mais informações."
     whatsapp_url = f"https://wa.me/5562983188400?text={urllib.parse.quote(mensagem)}"
 
+    # Recupera a URL da última busca para o botão "voltar"
+    last_search_url = request.session.get('last_search_url', None)
+
     context = {
         'imovel': imovel,
         'similares': similares,
         'whatsapp_url': whatsapp_url,
+        'last_search_url': last_search_url,
     }
     return render(request, 'core/detalhe_imovel.html', context)
