@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.utils.html import mark_safe
+from django.contrib.auth.models import User
 
 # --- Modelos de Apoio ---
 
@@ -53,6 +54,15 @@ class Corretor(models.Model):
             return mark_safe(f'<img src="{self.foto.url}" style="max-height: 100px; max-width: 100px;" />')
         return "Sem foto"
     get_foto_preview.short_description = "Prévia"
+
+# --- Modelo do Cliente ---
+class Cliente(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    foto_url = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.user.get_full_name() or self.user.username
 
 # --- Modelo Principal (Evoluído) ---
 
@@ -129,6 +139,8 @@ class Imovel(models.Model):
     )
     corretor = models.ForeignKey(Corretor, on_delete=models.SET_NULL, null=True, blank=True)
     
+    favoritos = models.ManyToManyField(Cliente, related_name='imoveis_favoritos', blank=True)
+
     # --- Status e Datas ---
     em_destaque = models.BooleanField(default=False)
     data_cadastro = models.DateTimeField(auto_now_add=True)
@@ -167,4 +179,3 @@ class Lead(models.Model):
 
     def __str__(self):
         return f"Lead de {self.nome} em {self.data.strftime('%d/%m/%Y')}"
-
