@@ -35,19 +35,19 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
             <!-- Coluna da Esquerda (Conteúdo Principal) -->
-            <div class="lg:col-span-2">
+            <div class="lg-col-span-2">
                 
-                <!-- Galeria com Lightbox -->
-                <div id="gallery-detalhe" class="pswp-gallery pswp-gallery--single-column bg-white p-8 rounded-lg shadow-xl mb-12">
+                <!-- Galeria -->
+                <div class="bg-white p-8 rounded-lg shadow-xl mb-12">
                     <h3 class="font-serif text-3xl text-marinho font-bold mb-6">Galeria de Imagens</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {% if imovel.imagem_principal %}
-                        <a href="{{ imovel.imagem_principal.url }}" data-pswp-width="{{ imovel.imagem_principal.width }}" data-pswp-height="{{ imovel.imagem_principal.height }}" target="_blank">
+                        <a href="{{ imovel.imagem_principal.url }}" target="_blank">
                             <img src="{{ imovel.imagem_principal.url }}" alt="Foto principal de {{ imovel.titulo }}" class="w-full h-48 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300">
                         </a>
                         {% endif %}
                         {% for img in imovel.imagens_secundarias.all %}
-                            <a href="{{ img.imagem.url }}" data-pswp-width="{{ img.imagem.width }}" data-pswp-height="{{ img.imagem.height }}" target="_blank">
+                            <a href="{{ img.imagem.url }}" target="_blank">
                                 <img src="{{ img.imagem.url }}" alt="Galeria de {{ imovel.titulo }}" class="w-full h-48 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-300">
                             </a>
                         {% endfor %}

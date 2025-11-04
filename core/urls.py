@@ -14,7 +14,7 @@ urlpatterns = [
     path('contato/sucesso/', views.contato_sucesso, name='contato_sucesso'),
 
     # --- A NOVA ROTA (Passo 2 do Plano) ---
-    # Esta rota espera um ID (ex: /imovel/123/)
-    path('imovel/<int:imovel_id>/', views.detalhe_imovel, name='detalhe_imovel'),
+    # Esta rota espera um ID (ex: /imoveis/123/)
+    path('imoveis/<int:imovel_id>/', views.detalhe_imovel, name='detalhe_imovel'),
 ]
 
