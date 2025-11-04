@@ -6,6 +6,7 @@ from .models import (
 from .forms import LeadForm
 from django.db.models import Q, Max, Min
 import re
+import urllib.parse
 
 # --- FUNÇÃO ATUALIZADA ---
 def index(request):
@@ -143,8 +144,14 @@ def detalhe_imovel(request, imovel_id):
         categoria=imovel.categoria
     ).exclude(id=imovel_id)[:3] 
     
+    # Gera o link do WhatsApp
+    imovel_url = request.build_absolute_uri()
+    mensagem = f"Olá, eu vi o imóvel '{imovel.titulo}' no site ({imovel_url}) e gostaria de mais informações."
+    whatsapp_url = f"https://wa.me/5562983188400?text={urllib.parse.quote(mensagem)}"
+
     context = {
         'imovel': imovel,
-        'similares': similares
+        'similares': similares,
+        'whatsapp_url': whatsapp_url,
     }
     return render(request, 'core/detalhe_imovel.html', context)
