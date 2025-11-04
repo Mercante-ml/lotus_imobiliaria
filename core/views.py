@@ -26,7 +26,14 @@ def index(request):
     return render(request, 'core/index.html', context)
 
 def sobre(request):
-    return render(request, 'core/sobre.html')
+    try:
+        conteudo = ConteudoPagina.objects.get(chave='pagina_sobre')
+    except ConteudoPagina.DoesNotExist:
+        conteudo = {
+            'titulo': 'Sobre a Lotus Imobiliária',
+            'subtitulo': 'O seu espaço de renascimento. Clareza e elegância na busca pelo extraordinário.'
+        }
+    return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
 def lista_imoveis(request):
     
