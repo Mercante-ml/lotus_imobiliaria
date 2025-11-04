@@ -41,7 +41,6 @@ def sobre(request):
         }
     return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
-
 def lista_imoveis(request):
     # Salva a URL da busca na sessão para o botão "Voltar"
     # Apenas salva se for uma página de resultados, não a partir de um imóvel
@@ -146,20 +145,26 @@ def contato_sucesso(request):
 def detalhe_imovel(request, imovel_id):
     imovel = get_object_or_404(Imovel.objects.prefetch_related('imagens_secundarias', 'caracteristicas'), id=imovel_id)
     
-    # Garante que a descrição seja tratada como HTML seguro
+    # Corrige o HTML escapado na descrição
     imovel.descricao = html.unescape(imovel.descricao)
-    
+
+    similares = Imovel.objects.filter(
+        bairro=imovel.bairro,
+        categoria=imovel.categoria
+    ).exclude(id=imovel_id)[:3]
+
     # Lógica para o botão WhatsApp
-    numero_whatsapp = "+5562983188400" # Número de destino
+    numero_whatsapp = "+5562983188400"
     url_imovel = request.build_absolute_uri()
     mensagem_whatsapp = f"Olá! Tenho interesse neste imóvel: {imovel.titulo}. Pode me dar mais detalhes? Link: {url_imovel}"
-    link_whatsapp = f"https://wa.me/{numero_whatsapp}?text={quote(mensagem_whatsapp)}"
+    link_whatsapp = f"httpsa//wa.me/{numero_whatsapp}?text={quote(mensagem_whatsapp)}"
     
-    # Lógica para o botão "Voltar para a busca"
+    # Lógica para o botão "Voltar"
     last_search_url = request.session.get('last_search_url', None)
 
     context = {
         'imovel': imovel,
+        'similares': similares,
         'link_whatsapp': link_whatsapp,
         'last_search_url': last_search_url,
     }
