@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import (
     Imovel, Bairro, Corretor, ConteudoPagina, 
-    TipoImovel, Caracteristica, ImagemImovel
+    TipoImovel, Caracteristica, ImagemImovel, Cliente
 )
 from .forms import LeadForm
 from django.db.models import Q, Max, Min
 import re
 import urllib.parse
 import html
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 # --- FUNÇÃO ATUALIZADA ---
 def index(request):
@@ -173,3 +175,53 @@ def detalhe_imovel(request, imovel_id):
         'last_search_url': last_search_url,
     }
     return render(request, 'core/detalhe_imovel.html', context)
+
+@login_required
+def lista_favoritos(request):
+    cliente = get_object_or_404(Cliente, user=request.user)
+    imoveis = cliente.imoveis_favoritos.all()
+    context = {
+        'imoveis': imoveis,
+    }
+    return render(request, 'core/lista_favoritos.html', context)
+
+@login_required
+def adicionar_favorito(request, imovel_id):
+    imovel = get_object_or_404(Imovel, id=imovel_id)
+    cliente, created = Cliente.objects.get_or_create(user=request.user)
+    imovel.favoritos.add(cliente)
+    return redirect(request.META.get('HTTP_REFERER', 'core:lista_imoveis'))
+
+@login_required
+def remover_favorito(request, imovel_id):
+    imovel = get_object_or_404(Imovel, id=imovel_id)
+    cliente = get_object_or_404(Cliente, user=request.user)
+    imovel.favoritos.remove(cliente)
+    return redirect(request.META.get('HTTP_REFERER', 'core:lista_imoveis'))
+
+def comparar_imoveis(request):
+    imoveis_ids = request.session.get('comparar_imoveis', [])
+    imoveis = Imovel.objects.filter(id__in=imoveis_ids)
+    context = {
+        'imoveis': imoveis,
+    }
+    return render(request, 'core/comparar_imoveis.html', context)
+
+def update_comparison(request):
+    if request.method == 'POST':
+        imovel_id = request.POST.get('imovel_id')
+        action = request.POST.get('action')
+
+        imoveis_ids = request.session.get('comparar_imoveis', [])
+
+        if action == 'add':
+            if imovel_id not in imoveis_ids and len(imoveis_ids) < 3:
+                imoveis_ids.append(imovel_id)
+        elif action == 'remove':
+            if imovel_id in imoveis_ids:
+                imoveis_ids.remove(imovel_id)
+
+        request.session['comparar_imoveis'] = imoveis_ids
+        return JsonResponse({'status': 'ok', 'count': len(imoveis_ids)})
+
+    return JsonResponse({'status': 'error'}, status=400)
