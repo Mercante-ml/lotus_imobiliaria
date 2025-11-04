@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>{% block title %}Lotus Imobiliária{% endblock %}</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'marinho': '#142048',
+                        'marinho-claro': '#293769',
+                        'marinho-escuro': '#0F1733',
+                        'ouro': '#B48C5A',
+                        'cinza-fundo': '#F4F6F9',
+                        'cinza-claro': '#E2E8F0',
+                        'graphite': '#333F58',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                        'serif': ['EB Garamond', 'ui-serif', 'Georgia'],
+                    }
+                }
+            },
+            // CORREÇÃO: A linha 'plugins' foi removida.
+            // O 'require()' não funciona no CDN e quebrava
+            // o carregamento de todas as cores customizadas.
+        }
+    </script>
+    
+    <style>
+        /* Bloco para CSS customizado (ex: formulário de contato) */
+        {% block extra_head %}{% endblock %}
+    </style>
+</head>
+<body class="font-sans bg-cinza-fundo text-graphite antialiased">
+
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            
+            <a href="{% url 'core:index' %}" class="flex-shrink-0">
+                <img src="{% static 'core/images/logo_lotus.png' %}" alt="Lotus Imobiliária Logo" class="h-[60px] w-auto">
+            </a>
+            
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'core:lista_imoveis' %}" class="text-marinho hover:text-ouro transition duration-300">Imóveis</a>
+                <a href="{% url 'core:sobre' %}" class="text-marinho hover:text-ouro transition duration-300">Sobre Nós</a>
+                <a href="{% url 'core:lista_corretores' %}" class="text-marinho hover:text-ouro transition duration-300">Equipa</a>
+                <a href="{% url 'core:contato' %}" class="text-marinho hover:text-ouro transition duration-300">Contato</a>
+            </div>
+            
+            <a href="{% url 'core:contato' %}" class="hidden md:block bg-ouro text-marinho font-medium px-5 py-2.5 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300 transform hover:scale-105">
+                Falar com Especialista
+            </a>
+
+            <button class="md:hidden text-marinho">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-marinho-escuro text-cinza-claro/70">
+        <div class="container mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                
+                <div>
+                    <a href="{% url 'core:index' %}" class="flex-shrink-0">
+                        <img src="{% static 'core/images/logo_lotus.png' %}" alt="Lotus Imobiliária Logo" class="h-12 w-auto">
+                    </a>
+                    <p class="mt-4 text-sm">
+                        O seu espaço de renascimento. Clareza e elegância na busca pelo extraordinário.
+                    </p>
+                    <p class="mt-2 text-sm">CRECI-GO 123.456-J</p>
+                </div>
+
+                <div>
+                    <h4 class="font-serif text-lg font-bold text-white">Navegar</h4>
+                    <ul class="mt-4 space-y-3 text-sm">
+                        <li><a href="{% url 'core:lista_imoveis' %}" class="hover:text-ouro transition-colors">Lançamentos</a></li>
+                        <li><a href="{% url 'core:lista_imoveis' %}?finalidade=revenda" class="hover:text-ouro transition-colors">Revenda</a></li>
+                        <li><a href="{% url 'core:sobre' %}" class="hover:text-ouro transition-colors">Sobre Nós</a></li>
+                        <li><a href="{% url 'core:lista_corretores' %}" class="hover:text-ouro transition-colors">Corretores</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-serif text-lg font-bold text-white">Contato</h4>
+                    <ul class="mt-4 space-y-3 text-sm">
+                        <li>(62) 98250-1403</li>
+                        <li>contato@lotusimob.com.br</li>
+                        <li>Rua C-259, 519 - Setor Nova Suiça, Goiânia - GO</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-serif text-lg font-bold text-white">Siga-nos</h4>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="hover:text-ouro transition-colors" aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.148 3.225-1.664 4.771-4.919 4.919-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.699-4.919-4.92-.058-1.265-.07-1.646-.07-4.85s.012-3.584.07-4.85C2.28 3.856 3.796 2.309 7.05 2.163 8.316 2.105 8.696 2.093 12 2.093m0-2.093c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948s.014 3.667.072 4.947c.2 4.358 2.618 6.78 6.98 6.98 1.281.059 1.689.073 4.948.073s3.667-.014 4.947-.072c4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948s-.014-3.667-.072-4.947c-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.948-.073h.001z" /><path d="M12 6.848c-2.848 0-5.152 2.304-5.152 5.152s2.304 5.152 5.152 5.152 5.152-2.304 5.152-5.152S14.848 6.848 12 6.848zm0 8.303c-1.742 0-3.15-1.408-3.15-3.15s1.408-3.15 3.15-3.15 3.15 1.408 3.15 3.15-1.408 3.15-3.15 3.15z" /><path d="M18.802 6.116c-.596 0-1.08.484-1.08 1.08s.484 1.08 1.08 1.08 1.08-.484 1.08-1.08-.483-1.08-1.08-1.08z" /></svg>
+                        </a>
+                        <a href="#" class="hover:text-ouro transition-colors" aria-label="Twitter">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-12 border-t border-cinza-claro/10 pt-8 text-center text-sm">
+                <p>&copy; 2025 Lotus Imobiliária. Todos os direitos reservados.</p>
+                <p class="mt-1">Desenvolvido com Django e <span class="text-ouro">&hearts;</span></p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

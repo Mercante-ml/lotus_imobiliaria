@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Sobre a Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<!-- ===== SEÇÃO HERO (TÍTULO DA PÁGINA) ===== -->
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Sobre a Lotus
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Entenda o que nos inspira a entregar o extraordinário, todos os dias.
+        </p>
+    </div>
+</section>
+
+<!-- ===== SEÇÃO DE CONTEÚDO (TEXTOS SOBRE) ===== -->
+<section class="py-20 md:py-28 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <!-- Cartão de conteúdo centralizado -->
+        <div class="max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+
+            <!-- 
+                A SUA SUGESTÃO: LOGO CENTRALIZADO NO TOPO
+            -->
+            <div class="flex justify-center mb-10">
+                <img src="{% static 'core/images/logo_lotus.png' %}" alt="Logo Lotus Imobiliária" class="h-[150px] w-auto">
+            </div>
+            <!-- FIM DA SUGESTÃO -->
+
+            <div class="prose prose-lg max-w-none text-graphite">
+                <!-- 
+                  O 'prose' é uma classe do Tailwind que formata texto (parágrafos, títulos)
+                  de forma bonita e legível automaticamente.
+                -->
+                <h2>O Significado da Flor de Lótus</h2>
+                <p>
+                    Inspirados pela flor de lótus, símbolo de pureza, resiliência e renascimento, trazemos renovação e 
+                    integridade a cada negociação.
+                </p>
+                <blockquote>
+                    "Tal como a flor de lótus, florescemos onde poucos imaginam: entregando beleza e valor em toda 
+                    jornada dos nossos clientes."
+                </blockquote>
+
+                <h2>Nossa Missão</h2>
+                <p>
+                    <strong>Proporcionar experiências imobiliárias únicas</strong>, que transcendam a simples transação. Construímos 
+                    relações baseadas em confiança, clareza e um atendimento de excelência que reflete a qualidade 
+                    dos imóveis que representamos.
+                </p>
+
+                <h2>Nossa Visão</h2>
+                <p>
+                    Ser a principal referência em atendimento personalizado e inovação no mercado imobiliário de médio 
+                    e alto padrão. Aspiramos ser a primeira escolha para clientes que procuram não apenas um imóvel, 
+                    mas um novo espaço para o seu renascimento.
+                </p>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+

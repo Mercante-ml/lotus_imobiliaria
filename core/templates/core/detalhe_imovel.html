@@ -1,0 +1,180 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %}
+
+<!-- O <title> da página será o nome do imóvel -->
+{% block title %}{{ imovel.titulo }} - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+
+<!-- 1. SEÇÃO DO TÍTULO E LOCALIZAÇÃO -->
+<section class="bg-marinho-escuro text-white pt-28 pb-16">
+    <div class="container mx-auto px-6 text-center">
+        <!-- Título do Imóvel (H1) -->
+        <h1 class="font-serif text-4xl md:text-6xl font-bold">
+            {{ imovel.titulo }}
+        </h1>
+        <!-- Localização (Tipo + Bairro) -->
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            {{ imovel.tipo_imovel.nome|default:'Imóvel' }} em {{ imovel.bairro.nome|default:'Localização Privilegiada' }}
+        </p>
+    </div>
+</section>
+
+<!-- 2. SEÇÃO PRINCIPAL (GALERIA E DETALHES) -->
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <!-- Grid principal (2 colunas: Galeria à esquerda, Infos à direita) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+            <!-- Coluna da Esquerda: GALERIA DE FOTOS -->
+            <div class="lg:col-span-2">
+                
+                <!-- Imagem Principal (Hero) -->
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-4">
+                    {% if imovel.imagem_principal %}
+                        <img src="{{ imovel.imagem_principal.url }}" alt="Foto principal de {{ imovel.titulo }}" class="w-full h-auto object-cover">
+                    {% else %}
+                        <img src="https://placehold.co/1200x800/142048/FFF?text=Lotus+Imobili%C3%A1ria" alt="Sem foto" class="w-full h-auto object-cover">
+                    {% endif %}
+                </div>
+
+                <!-- Galeria Secundária (Thumbnails) -->
+                <!-- O script descarregou todas as fotos do <Media> do XML -->
+                <h3 class="font-serif text-2xl text-marinho font-bold mt-10 mb-4">Galeria de Imagens</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for img in imovel.imagens_secundarias.all %}
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:scale-105">
+                            <!-- (Idealmente, isto abriria um Lightbox com JS) -->
+                            <a href="{{ img.imagem.url }}" target="_blank">
+                                <img src="{{ img.imagem.url }}" alt="Galeria de {{ imovel.titulo }}" class="w-full h-40 object-cover">
+                            </a>
+                        </div>
+                    {% empty %}
+                        <p class="text-graphite/70 col-span-4">Este imóvel não possui galeria de imagens secundárias.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Coluna da Direita: INFORMAÇÕES E PREÇO (Sticky) -->
+            <aside class="lg:col-span-1 lg:sticky top-28 h-fit">
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    
+                    <!-- Preço -->
+                    {% if imovel.valor %}
+                        <p class="font-serif text-4xl text-marinho-claro font-bold">
+                            R$ {{ imovel.valor|intcomma }}
+                        </p>
+                    {% else %}
+                        <p class="font-serif text-3xl text-marinho-claro font-bold">
+                            Sob Consulta
+                        </p>
+                    {% endif %}
+                    
+                    <!-- Botão de Ação (Falar com Corretor) -->
+                    <a href="#contato-corretor" class="mt-5 block w-full text-center bg-ouro text-marinho font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                        Falar com um Especialista
+                    </a>
+
+                    <!-- Tabela de Especificações (XML <Details>) -->
+                    <h3 class="font-serif text-xl text-marinho font-bold mt-6 mb-4 border-t pt-4">Especificações</h3>
+                    <div class="space-y-3 text-graphite">
+                        
+                        {% if imovel.area_util %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Área Útil</span>
+                            <span class="font-bold">{{ imovel.area_util|intcomma }} m²</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if imovel.quartos %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Quartos</span>
+                            <span class="font-bold">{{ imovel.quartos }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.suites %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Suítes</span>
+                            <span class="font-bold">{{ imovel.suites }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.banheiros %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Banheiros</span>
+                            <span class="font-bold">{{ imovel.banheiros }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.vagas %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Vagas</span>
+                            <span class="font-bold">{{ imovel.vagas }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.andar %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Andar</span>
+                            <span class="font-bold">{{ imovel.andar }}º</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.taxa_condominio %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">Condomínio</span>
+                            <span class="font-bold">R$ {{ imovel.taxa_condominio|intcomma }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if imovel.iptu %}
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium">IPTU (Anual)</span>
+                            <span class="font-bold">R$ {{ imovel.iptu|intcomma }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Coluna da Esquerda (continuação): DESCRIÇÃO e CARACTERÍSTICAS -->
+            <div class="lg:col-span-2 mt-12">
+                
+                <!-- Descrição (XML <Description>) -->
+                <div class="bg-white p-8 rounded-lg shadow-xl">
+                    <h3 class="font-serif text-3xl text-marinho font-bold mb-5">Descrição</h3>
+                    <!-- O filtro 'linebreaks' converte as quebras de linha (\n) do XML em <p> e <br> -->
+                    <div class="prose prose-lg max-w-none text-graphite">
+                        {{ imovel.descricao|linebreaks }}
+                    </div>
+                </div>
+
+                <!-- Características (XML <Features>) -->
+                {% if imovel.caracteristicas.all %}
+                <div class="bg-white p-8 rounded-lg shadow-xl mt-10">
+                    <h3 class="font-serif text-3xl text-marinho font-bold mb-6">Características do Imóvel</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for f in imovel.caracteristicas.all %}
+                        <div class="flex items-center">
+                            <svg class="h-5 w-5 text-ouro mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="text-graphite">{{ f.nome }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- TODO: Adicionar Mapa de Localização (Latitude/Longitude) -->
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

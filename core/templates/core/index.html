@@ -1,0 +1,146 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Lotus Imobiliária - O seu espaço de renascimento{% endblock %}
+
+{% block content %}
+
+<section class="relative h-screen min-h-[700px] flex items-center justify-center text-center text-white px-6">
+    
+    <div class="absolute inset-0 z-0">
+        <img src="https://placehold.co/1920x1080/142048/B48C5A?text=Lotus+Imobili%C3%A1ria" 
+             alt="Vista cinematográfica de um imóvel de luxo" 
+             class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/60"></div>
+    </div>
+
+    <div class="relative z-10 flex flex-col items-center">
+        <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight">
+            O seu espaço de renascimento.
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl text-white/90">
+            Transformamos a complexidade do mercado na simplicidade do extraordinário.
+        </p>
+
+        <form action="{% url 'core:lista_imoveis' %}" method="GET" class="mt-10 w-full max-w-2xl bg-white/10 backdrop-blur-sm p-4 rounded-full shadow-2xl">
+            <div class="flex flex-col md:flex-row items-center gap-4">
+                
+                <select name="bairro" 
+                        class="w-full md:flex-1 bg-transparent border-0 border-b-2 border-white/50 text-white focus:ring-0 focus:border-ouro transition duration-300 px-2 py-2">
+                    
+                    <option value="" class="text-graphite">Qual a localização dos seus sonhos?</option>
+                    
+                    {% for b in bairros %}
+                        <option value="{{ b.id }}" class="text-graphite">{{ b.nome }}</option>
+                    {% endfor %}
+                </select>
+
+                
+                <button type="submit" class="w-full md:w-auto flex items-center justify-center bg-ouro text-white font-medium px-8 py-3 rounded-full shadow-lg hover:bg-ouro/90 transition duration-300 transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Buscar</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section id="lancamentos" class="py-20 md:py-28 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="text-center mb-16">
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-marinho">Lançamentos Exclusivos</h2>
+            <p class="mt-4 text-lg text-graphite/80 max-w-xl mx-auto">
+                Projetos selecionados que definem o futuro do alto padrão.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {% for imovel in destaques %}
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                <div class="relative h-64">
+                    
+                    {% if imovel.imagem_principal %}
+                        <img src="{{ imovel.imagem_principal.url }}" 
+                             alt="{{ imovel.titulo }}" 
+                             class="w-full h-full object-cover">
+                    {% else %}
+                        <img src="https://placehold.co/600x400/CCCCCC/142048?text=Sem+Foto" 
+                             alt="{{ imovel.titulo }}" 
+                             class="w-full h-full object-cover">
+                    {% endif %}
+                    
+                    <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        {{ imovel.get_finalidade_display }}
+                    </div>
+                </div>
+                <div class="p-6">
+                    <h3 class="font-serif text-2xl font-bold text-graphite truncate" title="{{ imovel.titulo }}">
+                        {{ imovel.titulo }}
+                    </h3>
+                    
+                    <p class="text-graphite/70 text-sm mt-1">
+                        {{ imovel.bairro.nome }}
+                    </p>
+                    
+                    <div class="flex items-center justify-between mt-4 text-graphite/90 text-sm">
+                        <span class="flex items-center space-x-2">
+                            <svg class="h-5 w-5 text-ouro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <span>{{ imovel.quartos }} quartos</span>
+                        </span>
+                        <span class="flex items-center space-x-2">
+                             <svg class="h-5 w-5 text-ouro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5"/></svg>
+                            <span>{{ imovel.area_util|floatformat:0 }} m²</span>
+                        </span>
+                    </div>
+
+                    <p class="font-serif text-3xl text-marinho font-bold mt-5">
+                        R$ {{ imovel.valor|intcomma }}
+                    </p>
+                    
+                    <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="mt-6 flex items-center justify-center w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                        Ver Detalhes
+                    </a>
+                </div>
+            </div>
+            
+            {% empty %}
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10">
+                <p class="text-lg text-graphite/80">Nenhum imóvel em destaque no momento.</p>
+                <p class="text-sm text-graphite/60 mt-2">
+                    Volte em breve ou 
+                    <a href="{% url 'admin:index' %}" class="text-ouro underline">cadastre um novo imóvel</a>
+                    no painel de admin.
+                </p>
+            </div>
+            {% endfor %}
+
+        </div> </div>
+</section>
+
+<section class="bg-marinho text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h2 class="font-serif text-4xl md:text-5xl font-bold">
+            Encontre o seu imóvel.
+        </h2>
+        <p class="mt-4 text-lg text-white/80 max-w-xl mx-auto">
+            Nossa curadoria especializada está pronta para guiá-lo ao encontro do imóvel que reflete suas aspirações.
+        </p>
+        
+        <a href="{% url 'core:lista_imoveis' %}" class="mt-10 inline-flex items-center justify-center bg-ouro text-white font-medium px-10 py-4 rounded-full shadow-lg hover:bg-ouro/90 transition duration-300 transform hover:scale-105">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+            <span>Descobrir a Coleção Completa</span>
+        </a>
+    </div>
+</section>
+
+{% endblock %}

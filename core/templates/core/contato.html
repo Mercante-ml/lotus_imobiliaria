@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Contato{% endblock %}
+
+{% block content %}
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Fale Conosco
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Estamos prontos para o ajudar a encontrar o seu imóvel. Envie-nos uma mensagem.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 md:py-28 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+
+            <div class="bg-white p-8 md:p-12 rounded-lg shadow-xl">
+                <h2 class="font-serif text-3xl md:text-4xl font-bold text-marinho mb-8">Envie a sua mensagem</h2>
+                
+                <form action="{% url 'core:contato' %}" method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Nome Completo</label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.nome.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+                            {{ form.email }}
+                             {% if form.email.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.telefone.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Telefone (Opcional)</label>
+                            {{ form.telefone }}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.mensagem.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Mensagem</label>
+                            {{ form.mensagem }}
+                             {% if form.mensagem.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.mensagem.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <button type="submit" 
+                                class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                            Enviar Mensagem
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sticky top-28">
+                <h2 class="font-serif text-3xl md:text-4xl font-bold text-marinho mb-8">Onde estamos</h2>
+                <p class="text-lg text-graphite/80 mb-6">
+                    Venha tomar um café conosco e descobrir como podemos ajudá-lo a encontrar o seu espaço de renascimento.
+                </p>
+
+                <div class="w-full h-80 rounded-lg shadow-xl overflow-hidden border-4 border-white">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3821.571441617117!2d-49.28448732509172!3d-16.70014348405527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x935ef12973167b7b%3A0x6a1d4b6f4e6e6a1!2sR.%20C-259%2C%20519%20-%20Setor%20Nova%20Sui%C3%A7a%2C%20Goi%C3%A2nia%20-%20GO%2C%2074280-220!5e0!3m2!1spt-BR!2sbr!4v1730521481656!5m2!1spt-BR!2sbr" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+
+                <div class="mt-6 text-graphite/80">
+                    <p class="text-lg"><strong>Endereço:</strong> Rua C-259, 519, Setor Nova Suiça, Goiânia - GO, 74280-220</p>
+                    <p class="text-lg mt-2"><strong>Telefone:</strong> (62) 98250-1403</p>
+                    <p class="text-lg mt-2"><strong>Email:</strong> contato@lotusimob.com.br</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+
+{% block extra_head %}
+{% endblock %}
