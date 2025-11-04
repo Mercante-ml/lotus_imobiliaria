@@ -8,6 +8,7 @@ class ConteudoPagina(models.Model):
     chave = models.CharField(max_length=50, unique=True, help_text="Identificador único (ex: 'pagina_corretores')")
     titulo = models.CharField(max_length=200, blank=True)
     subtitulo = models.TextField(blank=True)
+    corpo = models.TextField(blank=True, help_text="Conteúdo principal da página. Pode usar tags HTML.")
 
     def __str__(self):
         return self.titulo or self.chave

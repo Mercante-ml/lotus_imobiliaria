@@ -7,10 +7,18 @@ from .models import (
 # --- Registos Simples (Evoluído) ---
 admin.site.register(Bairro)
 admin.site.register(Lead)
-admin.site.register(ConteudoPagina)
+# admin.site.register(ConteudoPagina) # Movido para baixo
 # Novos modelos registados:
 admin.site.register(TipoImovel)
 admin.site.register(Caracteristica)
+
+
+# --- Painel de Conteúdo de Página ---
+@admin.register(ConteudoPagina)
+class ConteudoPaginaAdmin(admin.ModelAdmin):
+    list_display = ('chave', 'titulo')
+    search_fields = ('chave', 'titulo')
+    fields = ('chave', 'titulo', 'subtitulo', 'corpo')
 
 
 # --- Painel do Corretor (Corrigido) ---
