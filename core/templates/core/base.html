@@ -42,6 +42,7 @@
         /* Bloco para CSS customizado (ex: formulário de contato) */
         {% block extra_head %}{% endblock %}
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.min.css" rel="stylesheet">
 </head>
 <body class="font-sans bg-cinza-fundo text-graphite antialiased">
 
@@ -130,6 +131,14 @@
     </footer>
 
     {% block extra_js %}{% endblock %}
-
+    <script type="module">
+        import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js';
+        const lightbox = new PhotoSwipeLightbox({
+          gallery: '#gallery--getting-started',
+          children: 'a',
+          pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.esm.min.js')
+        });
+        lightbox.init();
+      </script>
 </body>
 </html>

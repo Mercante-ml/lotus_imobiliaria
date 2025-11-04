@@ -43,11 +43,13 @@
                 <!-- Galeria Secundária (Thumbnails) -->
                 <!-- O script descarregou todas as fotos do <Media> do XML -->
                 <h3 class="font-serif text-2xl text-marinho font-bold mt-10 mb-4">Galeria de Imagens</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="gallery--getting-started">
                     {% for img in imovel.imagens_secundarias.all %}
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:scale-105">
                             <!-- (Idealmente, isto abriria um Lightbox com JS) -->
-                            <a href="{{ img.imagem.url }}" target="_blank">
+                            <a href="{{ img.imagem.url }}"
+                            data-pswp-width="{{ img.imagem.width }}"
+                            data-pswp-height="{{ img.imagem.height }}">
                                 <img src="{{ img.imagem.url }}" alt="Galeria de {{ imovel.titulo }}" class="w-full h-40 object-cover">
                             </a>
                         </div>
