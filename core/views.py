@@ -6,20 +6,18 @@ from .models import (
 from .forms import LeadForm
 from django.db.models import Q, Max, Min
 import re
+import html
+from urllib.parse import quote
 
-# --- FUNÇÃO ATUALIZADA ---
 def index(request):
     destaques = Imovel.objects.filter(
         finalidade='lancamento', 
         em_destaque=True
     ).order_by('-data_atualizacao')[:3]
-    
-    # NOVO: Buscar todos os bairros para o dropdown da home
     bairros = Bairro.objects.all().order_by('nome')
-    
     context = {
         'destaques': destaques,
-        'bairros': bairros # NOVO: Adicionar bairros ao contexto
+        'bairros': bairros
     }
     return render(request, 'core/index.html', context)
 
@@ -27,7 +25,6 @@ def sobre(request):
     try:
         conteudo = ConteudoPagina.objects.get(chave='pagina_sobre')
     except ConteudoPagina.DoesNotExist:
-        # Fallback para evitar que a página quebre se o objeto não for criado
         conteudo = {
             'titulo': 'Página Sobre',
             'subtitulo': 'Conteúdo ainda não configurado no admin.',
@@ -36,16 +33,15 @@ def sobre(request):
     return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
 def lista_imoveis(request):
+    # Salva a URL da busca na sessão para o botão "Voltar"
+    if 'HTTP_REFERER' in request.META and 'imoveis' in request.META['HTTP_REFERER']:
+        request.session['last_search_url'] = request.get_full_path()
     
     imoveis = Imovel.objects.filter(valor__isnull=False).order_by('-data_atualizacao')
-    
     bairros = Bairro.objects.all().order_by('nome')
     tipos_imovel = TipoImovel.objects.all().order_by('nome')
     caracteristicas = Caracteristica.objects.all().order_by('nome')
-    
     filtros_aplicados = request.GET.copy()
-    
-    # --- Aplicação dos Filtros ---
     
     finalidade = filtros_aplicados.get('finalidade', 'lancamento')
     if finalidade:
@@ -55,7 +51,6 @@ def lista_imoveis(request):
     if categoria:
         imoveis = imoveis.filter(categoria=categoria)
 
-    # NOVO FILTRO (name="query" do seu form)
     query = filtros_aplicados.get('query')
     if query:
         imoveis = imoveis.filter(titulo__icontains=query)
@@ -119,14 +114,12 @@ def lista_corretores(request):
             'titulo': 'A Nossa Equipa', 
             'subtitulo': 'Especialistas dedicados a encontrar o imóvel que reflete a sua essência.'
         }
-        
     return render(request, 'core/lista_corretores.html', {
         'corretores': corretores, 
         'conteudo': conteudo
     })
 
 def contato(request):
-    enviado = False
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
@@ -134,26 +127,35 @@ def contato(request):
             return redirect('core:contato_sucesso')
     else:
         form = LeadForm()
-        
     return render(request, 'core/contato.html', {'form': form})
 
 def contato_sucesso(request):
     return render(request, 'core/contato_sucesso.html')
 
-
 def detalhe_imovel(request, imovel_id):
-    """
-    Mostra a página de detalhe de um único imóvel.
-    """
     imovel = get_object_or_404(Imovel.objects.prefetch_related('imagens_secundarias', 'caracteristicas'), id=imovel_id)
     
+    # Corrige o HTML escapado na descrição
+    imovel.descricao = html.unescape(imovel.descricao)
+
     similares = Imovel.objects.filter(
         bairro=imovel.bairro, 
         categoria=imovel.categoria
-    ).exclude(id=imovel_id)[:3] 
+    ).exclude(id=imovel_id)[:3]
+
+    # Lógica para o botão WhatsApp
+    numero_whatsapp = "+5562983188400"
+    url_imovel = request.build_absolute_uri()
+    mensagem_whatsapp = f"Olá! Tenho interesse neste imóvel: {imovel.titulo}. Pode me dar mais detalhes? Link: {url_imovel}"
+    link_whatsapp = f"httpsa//wa.me/{numero_whatsapp}?text={quote(mensagem_whatsapp)}"
     
+    # Lógica para o botão "Voltar"
+    last_search_url = request.session.get('last_search_url', None)
+
     context = {
         'imovel': imovel,
-        'similares': similares
+        'similares': similares,
+        'link_whatsapp': link_whatsapp,
+        'last_search_url': last_search_url,
     }
     return render(request, 'core/detalhe_imovel.html', context)

@@ -1,0 +1,2 @@
+/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/environ/environ.py:639: UserWarning: /app/lotus_imobiliaria/.env doesn't exist - if you're not configuring your environment separately, create one.
+  warnings.warn(
