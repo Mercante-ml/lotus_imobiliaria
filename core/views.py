@@ -23,18 +23,29 @@ def index(request):
 
 def sobre(request):
     try:
-        conteudo = ConteudoPagina.objects.get(chave='pagina_sobre')
-    except ConteudoPagina.DoesNotExist:
+        # Usamos o manager .objects do proxy model para garantir o get_or_create
+        conteudo, created = ConteudoPagina.objects.get_or_create(
+            chave='pagina_sobre',
+            defaults={
+                'titulo': 'Página Sobre',
+                'subtitulo': 'Conteúdo padrão inicial.',
+                'corpo': '<p>Este é o conteúdo padrão. Edite no painel de administração.</p>'
+            }
+        )
+    except Exception:
+        # Fallback em caso de erro no banco
         conteudo = {
             'titulo': 'Página Sobre',
-            'subtitulo': 'Conteúdo ainda não configurado no admin.',
-            'corpo': '<p>Por favor, acesse a área de administração para preencher esta página.</p>'
+            'subtitulo': 'Erro ao carregar o conteúdo.',
+            'corpo': '<p>Ocorreu um erro ao buscar os dados. Tente novamente mais tarde.</p>'
         }
     return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
+
 def lista_imoveis(request):
     # Salva a URL da busca na sessão para o botão "Voltar"
-    if 'HTTP_REFERER' in request.META and 'imoveis' in request.META['HTTP_REFERER']:
+    # Apenas salva se for uma página de resultados, não a partir de um imóvel
+    if 'imoveis' in request.path:
         request.session['last_search_url'] = request.get_full_path()
     
     imoveis = Imovel.objects.filter(valor__isnull=False).order_by('-data_atualizacao')
@@ -135,26 +146,20 @@ def contato_sucesso(request):
 def detalhe_imovel(request, imovel_id):
     imovel = get_object_or_404(Imovel.objects.prefetch_related('imagens_secundarias', 'caracteristicas'), id=imovel_id)
     
-    # Corrige o HTML escapado na descrição
+    # Garante que a descrição seja tratada como HTML seguro
     imovel.descricao = html.unescape(imovel.descricao)
-
-    similares = Imovel.objects.filter(
-        bairro=imovel.bairro, 
-        categoria=imovel.categoria
-    ).exclude(id=imovel_id)[:3]
-
+    
     # Lógica para o botão WhatsApp
-    numero_whatsapp = "+5562983188400"
+    numero_whatsapp = "+5562983188400" # Número de destino
     url_imovel = request.build_absolute_uri()
     mensagem_whatsapp = f"Olá! Tenho interesse neste imóvel: {imovel.titulo}. Pode me dar mais detalhes? Link: {url_imovel}"
-    link_whatsapp = f"httpsa//wa.me/{numero_whatsapp}?text={quote(mensagem_whatsapp)}"
+    link_whatsapp = f"https://wa.me/{numero_whatsapp}?text={quote(mensagem_whatsapp)}"
     
-    # Lógica para o botão "Voltar"
+    # Lógica para o botão "Voltar para a busca"
     last_search_url = request.session.get('last_search_url', None)
 
     context = {
         'imovel': imovel,
-        'similares': similares,
         'link_whatsapp': link_whatsapp,
         'last_search_url': last_search_url,
     }
