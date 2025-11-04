@@ -24,7 +24,16 @@ def index(request):
     return render(request, 'core/index.html', context)
 
 def sobre(request):
-    return render(request, 'core/sobre.html')
+    try:
+        conteudo = ConteudoPagina.objects.get(chave='pagina_sobre')
+    except ConteudoPagina.DoesNotExist:
+        # Fallback para evitar que a página quebre se o objeto não for criado
+        conteudo = {
+            'titulo': 'Página Sobre',
+            'subtitulo': 'Conteúdo ainda não configurado no admin.',
+            'corpo': '<p>Por favor, acesse a área de administração para preencher esta página.</p>'
+        }
+    return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
 def lista_imoveis(request):
     
