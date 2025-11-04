@@ -13,6 +13,12 @@ class ConteudoPagina(models.Model):
     def __str__(self):
         return self.titulo or self.chave
 
+class PaginaSobre(ConteudoPagina):
+    class Meta:
+        proxy = True
+        verbose_name = 'Página "Sobre"'
+        verbose_name_plural = 'Página "Sobre"'
+
 class Bairro(models.Model):
     nome = models.CharField(max_length=80, unique=True)
     def __str__(self):

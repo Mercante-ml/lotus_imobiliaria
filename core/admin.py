@@ -1,24 +1,49 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
-    ConteudoPagina, TipoImovel, Caracteristica  # Modelos evoluídos
+    ConteudoPagina, TipoImovel, Caracteristica, PaginaSobre
 )
 
 # --- Registos Simples (Evoluído) ---
 admin.site.register(Bairro)
 admin.site.register(Lead)
-# admin.site.register(ConteudoPagina) # Movido para baixo
-# Novos modelos registados:
 admin.site.register(TipoImovel)
 admin.site.register(Caracteristica)
 
+# --- Admin Singleton para a Página "Sobre" ---
+@admin.register(PaginaSobre)
+class PaginaSobreAdmin(admin.ModelAdmin):
+    # O objeto que estamos editando é sempre o mesmo
+    def get_object(self, request, object_id, from_field=None):
+        # Obtém ou cria o objeto único com a chave 'pagina_sobre'
+        obj, created = ConteudoPagina.objects.get_or_create(
+            chave='pagina_sobre',
+            defaults={
+                'titulo': 'Sobre Nós',
+                'subtitulo': 'Um pouco sobre nossa história e valores.',
+                'corpo': '<p>Escreva aqui o conteúdo da página sobre.</p>'
+            }
+        )
+        return obj
 
-# --- Painel de Conteúdo de Página ---
-@admin.register(ConteudoPagina)
-class ConteudoPaginaAdmin(admin.ModelAdmin):
-    list_display = ('chave', 'titulo')
-    search_fields = ('chave', 'titulo')
-    fields = ('chave', 'titulo', 'subtitulo', 'corpo')
+    # Redireciona a "changelist" (lista de objetos) para a página de edição
+    def changelist_view(self, request, extra_context=None):
+        obj = self.get_object(request, None)
+        return HttpResponseRedirect(
+            reverse(f'admin:{self.opts.app_label}_{self.opts.model_name}_change', args=(obj.pk,))
+        )
+
+    # Oculta os botões de "Adicionar" e "Deletar"
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    # Define os campos que aparecerão no formulário de edição
+    fields = ('titulo', 'subtitulo', 'corpo')
 
 
 # --- Painel do Corretor (Corrigido) ---
