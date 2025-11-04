@@ -7,6 +7,7 @@ from .forms import LeadForm
 from django.db.models import Q, Max, Min
 import re
 import urllib.parse
+import html
 
 # --- FUNÇÃO ATUALIZADA ---
 def index(request):
@@ -154,6 +155,9 @@ def detalhe_imovel(request, imovel_id):
 
     # Recupera a URL da última busca para o botão "voltar"
     last_search_url = request.session.get('last_search_url', '/imoveis/')
+
+    # Decodifica o HTML da descrição para renderizar as tags <br>
+    imovel.descricao = html.unescape(imovel.descricao)
 
     context = {
         'imovel': imovel,

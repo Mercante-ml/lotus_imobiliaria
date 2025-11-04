@@ -43,7 +43,7 @@
                 <div class="bg-white p-8 rounded-lg shadow-xl mb-10">
                     <h3 class="font-serif text-3xl text-marinho font-bold mb-5">Descrição</h3>
                     <div class="prose prose-lg max-w-none text-graphite">
-                        {{ imovel.descricao|linebreaks }}
+                        {{ imovel.descricao|safe }}
                     </div>
                 </div>
 
