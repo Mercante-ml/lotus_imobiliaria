@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.utils.html import mark_safe
+from django.core.validators import RegexValidator
 
 # --- Modelos de Apoio ---
 
@@ -40,7 +41,12 @@ class Corretor(models.Model):
     nome = models.CharField(max_length=80)
     email = models.EmailField(blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
-    creci = models.CharField(max_length=20)
+    
+    creci_validator = RegexValidator(regex=r'^\d+$',  
+    message='O CRECI deve conter apenas números.')    
+    creci = models.CharField(max_length=20, validators=[creci_validator])
+    
+    models.CharField(max_length=20, validators=[creci_validator])
     foto = models.ImageField(upload_to='fotos_corretores/', blank=True, null=True)
     bio = models.TextField(blank=True, help_text="Uma breve biografia ou citação do corretor.")
 
