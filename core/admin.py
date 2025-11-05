@@ -1,8 +1,14 @@
 from django.contrib import admin
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
-    ConteudoPagina, TipoImovel, Caracteristica  # Modelos evoluídos
+    ConteudoPagina, TipoImovel, Caracteristica, Cliente
 )
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
+
+# admin.site.unregister(SocialApp)
+# admin.site.register(SocialApp)
+admin.site.register(Cliente)
 
 # --- Registos Simples (Evoluído) ---
 admin.site.register(Bairro)

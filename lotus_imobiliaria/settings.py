@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'django.contrib.humanize',
+    'django.contrib.sites',
 
     # allauth
     'allauth',
@@ -173,11 +174,6 @@ ACCOUNT_UNIQUE_EMAIL = True
 # Configurações dos provedores sociais (Google e Facebook)
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'APP': {
-            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
-            'secret': os.getenv('GOOGLE_SECRET_KEY'),
-            'key': ''
-        },
         'SCOPE': [
             'profile',
             'email',
@@ -187,11 +183,6 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     },
     'facebook': {
-        'APP': {
-            'client_id': os.getenv('FACEBOOK_APP_ID'),
-            'secret': os.getenv('FACEBOOK_APP_SECRET'),
-            'key': ''
-        },
         'METHOD': 'oauth2',
         'SCOPE': ['email', 'public_profile'],
         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
