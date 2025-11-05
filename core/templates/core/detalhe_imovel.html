@@ -1,6 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% load humanize %}
+{% load core_tags %}
 
 {% block title %}{{ imovel.titulo }} - Lotus Imobiliária{% endblock %}
 
@@ -94,6 +95,29 @@
                         Agende uma visita
                     </a>
 
+<<<<<<< HEAD
+=======
+                    {% if user|hasattr_filter:'cliente' %}
+                        {% if user.cliente in imovel.favoritos.all %}
+                            <a href="{% url 'core:remover_favorito' imovel.id %}" class="mt-3 flex items-center justify-center w-full text-center bg-red-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-red-600 transition duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
+                                Remover dos Favoritos
+                            </a>
+                        {% else %}
+                            <a href="{% url 'core:adicionar_favorito' imovel.id %}" class="mt-3 flex items-center justify-center w-full text-center bg-blue-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                Adicionar aos Favoritos
+                            </a>
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <input type="checkbox" id="compare_{{ imovel.id }}" name="compare" value="{{ imovel.id }}" onchange="updateCompare({{ imovel.id }})" {% if imovel.id|stringformat:"s" in request.session.comparar_imoveis %}checked{% endif %}>
+                        <label for="compare_{{ imovel.id }}">Comparar</label>
+                    </div>
+
+                    <!-- Tabela de Especificações -->
+>>>>>>> ccc3a18a88ff6b2aa19ec88d8c4e0d186a48fc02
                     <h3 class="font-serif text-xl text-marinho font-bold mt-6 mb-4 border-t pt-4">Especificações</h3>
                     <div class="space-y-3 text-graphite">
                         {% if imovel.area_util %}<div class="flex justify-between border-b pb-2"><span class="font-medium">Área Útil</span><span class="font-bold">{{ imovel.area_util|intcomma }} m²</span></div>{% endif %}
@@ -112,4 +136,30 @@
     </div>
 </section>
 
+<<<<<<< HEAD
 {% endblock %}
+=======
+<script>
+function updateCompare(imovelId) {
+    const checkbox = document.getElementById(`compare_${imovelId}`);
+    const action = checkbox.checked ? 'add' : 'remove';
+
+    fetch("{% url 'core:update_comparison' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `imovel_id=${imovelId}&action=${action}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status !== 'ok') {
+            console.error('Failed to update comparison list');
+        }
+    });
+}
+</script>
+
+{% endblock %}
+>>>>>>> ccc3a18a88ff6b2aa19ec88d8c4e0d186a48fc02

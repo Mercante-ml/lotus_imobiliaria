@@ -12,6 +12,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')), # Inclui as URLs do seu app 'core'
+    path('accounts/', include('allauth.urls')), # Adiciona as URLs do django-allauth
 ]
 
 # --- ADIÇÃO IMPORTANTE ---

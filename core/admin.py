@@ -3,8 +3,18 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
+<<<<<<< HEAD
     ConteudoPagina, TipoImovel, Caracteristica, PaginaSobre
+=======
+    ConteudoPagina, TipoImovel, Caracteristica, Cliente
+>>>>>>> ccc3a18a88ff6b2aa19ec88d8c4e0d186a48fc02
 )
+from allauth.socialaccount.models import SocialApp
+from django.contrib.sites.models import Site
+
+# admin.site.unregister(SocialApp)
+# admin.site.register(SocialApp)
+admin.site.register(Cliente)
 
 # --- Registos Simples (Evoluído) ---
 admin.site.register(Bairro)

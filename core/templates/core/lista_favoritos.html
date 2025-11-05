@@ -1,0 +1,32 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-20">
+    <h1 class="font-serif text-5xl md:text-7xl font-bold text-marinho-escuro text-center mb-12">Meus Imóveis Favoritos</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for imovel in imoveis %}
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                <div class="relative h-64">
+                    <a href="{% url 'core:detalhe_imovel' imovel.id %}">
+                        {% if imovel.imagem_principal %}
+                            <img src="{{ imovel.imagem_principal.url }}" alt="Foto de {{ imovel.titulo }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <img src="https://placehold.co/600x400/142048/FFF?text=Lotus+Imobili%C3%A1ria" alt="Sem foto" class="w-full h-full object-cover">
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-serif text-2xl font-bold text-marinho truncate" title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
+                    <p class="text-graphite/70 text-sm mt-1">{{ imovel.bairro.nome }}</p>
+                    <div class="mt-5">
+                        <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="block w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center text-graphite/80 col-span-full">Você ainda não adicionou nenhum imóvel aos seus favoritos.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

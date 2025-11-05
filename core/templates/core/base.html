@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="pt-br" class="scroll-smooth">
 <head>
@@ -8,6 +9,7 @@
     <title>{% block title %}Lotus Imobiliária{% endblock %}</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,9 +60,34 @@
                 <a href="{% url 'core:contato' %}" class="text-marinho hover:text-ouro transition duration-300">Contato</a>
             </div>
             
-            <a href="{% url 'core:contato' %}" class="hidden md:block bg-ouro text-marinho font-medium px-5 py-2.5 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300 transform hover:scale-105">
-                Falar com Especialista
-            </a>
+            <div class="hidden md:flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center text-marinho hover:text-ouro transition duration-300">
+                            <span>Minha Conta</span>
+                            <svg class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                            <a href="{% url 'core:lista_favoritos' %}" class="block px-4 py-2 text-sm text-marinho hover:bg-gray-100">Meus Favoritos</a>
+                            <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-sm text-marinho hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center text-marinho hover:text-ouro transition duration-300">
+                            <span>Login</span>
+                            <svg class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                            <a href="{% provider_login_url 'google' %}" class="block px-4 py-2 text-sm text-marinho hover:bg-gray-100">Login com Google</a>
+                            <a href="{% provider_login_url 'facebook' %}" class="block px-4 py-2 text-sm text-marinho hover:bg-gray-100">Login com Facebook</a>
+                        </div>
+                    </div>
+                {% endif %}
+                <a href="{% url 'core:contato' %}" class="bg-ouro text-marinho font-medium px-5 py-2.5 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300 transform hover:scale-105">
+                    Falar com Especialista
+                </a>
+            </div>
 
             <button class="md:hidden text-marinho">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

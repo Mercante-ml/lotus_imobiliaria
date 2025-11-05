@@ -1,6 +1,8 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load humanize %} {% block title %}Portfólio de Imóveis{% endblock %}
+{% load humanize %}
+{% load core_tags %}
+{% block title %}Portfólio de Imóveis{% endblock %}
 
 {% block content %}
 
@@ -160,6 +162,12 @@
                     </div>
 
                 </form>
+
+                <div id="compare-section" class="mt-8">
+                    <a href="{% url 'core:comparar_imoveis' %}" id="compare-button" class="hidden flex items-center justify-center w-full bg-blue-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-blue-600 transition duration-300">
+                        Comparar Itens (<span id="compare-count">0</span>)
+                    </a>
+                </div>
             </aside>
 
             <main class="lg:col-span-3">
@@ -190,6 +198,18 @@
                             <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                                 {{ imovel.get_finalidade_display }}
                             </div>
+
+                            {% if user|hasattr_filter:'cliente' %}
+                                {% if user.cliente in imovel.favoritos.all %}
+                                    <a href="{% url 'core:remover_favorito' imovel.id %}" class="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition duration-300" title="Remover dos Favoritos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'core:adicionar_favorito' imovel.id %}" class="absolute top-4 right-4 bg-white/80 text-marinho p-2 rounded-full hover:bg-red-500 hover:text-white transition-colors duration-300" title="Adicionar aos Favoritos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
                         </div>
                         <div class="p-5">
                             <h3 class="font-serif text-2xl font-bold text-marinho truncate" title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
@@ -231,6 +251,10 @@
                             <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="mt-5 block w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
                                 Ver Detalhes
                             </a>
+                            <div class="mt-3">
+                                <input type="checkbox" id="compare_{{ imovel.id }}" name="compare" value="{{ imovel.id }}" onchange="updateCompare({{ imovel.id }})" {% if imovel.id|stringformat:"s" in request.session.comparar_imoveis %}checked{% endif %}>
+                                <label for="compare_{{ imovel.id }}">Comparar</label>
+                            </div>
                         </div>
                     </div>
                     {% empty %}
@@ -301,6 +325,48 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = url.toString();
         });
     });
+});
+</script>
+
+<script>
+function updateCompare(imovelId) {
+    const checkbox = document.getElementById(`compare_${imovelId}`);
+    const action = checkbox.checked ? 'add' : 'remove';
+
+    fetch("{% url 'core:update_comparison' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `imovel_id=${imovelId}&action=${action}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            updateCompareButton(data.count);
+        } else {
+            // Handle error
+            console.error('Failed to update comparison list');
+        }
+    });
+}
+
+function updateCompareButton(count) {
+    const compareButton = document.getElementById('compare-button');
+    const compareCount = document.getElementById('compare-count');
+
+    if (count > 0) {
+        compareButton.classList.remove('hidden');
+        compareCount.innerText = count;
+    } else {
+        compareButton.classList.add('hidden');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const imoveis_ids = {{ request.session.comparar_imoveis|default:"[]"|safe }};
+    updateCompareButton(imoveis_ids.length);
 });
 </script>
 

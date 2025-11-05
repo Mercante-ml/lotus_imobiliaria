@@ -1,0 +1,64 @@
+{% extends 'core/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-20">
+    <h1 class="font-serif text-5xl md:text-7xl font-bold text-marinho-escuro text-center mb-12">Comparar Imóveis</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for imovel in imoveis %}
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                <div class="relative h-64">
+                    <a href="{% url 'core:detalhe_imovel' imovel.id %}">
+                        {% if imovel.imagem_principal %}
+                            <img src="{{ imovel.imagem_principal.url }}" alt="Foto de {{ imovel.titulo }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <img src="https://placehold.co/600x400/142048/FFF?text=Lotus+Imobili%C3%A1ria" alt="Sem foto" class="w-full h-full object-cover">
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="p-5">
+                    <h3 class="font-serif text-2xl font-bold text-marinho truncate" title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
+                    <p class="text-graphite/70 text-sm mt-1">{{ imovel.bairro.nome }}</p>
+                    <ul class="mt-4 space-y-2 text-graphite">
+                        <li class="flex justify-between border-b pb-2"><span>Preço:</span> <span class="font-bold">R$ {{ imovel.valor|intcomma }}</span></li>
+                        <li class="flex justify-between border-b pb-2"><span>Área:</span> <span class="font-bold">{{ imovel.area_util|intcomma }} m²</span></li>
+                        <li class="flex justify-between border-b pb-2"><span>Quartos:</span> <span class="font-bold">{{ imovel.quartos }}</span></li>
+                        <li class="flex justify-between border-b pb-2"><span>Banheiros:</span> <span class="font-bold">{{ imovel.banheiros }}</span></li>
+                        <li class="flex justify-between"><span>Vagas:</span> <span class="font-bold">{{ imovel.vagas }}</span></li>
+                    </ul>
+                    <div class="mt-5 space-y-2">
+                        <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="block w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">Ver Detalhes</a>
+                        <a href="#" onclick="updateCompare({{ imovel.id }}, true)" class="block w-full text-center bg-red-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-red-600 transition duration-300">Remover</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-center text-graphite/80 col-span-full">Nenhum imóvel selecionado para comparação.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function updateCompare(imovelId, remove) {
+    const action = remove ? 'remove' : 'add';
+
+    fetch("{% url 'core:update_comparison' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `imovel_id=${imovelId}&action=${action}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            window.location.reload();
+        } else {
+            // Handle error
+            console.error('Failed to update comparison list');
+        }
+    });
+}
+</script>
+{% endblock %}
