@@ -96,13 +96,9 @@ SITE_ID = 1
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_lotus',      # O nome do seu banco de dados
-        'USER': 'user_lotus',   # Seu usuário do PostgreSQL
-        'PASSWORD': 'pass_lotus', # Sua senha do PostgreSQL
-        'HOST': 'localhost',      # Ou o IP do seu servidor de banco de dados
-        'PORT': '5432',           # A porta padrão do PostgreSQL
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
