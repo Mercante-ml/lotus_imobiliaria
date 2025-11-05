@@ -1,6 +1,8 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load humanize %} {% block title %}Portfólio de Imóveis{% endblock %}
+{% load humanize %}
+{% load core_tags %}
+{% block title %}Portfólio de Imóveis{% endblock %}
 
 {% block content %}
 
@@ -197,7 +199,7 @@
                                 {{ imovel.get_finalidade_display }}
                             </div>
 
-                            {% if user.is_authenticated and hasattr(user, 'cliente') %}
+                            {% if user|hasattr_filter:'cliente' %}
                                 {% if user.cliente in imovel.favoritos.all %}
                                     <a href="{% url 'core:remover_favorito' imovel.id %}" class="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition duration-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
