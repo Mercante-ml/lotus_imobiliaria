@@ -2,30 +2,24 @@
 {% load static %}
 {% load humanize %}
 
-<!-- O <title> da página será o nome do imóvel -->
 {% block title %}{{ imovel.titulo }} - Lotus Imobiliária{% endblock %}
 
 {% block content %}
 
-<!-- 1. SEÇÃO DO TÍTULO E LOCALIZAÇÃO -->
 <section class="bg-marinho-escuro text-white pt-28 pb-16">
     <div class="container mx-auto px-6 text-center">
-        <!-- Título do Imóvel (H1) -->
         <h1 class="font-serif text-4xl md:text-6xl font-bold">
             {{ imovel.titulo }}
         </h1>
-        <!-- Localização (Tipo + Bairro) -->
         <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
             {{ imovel.tipo_imovel.nome|default:'Imóvel' }} em {{ imovel.bairro.nome|default:'Localização Privilegiada' }}
         </p>
     </div>
 </section>
 
-<!-- 2. SEÇÃO PRINCIPAL (CONTEÚDO) -->
 <section class="py-20 bg-cinza-fundo">
     <div class="container mx-auto px-6">
 
-        <!-- Botão Voltar -->
         <a href="{{ last_search_url }}" class="inline-flex items-center text-marinho hover:text-ouro font-medium mb-8 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -33,13 +27,10 @@
             Voltar para a busca
         </a>
         
-        <!-- Grid principal (2 colunas: Conteúdo à esquerda, Infos à direita) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-            <!-- Coluna da Esquerda: DESCRIÇÃO, FOTOS E CARACTERÍSTICAS -->
             <div class="lg:col-span-2">
                 
-                <!-- Descrição (Movido para cima) -->
                 <div class="bg-white p-8 rounded-lg shadow-xl mb-10">
                     <h3 class="font-serif text-3xl text-marinho font-bold mb-5">Descrição</h3>
                     <div class="prose prose-lg max-w-none text-graphite">
@@ -47,7 +38,6 @@
                     </div>
                 </div>
 
-                <!-- Imagem Principal (Hero) -->
                 <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-4">
                     {% if imovel.imagem_principal %}
                         <img src="{{ imovel.imagem_principal.url }}" alt="Foto principal de {{ imovel.titulo }}" class="w-full h-auto object-cover">
@@ -56,7 +46,6 @@
                     {% endif %}
                 </div>
 
-                <!-- Galeria Secundária (Thumbnails) -->
                 <h3 class="font-serif text-2xl text-marinho font-bold mt-10 mb-4">Galeria de Imagens</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="gallery--getting-started">
                     {% for img in imovel.imagens_secundarias.all %}
@@ -72,7 +61,6 @@
                     {% endfor %}
                 </div>
 
-                <!-- Características (XML <Features>) -->
                 {% if imovel.caracteristicas.all %}
                 <div class="bg-white p-8 rounded-lg shadow-xl mt-10">
                     <h3 class="font-serif text-3xl text-marinho font-bold mb-6">Características do Imóvel</h3>
@@ -90,11 +78,9 @@
                 {% endif %}
             </div>
 
-            <!-- Coluna da Direita: INFORMAÇÕES E PREÇO (Sticky) -->
             <aside class="lg:col-span-1 lg:sticky top-28 h-fit">
                 <div class="bg-white p-6 rounded-lg shadow-xl">
                     
-                    <!-- Preço -->
                     {% if imovel.valor %}
                         <p class="font-serif text-4xl text-marinho-claro font-bold">
                             R$ {{ imovel.valor|intcomma }}
@@ -105,13 +91,11 @@
                         </p>
                     {% endif %}
                     
-                    <!-- Botão de Ação (Agendar Visita) -->
                     <a href="{{ whatsapp_url }}" target="_blank" class="mt-5 flex items-center justify-center w-full text-center bg-green-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-green-600 transition duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.398 1.919 6.191l-.84 3.095 3.147-.817z"/></svg>
                         Agende uma visita
                     </a>
 
-                    <!-- Tabela de Especificações -->
                     <h3 class="font-serif text-xl text-marinho font-bold mt-6 mb-4 border-t pt-4">Especificações</h3>
                     <div class="space-y-3 text-graphite">
                         
@@ -178,4 +162,16 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+    import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe-lightbox.esm.min.js';
+    const lightbox = new PhotoSwipeLightbox({
+      gallery: '#gallery--getting-started',
+      children: 'a',
+      pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.esm.min.js')
+    });
+    lightbox.init();
+  </script>
 {% endblock %}

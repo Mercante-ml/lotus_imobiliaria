@@ -1,0 +1,115 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load allauth %} 
+{% load socialaccount %} 
+
+{% block title %}Entrar na sua Conta{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Fazer Login
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Acesse sua conta para ver seus imóveis favoritos.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+            
+            {% comment %} 
+            
+            <h2 class="font-serif text-3xl text-marinho font-bold mb-6 text-center">
+                Entrar com 1 clique
+            </h2>
+            
+            {% get_providers as socialaccount_providers %}
+            <div class="flex flex-col md:flex-row gap-4 mb-8">
+                
+                {% provider_login_url "google" as google_url %}
+                <a href="{{ google_url }}" class="flex-1 flex items-center justify-center gap-3 bg-white border border-gray-400 text-graphite font-medium px-5 py-3 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="m6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.223 0-9.64-3.657-11.303-8H6.306C9.656 39.663 16.318 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.574l6.19 5.238C41.042 36.151 44 30.63 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                    Entrar com Google
+                </a>
+                
+            </div>
+            
+            <div class="my-6 flex items-center justify-center">
+                <span class="flex-grow border-t"></span>
+                <span class="mx-4 text-sm font-medium text-gray-500">OU ENTRE COM SEU EMAIL</span>
+                <span class="flex-grow border-t"></span>
+            </div>
+
+            {% endcomment %} 
+            
+            <h2 class="font-serif text-3xl text-marinho font-bold mb-6 text-center">
+                Entrar com seu Email
+            </h2>
+
+            <form method="POST" action="{% url 'account_login' %}" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.login.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+                    <input type="email" name="login" id="{{ form.login.id_for_label }}"
+                           value="{{ form.login.value|default:'' }}"
+                           required
+                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                           placeholder="seu.email@exemplo.com">
+                    {% for error in form.login.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Senha</label>
+                    <input type="password" name="password" id="{{ form.password.id_for_label }}"
+                           required
+                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                           placeholder="Sua senha">
+                    {% for error in form.password.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+                {% for error in form.non_field_errors %}
+                    <p class="text-red-600 text-sm mt-1 font-bold">{{ error }}</p>
+                {% endfor %}
+
+                <div class="flex items-center justify-between">
+                    <label for="{{ form.remember.id_for_label }}" class="flex items-center text-sm text-graphite">
+                        <input type="checkbox" name="remember" id="{{ form.remember.id_for_label }}"
+                               class="rounded text-ouro focus:ring-ouro/50">
+                        <span class="ml-2">Lembrar-me</span>
+                    </label>
+                    <a href="{% url 'account_reset_password' %}" class="text-sm font-medium text-marinho hover:text-ouro">
+                        Esqueceu a senha?
+                    </a>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                        Entrar
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center text-sm text-graphite mt-8">
+                Ainda não tem uma conta?
+                <a href="{% url 'account_signup' %}" class="font-medium text-marinho hover:text-ouro underline">
+                    Crie uma agora
+                </a>
+            </p>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

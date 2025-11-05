@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Verificação de Duas Etapas{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Verificação de Segurança
+        </h1>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+            
+            <h2 class="font-serif text-3xl text-marinho font-bold mb-4 text-center">
+                Insira seu código
+            </h2>
+            <p class="text-center text-graphite/80 mb-8">
+                Enviamos um código de verificação para o seu e-mail. Por favor, insira-o abaixo para continuar.
+            </p>
+
+            <form method="POST" action="." class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.code.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Código de Verificação</label>
+                    <input type="text" name="code" id="{{ form.code.id_for_label }}"
+                           required
+                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                           placeholder="S6KPXX">
+                    {% for error in form.code.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+                {% for error in form.non_field_errors %}
+                    <p class="text-red-600 text-sm mt-1 font-bold">{{ error }}</p>
+                {% endfor %}
+
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                        Confirmar e Entrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %} 
+
+{% block title %}Meus Favoritos{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Meus Favoritos
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Estes são os imóveis que você mais gostou.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <a href="{{ last_search_url }}" class="inline-flex items-center text-marinho hover:text-ouro font-medium mb-8 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            Voltar para a busca
+        </a>
+
+        <main class="max-w-5xl mx-auto" id="pagina-favoritos">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                {% for imovel in imoveis %}
+                <div class="imovel-card bg-white rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                    <div class="relative h-64">
+                        <a href="{% url 'core:detalhe_imovel' imovel.id %}">
+                            {% if imovel.imagem_principal %}
+                            <img src="{{ imovel.imagem_principal.url }}" 
+                                 alt="Foto de {{ imovel.titulo }}" 
+                                 class="w-full h-full object-cover">
+                            {% else %}
+                            <img src="https://placehold.co/600x400/142048/FFF?text=Lotus+Imobili%C3%A1ria" 
+                                 alt="Sem foto" 
+                                 class="w-full h-full object-cover">
+                            {% endif %}
+                        </a>
+                        
+                        <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            {{ imovel.get_finalidade_display }}
+                        </div>
+
+                        <button class="btn-favorito absolute top-4 right-4 p-2 rounded-full bg-black/30 backdrop-blur-sm"
+                                data-imovel-id="{{ imovel.id }}"
+                                title="Remover dos Favoritos">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-serif text-2xl font-bold text-marinho truncate" title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
+                        <p class="text-graphite/70 text-sm mt-1">
+                            {{ imovel.tipo_imovel.nome }} em {{ imovel.bairro.nome|default:'Localização não informada' }}
+                        </p>
+                        
+                        <div class="flex items-center justify-between mt-4 text-graphite/90 border-b pb-4">
+                            {% if imovel.suites %}
+                            <span class="flex items-center space-x-2 text-sm" title="{{ imovel.suites }} Suítes">
+                                <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /> </svg>
+                                <span>{{ imovel.suites }} Suíte{{ imovel.suites|pluralize }}</span>
+                            </span>
+                            {% endif %}
+                            {% if imovel.vagas %}
+                            <span class="flex items-center space-x-2 text-sm" title="{{ imovel.vagas }} Vagas">
+                                <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /> </svg>
+                                <span>{{ imovel.vagas }} Vaga{{ imovel.vagas|pluralize }}</span>
+                            </span>
+                            {% endif %}
+                            {% if imovel.area_util %}
+                            <span class="flex items-center space-x-2 text-sm" title="{{ imovel.area_util }} m²">
+                                <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5" /> </svg>
+                                <span>{{ imovel.area_util|intcomma }} m²</span>
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        {% if imovel.valor %}
+                            <p class="font-serif text-3xl text-marinho-claro font-bold mt-4">
+                                R$ {{ imovel.valor|intcomma }}
+                            </p>
+                        {% else %}
+                            <p class="font-serif text-2xl text-marinho-claro font-bold mt-4">
+                                Sob Consulta
+                            </p>
+                        {% endif %}
+                        
+                        <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="mt-5 block w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div> 
+
+            <div id="sem-favoritos" 
+                 class="text-center py-10 bg-white shadow-xl rounded-lg"
+                 {% if imoveis %}style="display: none;"{% endif %}>
+                
+                <h3 class="font-serif text-2xl text-marinho">Nenhum favorito salvo</h3>
+                <p class="text-graphite/80 mt-2">
+                    Clique no ícone de coração nos imóveis para salvá-los aqui.
+                </p>
+                <a href="{% url 'core:lista_imoveis' %}" class="mt-6 inline-block bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Ver Imóveis
+                </a>
+            </div>
+            
+        </main>
+        
+    </div>
+</section>
+
+{% endblock %}

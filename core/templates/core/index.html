@@ -48,6 +48,7 @@
     </div>
 </section>
 
+
 <section id="lancamentos" class="py-20 md:py-28 bg-cinza-fundo">
     <div class="container mx-auto px-6">
         
@@ -77,7 +78,15 @@
                     <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                         {{ imovel.get_finalidade_display }}
                     </div>
-                </div>
+
+                    <button class="btn-favorito absolute top-4 right-4 p-2 rounded-full bg-black/30 backdrop-blur-sm"
+                            data-imovel-id="{{ imovel.id }}"
+                            title="Adicionar aos Favoritos">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </button>
+                    </div>
                 <div class="p-6">
                     <h3 class="font-serif text-2xl font-bold text-graphite truncate" title="{{ imovel.titulo }}">
                         {{ imovel.titulo }}

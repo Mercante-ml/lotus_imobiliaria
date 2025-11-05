@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Gerenciar Emails{% endblock %}
+
+{% block content %}
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Gerenciar Emails
+        </h1>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+            
+            <h2 class="font-serif text-3xl text-marinho font-bold mb-6">
+                Seus Emails
+            </h2>
+
+            {% if user.emailaddress_set.all %}
+                <p class="text-graphite/80 mb-4">Estes são os endereços de email associados à sua conta:</p>
+                <form action="{% url 'account_email' %}" method="post" class="space-y-3">
+                    {% csrf_token %}
+                    
+                    {% for emailaddress in user.emailaddress_set.all %}
+                    <div class="flex items-center justify-between p-3 border rounded-lg {% if emailaddress.primary %}bg-green-50 border-green-200{% else %}bg-gray-50 border-gray-200{% endif %}">
+                        <div class="text-graphite">
+                            <strong>{{ emailaddress.email }}</strong>
+                            {% if emailaddress.primary %}
+                                <span class="ml-2 text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded-full">Primário</span>
+                            {% endif %}
+                            {% if not emailaddress.verified %}
+                                <span class="ml-2 text-xs font-medium bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full">Não verificado</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {% if not emailaddress.primary %}
+                                <button type="submit" name="action_primary" value="{{ emailaddress.email }}" 
+                                        class="text-sm font-medium text-marinho hover:text-ouro">
+                                    Tornar Primário
+                                </button>
+                                <button type="submit" name="action_remove" value="{{ emailaddress.email }}" 
+                                        class="ml-3 text-sm font-medium text-red-600 hover:text-red-800">
+                                    Remover
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </form>
+            {% else %}
+                <p>Sua conta não tem emails associados.</p>
+            {% endif %}
+
+            <h3 class="font-serif text-2xl text-marinho font-bold mt-10 mb-6 border-t pt-6">
+                Adicionar Novo Email
+            </h3>
+            <form action="{% url 'account_email' %}" method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+                    <input type="email" name="email" id="{{ form.email.id_for_label }}" required
+                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
+                    {% for error in form.email.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+                <button name="action_add" type="submit" 
+                        class="w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Adicionar Email
+                </button>
+            </form>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

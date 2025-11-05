@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Confirmar E-mail{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Confirmação de Conta
+        </h1>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl text-center">
+            
+            {% if confirmation %}
+                <h2 class="font-serif text-3xl text-marinho font-bold mb-6">
+                    Confirmar seu E-mail
+                </h2>
+                <p class="text-lg text-graphite/80 mb-8">
+                    Por favor, clique no botão abaixo para ativar sua conta.
+                </p>
+
+                <form method="POST" action="{% url 'account_confirm_email' confirmation.key %}">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="w-full bg-green-600 text-white font-medium px-8 py-4 rounded-lg shadow-lg hover:bg-green-700 transition duration-300 text-lg">
+                        Confirmar e Ativar Conta
+                    </button>
+                </form>
+
+            {% else %}
+                <svg class="mx-auto h-20 w-20 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+
+                <h2 class="font-serif text-3xl text-marinho font-bold mt-6 mb-4">
+                    Link Inválido
+                </h2>
+                <p class="text-lg text-graphite/80">
+                    O link de ativação que você usou é inválido ou já expirou.
+                </p>
+                <a href="{% url 'core:index' %}" class="mt-8 inline-block bg-ouro text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Voltar para a Página Inicial
+                </a>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -3,7 +3,16 @@ from django.utils.text import slugify
 from django.utils.html import mark_safe
 from django.core.validators import RegexValidator
 
-# --- Modelos de Apoio ---
+# Importações para o Perfil de Usuário e o "Sinal"
+from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+# Pega o modelo de User padrão do Django
+User = get_user_model()
+
+
+# --- Modelos de Apoio (Conteúdo, Bairro, etc.) ---
 
 class ConteudoPagina(models.Model):
     chave = models.CharField(max_length=50, unique=True, help_text="Identificador único (ex: 'pagina_corretores')")
@@ -19,7 +28,6 @@ class Bairro(models.Model):
         return self.nome
 
 class TipoImovel(models.Model):
-    """ Ex: Apartamento, Casa de Condomínio, Loft, Sala Comercial """
     nome = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     
@@ -32,7 +40,6 @@ class TipoImovel(models.Model):
         super().save(*args, **kwargs)
 
 class Caracteristica(models.Model):
-    """ Ex: Piscina, Academia, Portaria 24h """
     nome = models.CharField(max_length=100, unique=True)
     def __str__(self):
         return self.nome
@@ -42,73 +49,47 @@ class Corretor(models.Model):
     email = models.EmailField(blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     
-    creci_validator = RegexValidator(regex=r'^\d+$',  
-    message='O CRECI deve conter apenas números.')    
-    creci = models.CharField(max_length=20, validators=[creci_validator])
+    # Validador do CRECI (que corrigimos)
+    creci_validator = RegexValidator(
+        regex=r'^\d+$',  
+        message='O CRECI deve conter apenas números.'
+    )    
+    creci = models.CharField(
+        max_length=20, 
+        validators=[creci_validator]
+    )
     
-    models.CharField(max_length=20, validators=[creci_validator])
     foto = models.ImageField(upload_to='fotos_corretores/', blank=True, null=True)
     bio = models.TextField(blank=True, help_text="Uma breve biografia ou citação do corretor.")
 
     def __str__(self):
         return self.nome
 
-    # CORRIGIDO para admin: Renomeado de 'foto_preview' para 'get_foto_preview'
     def get_foto_preview(self):
         if self.foto:
             return mark_safe(f'<img src="{self.foto.url}" style="max-height: 100px; max-width: 100px;" />')
         return "Sem foto"
     get_foto_preview.short_description = "Prévia"
 
-# --- Modelo Principal (Evoluído) ---
+
+# --- Modelo Principal (Imovel) ---
+# (Este modelo precisa estar DEFINIDO ANTES do Profile, que o usa)
 
 class Imovel(models.Model):
     
     # --- Identificação e Classificação ---
     titulo = models.CharField(max_length=120)
     descricao = models.TextField(blank=True)
-    
-    FINALIDADE_CHOICES = [
-        ('lancamento', 'Lançamento'),
-        ('revenda', 'Revenda')
-    ]
-    finalidade = models.CharField(
-        max_length=20, choices=FINALIDADE_CHOICES, default='revenda',
-        help_text="Deduzido do Título (ex: 'lançamento') ou 'Revenda' como padrão"
-    )
-
-    # NOVO CAMPO (Baseado na sua análise do XML)
-    CATEGORIA_CHOICES = [
-        ('residencial', 'Residencial'),
-        ('comercial', 'Comercial'),
-    ]
-    categoria = models.CharField(
-        max_length=20, choices=CATEGORIA_CHOICES, default='residencial',
-        help_text="Baseado no <UsageType> do XML (Residencial/Comercial)"
-    )
-
-    tipo_imovel = models.ForeignKey(
-        TipoImovel, on_delete=models.SET_NULL, null=True, blank=True,
-        help_text="Baseado no <PropertySubType> ou <PropertyType> do XML"
-    )
+    FINALIDADE_CHOICES = [('lancamento', 'Lançamento'), ('revenda', 'Revenda')]
+    finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES, default='revenda', help_text="Deduzido do Título (ex: 'lançamento') ou 'Revenda' como padrão")
+    CATEGORIA_CHOICES = [('residencial', 'Residencial'), ('comercial', 'Comercial'),]
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='residencial', help_text="Baseado no <UsageType> do XML (Residencial/Comercial)")
+    tipo_imovel = models.ForeignKey(TipoImovel, on_delete=models.SET_NULL, null=True, blank=True, help_text="Baseado no <PropertySubType> ou <PropertyType> do XML")
     
     # --- Valores (Para Filtros Min/Max) ---
-    valor = models.DecimalField(
-        max_digits=12, decimal_places=2, null=True, blank=True, 
-        help_text="Deixe em branco se for 'Sob Consulta'"
-    )
-    
-    # NOVO CAMPO (Baseado na sua análise do XML)
-    taxa_condominio = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
-        help_text="Baseado no <PropertyAdministrationFee> do XML"
-    )
-    
-    # NOVO CAMPO (Baseado na sua análise do XML)
-    iptu = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
-        help_text="Baseado no <Iptu> do XML"
-    )
+    valor = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text="Deixe em branco se for 'Sob Consulta'")
+    taxa_condominio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Baseado no <PropertyAdministrationFee> do XML")
+    iptu = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Baseado no <Iptu> do XML")
 
     # --- Detalhes (Para Filtros Exatos) ---
     quartos = models.IntegerField(null=True, blank=True)
@@ -116,12 +97,7 @@ class Imovel(models.Model):
     banheiros = models.IntegerField(null=True, blank=True)
     vagas = models.IntegerField(null=True, blank=True)
     area_util = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
-    
-    # NOVO CAMPO (Baseado na sua análise do XML)
-    andar = models.IntegerField(
-        null=True, blank=True,
-        help_text="Baseado no <UnitFloor> do XML"
-    )
+    andar = models.IntegerField(null=True, blank=True, help_text="Baseado no <UnitFloor> do XML")
 
     # --- Localização e Mídia ---
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
@@ -129,10 +105,7 @@ class Imovel(models.Model):
     imagem_principal = models.ImageField(upload_to='fotos_imoveis/', null=True, blank=True)
     
     # --- Relacionamentos ---
-    caracteristicas = models.ManyToManyField(
-        Caracteristica, blank=True,
-        help_text="Baseado nas <Features> do XML"
-    )
+    caracteristicas = models.ManyToManyField(Caracteristica, blank=True, help_text="Baseado nas <Features> do XML")
     corretor = models.ForeignKey(Corretor, on_delete=models.SET_NULL, null=True, blank=True)
     
     # --- Status e Datas ---
@@ -143,12 +116,12 @@ class Imovel(models.Model):
     def __str__(self):
         return self.titulo
 
-    # CORRIGIDO para admin: Renomeado de 'imagem_preview' para 'get_imagem_preview'
     def get_imagem_preview(self):
         if self.imagem_principal:
             return mark_safe(f'<img src="{self.imagem_principal.url}" style="max-height: 100px; max-width: 100px;" />')
         return "Sem foto"
     get_imagem_preview.short_description = "Prévia"
+
 
 class ImagemImovel(models.Model):
     imovel = models.ForeignKey(Imovel, related_name='imagens_secundarias', on_delete=models.CASCADE)
@@ -157,7 +130,6 @@ class ImagemImovel(models.Model):
     def __str__(self):
         return f"Imagem de {self.imovel.titulo}"
 
-    # CORRIGIDO para admin: Renomeado de 'imagem_preview' para 'get_imagem_preview'
     def get_imagem_preview(self):
         if self.imagem:
             return mark_safe(f'<img src="{self.imagem.url}" style="max-height: 100px; max-width: 100px;" />')
@@ -174,3 +146,30 @@ class Lead(models.Model):
     def __str__(self):
         return f"Lead de {self.nome} em {self.data.strftime('%d/%m/%Y')}"
 
+
+# --- Modelo de Perfil de Usuário (ATUALIZADO) ---
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    
+    # --- CAMPO ADICIONADO AQUI ---
+    # É aqui que vamos salvar os imóveis favoritos do usuário logado
+    favoritos = models.ManyToManyField(Imovel, blank=True, related_name="favoritado_por")
+    # --- FIM DA ADIÇÃO ---
+
+    def __str__(self):
+        return self.user.email # Usa o email do usuário como nome
+
+# --- "Sinal" para criar o Profile automaticamente ---
+# (Roda sempre que um novo 'User' é criado)
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    
+    # Esta verificação garante que o perfil exista antes de salvar
+    # (Resolve o bug do superuser que você teve)
+    try:
+        instance.profile.save()
+    except Profile.DoesNotExist:
+        Profile.objects.create(user=instance)
