@@ -189,6 +189,30 @@ def toggle_favorito(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+@login_required
+@require_POST
+def sync_favoritos(request):
+    try:
+        data = json.loads(request.body)
+        local_ids = set(map(str, data.get('ids', [])))
+
+        profile = request.user.profile
+        server_imoveis = profile.favoritos.all()
+        server_ids = set(map(str, server_imoveis.values_list('id', flat=True)))
+
+        combined_ids = local_ids.union(server_ids)
+
+        imoveis_to_add = Imovel.objects.filter(id__in=combined_ids)
+        profile.favoritos.set(imoveis_to_add)
+
+        updated_server_ids = list(profile.favoritos.values_list('id', flat=True))
+
+        return JsonResponse({'status': 'success', 'server_favorites': updated_server_ids})
+    except (json.JSONDecodeError, TypeError, ValueError) as e:
+        return JsonResponse({'status': 'error', 'message': f'Invalid request: {e}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 # --- 1. NOVA VIEW ADICIONADA AQUI ---
 # Esta view vai "interceptar" a página de "sucesso" do allauth

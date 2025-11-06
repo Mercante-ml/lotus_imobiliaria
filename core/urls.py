@@ -14,7 +14,7 @@ urlpatterns = [
     path('favoritos/', views.favoritos, name='favoritos'),
     path('minha-conta/', views.minha_conta, name='minha_conta'),
 
-    # --- ROTA ADICIONADA ---
-    # Esta URL será chamada pelo JavaScript para salvar os favoritos no banco de dados
+    # --- ROTAS ADICIONADAS ---
     path('toggle-favorito/', views.toggle_favorito, name='toggle_favorito'),
+    path('sync-favoritos/', views.sync_favoritos, name='sync_favoritos'),
 ]

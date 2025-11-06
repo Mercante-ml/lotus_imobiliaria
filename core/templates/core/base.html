@@ -1,4 +1,5 @@
 {% load static %}
+{% load core_tags %}
 <!DOCTYPE html>
 <html lang="pt-br" class="scroll-smooth">
 <head>
@@ -48,11 +49,13 @@
     </style>
     <link href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.min.css" rel="stylesheet">
 </head>
-<body class="font-sans bg-cinza-fundo text-graphite antialiased">
+<body class="font-sans bg-cinza-fundo text-graphite antialiased"
+      data-favoritos-servidor="{% get_favorite_ids user as favorite_ids %}{{ favorite_ids|json_script:'user-favorites' }}">
 
     <script>
         window.CSRF_TOKEN = "{{ csrf_token }}";
         window.TOGGLE_URL = "{% url 'core:toggle_favorito' %}";
+        window.SYNC_URL = "{% url 'core:sync_favoritos' %}";
         window.IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
     </script>
 
@@ -131,13 +134,39 @@
         const IS_LOGGED_IN = window.IS_AUTHENTICATED;
 
         function getLocalFavorites() {
-            return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
+            const favs = localStorage.getItem(FAVORITES_KEY);
+            return favs ? JSON.parse(favs) : [];
         }
+
         function saveLocalFavorites(favorites) {
-            localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(new Set(favorites))));
+        }
+
+        async function syncFavoritesWithServer() {
+            const localFavorites = getLocalFavorites();
+            if (localFavorites.length > 0) {
+                try {
+                    const response = await fetch(window.SYNC_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': window.CSRF_TOKEN
+                        },
+                        body: JSON.stringify({ ids: localFavorites })
+                    });
+                    const data = await response.json();
+                    if (data.status === 'success' && data.server_favorites) {
+                        saveLocalFavorites(data.server_favorites.map(String));
+                        syncUI();
+                    }
+                } catch (error) {
+                    console.error('Falha ao sincronizar favoritos no login:', error);
+                }
+            }
         }
 
         async function toggleServerFavorite(imovelId, action) {
+            if (!IS_LOGGED_IN) return;
             try {
                 await fetch(window.TOGGLE_URL, {
                     method: 'POST',
@@ -148,11 +177,11 @@
                     body: JSON.stringify({ id: imovelId, action: action })
                 });
             } catch (error) {
-                console.error('Falha ao sincronizar favorito:', error);
+                console.error('Falha ao favoritar:', error);
             }
         }
 
-        async function handleFavoriteClick(button) {
+        function handleFavoriteClick(button) {
             const imovelId = button.dataset.imovelId;
             let favorites = getLocalFavorites();
             const isFavorited = favorites.includes(imovelId);
@@ -161,10 +190,10 @@
 
             if (isFavorited) {
                 favorites = favorites.filter(id => id !== imovelId);
-                if (IS_LOGGED_IN) await toggleServerFavorite(imovelId, 'remove');
+                toggleServerFavorite(imovelId, 'remove');
             } else {
                 favorites.push(imovelId);
-                if (IS_LOGGED_IN) await toggleServerFavorite(imovelId, 'add');
+                toggleServerFavorite(imovelId, 'add');
             }
             saveLocalFavorites(favorites);
 
@@ -174,12 +203,17 @@
                 if (card) {
                     card.style.transition = 'opacity 0.4s';
                     card.style.opacity = '0';
-                    setTimeout(() => card.remove(), 400);
+                    setTimeout(() => {
+                        card.remove();
+                        if (getLocalFavorites().length === 0) {
+                            document.getElementById('sem-favoritos').style.display = 'block';
+                        }
+                    }, 400);
                 }
             }
         }
 
-        document.body.addEventListener('click', function(e) {
+        document.body.addEventListener('click', e => {
             const button = e.target.closest('.btn-favorito');
             if (button) {
                 e.preventDefault();
@@ -193,13 +227,14 @@
                 window.location.href = "{% url 'core:favoritos' %}";
             } else {
                 const favorites = getLocalFavorites();
-                let url = "{% url 'core:favoritos' %}";
+                const url = new URL("{% url 'core:favoritos' %}", window.location.origin);
                 if (favorites.length > 0) {
-                    url += `?ids=${favorites.join(',')}`;
+                    url.searchParams.set('ids', favorites.join(','));
                 }
-                window.location.href = url;
+                window.location.href = url.href;
             }
         }
+
         document.getElementById('link-favoritos-header')?.addEventListener('click', goToFavorites);
         document.getElementById('link-favoritos-dropdown')?.addEventListener('click', goToFavorites);
 
@@ -209,7 +244,24 @@
                 button.classList.toggle('ativo', favorites.includes(button.dataset.imovelId));
             });
         }
-        syncUI();
+
+        function initializeFavorites() {
+            if (IS_LOGGED_IN) {
+                const serverFavsData = document.getElementById('user-favorites');
+                if (serverFavsData) {
+                    const serverFavorites = JSON.parse(serverFavsData.textContent).map(String);
+                    const localFavorites = getLocalFavorites();
+                    const combined = Array.from(new Set([...serverFavorites, ...localFavorites]));
+                    saveLocalFavorites(combined);
+                    if (localFavorites.length > 0) {
+                        syncFavoritesWithServer();
+                    }
+                }
+            }
+            syncUI();
+        }
+
+        initializeFavorites();
     });
     </script>
     </body>
