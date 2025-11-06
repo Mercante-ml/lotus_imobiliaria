@@ -5,6 +5,7 @@ from .models import Lead
 from django.contrib.auth import get_user_model
 from .models import Profile
 from allauth.account.forms import SignupForm # Importa o form base do allauth
+from .models import CandidaturaCorretor
 # -------------------------
 
 User = get_user_model()
@@ -67,3 +68,38 @@ class CustomSignupForm(SignupForm):
         user.save()
         
         return user
+    
+# --- 4. NOVO FORMULÁRIO "TRABALHE CONOSCO" ---
+
+class CandidaturaForm(forms.ModelForm):
+    
+    class Meta:
+        model = CandidaturaCorretor
+        fields = ['nome', 'email', 'telefone', 'creci', 'mensagem', 'curriculo']
+        
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50',
+                'placeholder': 'Seu nome completo'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50',
+                'placeholder': 'Seu melhor email'
+            }),
+            'telefone': forms.TextInput(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50',
+                'placeholder': 'Seu número de WhatsApp'
+            }),
+            'creci': forms.TextInput(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50',
+                'placeholder': 'Nº do CRECI (Opcional)'
+            }),
+            'mensagem': forms.Textarea(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50',
+                'rows': 4,
+                'placeholder': 'Fale um pouco sobre sua experiência (Opcional)'
+            }),
+            'curriculo': forms.FileInput(attrs={
+                'class': 'w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-ouro/20 file:text-ouro hover:file:bg-ouro/30'
+            }),
+        }

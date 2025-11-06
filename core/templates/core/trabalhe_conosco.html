@@ -1,0 +1,93 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Trabalhe Conosco - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Faça Parte da Equipe
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Estamos sempre em busca de talentos que compartilhem nossa paixão pela excelência no mercado imobiliário.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 md:py-28 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="max-w-3xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+            <h2 class="font-serif text-3xl md:text-4xl font-bold text-marinho mb-8">Envie sua candidatura</h2>
+            
+            <form action="{% url 'core:trabalhe_conosco' %}" method="POST" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Nome Completo</label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.nome.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+                            {{ form.email }}
+                             {% if form.email.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="{{ form.telefone.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Telefone</label>
+                            {{ form.telefone }}
+                            {% if form.telefone.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.telefone.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.creci.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">CRECI (Opcional)</label>
+                            {{ form.creci }}
+                             {% if form.creci.errors %}
+                                <p class="text-red-600 text-sm mt-1">{{ form.creci.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="{{ form.mensagem.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Mensagem (Opcional)</label>
+                        {{ form.mensagem }}
+                         {% if form.mensagem.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.mensagem.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.curriculo.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Currículo (PDF, DOC, DOCX)</label>
+                        {{ form.curriculo }}
+                         {% if form.curriculo.errors %}
+                            <p class="text-red-600 text-sm mt-1">{{ form.curriculo.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <button type="submit" 
+                            class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                        Enviar Candidatura
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

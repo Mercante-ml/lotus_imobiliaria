@@ -203,3 +203,21 @@ class PostBlog(models.Model):
 
     def __str__(self):
         return self.titulo
+    
+# --- MODELO PARA RECRUTAMENTO ---
+class CandidaturaCorretor(models.Model):
+    nome = models.CharField(max_length=100)
+    email = models.EmailField()
+    telefone = models.CharField(max_length=20, blank=True)
+    creci = models.CharField(max_length=20, blank=True, null=True, help_text="Opcional, caso já possua.")
+    mensagem = models.TextField(blank=True, help_text="Opcional. Fale um pouco sobre você.")
+    curriculo = models.FileField(upload_to='curriculos/', help_text="Anexe seu currículo (PDF ou DOCX).")
+    data_envio = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_envio']
+        verbose_name = "Candidatura de Corretor"
+        verbose_name_plural = "Candidaturas de Corretores"
+
+    def __str__(self):
+        return f"Candidatura de {self.nome} ({self.email})"

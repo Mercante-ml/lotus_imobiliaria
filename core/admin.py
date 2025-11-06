@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
     ConteudoPagina, TipoImovel, Caracteristica,
-    Profile, PostBlog
+    Profile, PostBlog, CandidaturaCorretor
 )
 
 # --- Registos Simples (Evoluído) ---
@@ -90,3 +90,28 @@ class PostBlogAdmin(admin.ModelAdmin):
     # (Isso é opcional, mas melhora muito a usabilidade)
     class Media:
         js = ('//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', 'admin/js/blog_admin.js',)
+        
+@admin.register(CandidaturaCorretor)
+class CandidaturaCorretorAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'email', 'telefone', 'creci', 'data_envio')
+    list_filter = ('data_envio', 'creci')
+    search_fields = ('nome', 'email', 'creci', 'mensagem')
+    readonly_fields = ('nome', 'email', 'telefone', 'creci', 'mensagem', 'curriculo', 'data_envio')
+
+    fieldsets = (
+        ('Informações Pessoais', {
+            'fields': ('nome', 'email', 'telefone', 'creci')
+        }),
+        ('Documentos', {
+            'fields': ('curriculo', 'mensagem')
+        }),
+        (None, {
+            'fields': ('data_envio',)
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return False # Ninguém pode adicionar candidaturas pelo admin
+
+    def has_change_permission(self, request, obj=None):
+        return False # Ninguém pode alterar candidaturas

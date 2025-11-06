@@ -6,29 +6,27 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .forms import LeadForm, UserUpdateForm, ProfileUpdateForm
+# Importações de Email (já presentes da última alteração)
+from django.core.mail import send_mail
+from django.conf import settings
+
+from .forms import LeadForm, UserUpdateForm, ProfileUpdateForm, CandidaturaForm
 from .models import (
     Imovel, Bairro, Corretor, ConteudoPagina, 
     TipoImovel, Caracteristica, ImagemImovel, Profile,
-    PostBlog
+    PostBlog, CandidaturaCorretor
 )
 from django.db.models import Q
 import re
 import urllib.parse
 import html
 
-# --- (views index, sobre - sem mudança) ---
+# --- (view index - corrigida) ---
 def index(request):
     destaques = Imovel.objects.filter(finalidade='lancamento', em_destaque=True).order_by('-data_atualizacao')[:3]
     bairros = Bairro.objects.all().order_by('nome')
     ultimos_posts = PostBlog.objects.all().order_by('-data_publicacao')[:3]
-    
-    # --- 
-    # A CORREÇÃO ESTÁ AQUI:
-    # Adicionamos 'ultimos_posts': ultimos_posts ao dicionário
-    # ---
     context = {'destaques': destaques, 'bairros': bairros, 'ultimos_posts': ultimos_posts}
-    
     return render(request, 'core/index.html', context)
 
 def sobre(request):
@@ -39,7 +37,7 @@ def sobre(request):
     return render(request, 'core/sobre.html', {'conteudo': conteudo})
 
 
-# --- VIEW LISTA_IMOVEIS (CORRIGIDA) ---
+# --- VIEW LISTA_IMOVEIS ---
 def lista_imoveis(request):
     request.session['last_search_url'] = request.get_full_path()
     imoveis = Imovel.objects.filter(valor__isnull=False).order_by('-data_atualizacao')
@@ -107,7 +105,7 @@ def lista_imoveis(request):
     return render(request, 'core/lista_imoveis.html', context)
 
 
-# --- (outras views: lista_corretores, contato, etc. sem mudança) ---
+# --- (outras views: lista_corretores, etc.) ---
 def lista_corretores(request):
     corretores = Corretor.objects.all()
     try:
@@ -116,11 +114,35 @@ def lista_corretores(request):
         conteudo = {'titulo': 'A Nossa Equipa', 'subtitulo': 'Especialistas dedicados a encontrar o imóvel que reflete a sua essences.'}
     return render(request, 'core/lista_corretores.html', {'corretores': corretores, 'conteudo': conteudo})
 
+# --- (View de Contato - com email) ---
 def contato(request):
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
-            form.save()
+            lead = form.save()
+            
+            try:
+                subject = f'Novo Lead de Contato: {lead.nome}'
+                message = f"""
+                Um novo lead foi recebido através do site Lotus Imobiliária.
+
+                Nome: {lead.nome}
+                Email: {lead.email}
+                Telefone: {lead.telefone or 'Não informado'}
+                
+                Mensagem:
+                {lead.mensagem}
+                """
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Erro ao enviar email de notificação de lead: {e}")
+
             return redirect('core:contato_sucesso')
     else:
         form = LeadForm()
@@ -174,6 +196,7 @@ def favoritos(request):
     context = {'imoveis': imoveis_favoritos, 'last_search_url': last_search_url}
     return render(request, 'core/favoritos.html', context)
 
+# --- (Views de Favoritos API - sem mudança) ---
 @login_required
 @require_POST
 def toggle_favorito(request):
@@ -222,55 +245,77 @@ def sync_favoritos(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
-# --- 1. NOVA VIEW ADICIONADA AQUI ---
-# Esta view vai "interceptar" a página de "sucesso" do allauth
+# --- (View de Senha - sem mudança) ---
 @login_required
 def custom_password_change_done(request):
-    # 1. Adiciona a mensagem de sucesso (com uma nova tag)
     messages.success(request, 'Sua senha foi alterada com sucesso!', extra_tags='password_update')
-    
-    # 2. Redireciona o usuário de volta para a página "Minha Conta"
     return redirect('core:minha_conta')
 
+# --- (Views do Blog - sem mudança) ---
 def lista_blog(request):
-    """
-    Lista todos os posts do blog, com paginação.
-    """
     posts_list = PostBlog.objects.all()
-    paginator = Paginator(posts_list, 9) # 9 posts por página
+    paginator = Paginator(posts_list, 9)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-    }
+    context = {'page_obj': page_obj,}
     return render(request, 'core/blog.html', context)
 
 
 def detalhe_post(request, post_id):
-    """
-    Exibe um único post do blog (seja link ou embed).
-    """
     post = get_object_or_404(PostBlog, id=post_id)
-
-    # Se for um link, apenas redireciona
     if post.tipo_conteudo == 'link' and post.link_url:
         return redirect(post.link_url)
-
-    # Se for embed, renderiza a página que vai exibir
-    context = {
-        'post': post,
-    }
+    context = {'post': post,}
     return render(request, 'core/blog_detalhe.html', context)
 
-# --- NOVAS VIEWS (LGPD E TERMOS) ---
-
+# --- (Views de LGPD/Termos - sem mudança) ---
 def termos_de_uso(request):
-    """ Renderiza a página estática de Termos de Uso """
     context = {}
     return render(request, 'core/termos_de_uso.html', context)
 
 def lgpd(request):
-    """ Renderiza a página estática da Política de Privacidade (LGPD) """
     context = {}
     return render(request, 'core/lgpd.html', context)
+    
+# ---
+# ATUALIZAÇÃO DA VIEW "TRABALHE CONOSCO"
+# ---
+def trabalhe_conosco(request):
+    if request.method == 'POST':
+        form = CandidaturaForm(request.POST, request.FILES)
+        if form.is_valid():
+            # 1. Salva a candidatura no banco (como já fazia)
+            candidatura = form.save()
+            
+            # --- 2. NOVO: Envia o email de notificação ---
+            try:
+                subject = f'Nova Candidatura Recebida: {candidatura.nome}'
+                message = f"""
+                Você recebeu uma nova candidatura pelo site Lotus Imobiliária.
+
+                Nome: {candidatura.nome}
+                Email: {candidatura.email}
+                Telefone: {candidatura.telefone or 'Não informado'}
+                CRECI: {candidatura.creci or 'Não informado'}
+
+                O currículo e a mensagem estão salvos no painel de admin.
+                """
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL, # Remetente
+                    [settings.DEFAULT_FROM_EMAIL], # Destinatário (você/Livia)
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Erro ao enviar email de notificação de candidatura: {e}")
+            # ---------------------------------------------------
+
+            # 3. Redireciona para a página de sucesso
+            return redirect('core:trabalhe_conosco_sucesso')
+    else:
+        form = CandidaturaForm()
+    return render(request, 'core/trabalhe_conosco.html', {'form': form})
+
+def trabalhe_conosco_sucesso(request):
+    return render(request, 'core/trabalhe_conosco_sucesso.html')
