@@ -6,10 +6,11 @@
 <style>
     @keyframes scroll {
         from { transform: translateX(0); }
-        to { transform: translateX(-100%); }
+        /* A animação move 50% para a esquerda (o tamanho exato da primeira lista) */
+        to { transform: translateX(-50%); }
     }
     .animate-scroll {
-        /* Ajuste a duração (ex: 60s) para ficar mais lento com mais logos */
+        /* Duração da animação (60s) */
         animation: scroll 60s linear infinite;
     }
 </style>
@@ -97,7 +98,18 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
-                    </div>
+                    
+                    <button class="btn-comparar"
+                            data-imovel-id="{{ imovel.id }}"
+                            data-imovel-titulo="{{ imovel.titulo }}"
+                            data-imovel-imagem="{% if imovel.imagem_principal %}{{ imovel.imagem_principal.url }}{% else %}https://placehold.co/100x100/142048/FFF?text=Lotus{% endif %}"
+                            title="Adicionar para Comparar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                    </button>
+                    
+                </div>
                 <div class="p-6">
                     <h3 class="font-serif text-2xl font-bold text-graphite truncate" title="{{ imovel.titulo }}">
                         {{ imovel.titulo }}
@@ -176,7 +188,7 @@
                 Temos uma carteira de clientes qualificada e a melhor estratégia de marketing para o seu imóvel.
             </p>
             
-            <a href="https://wa.me/5562982501403?text=Ol%C3%A1%21%20Gostaria%20de%20deixar%20meu%20im%C3%B3vel%20%C3%A0%20venda." 
+            <a href="https://wa.me/5562982501403?text=Ol%C3%A1%21%20Gostaria%20de%20deixar%20meu%20im%C3%B3vel%20%C3%Aà%20venda." 
                target="_blank" 
                rel="noopener noreferrer"
                class="mt-10 inline-flex items-center justify-center bg-green-500 text-white font-medium px-10 py-4 rounded-full shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
@@ -264,13 +276,13 @@
             Nossos Parceiros e Principais Construtoras
         </h3>
         
-        <div class="w-full overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+        <div class="w-full overflow-hidden [mask-image:_linear_gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
             
-            <div class="inline-flex animate-scroll hover:paused">
+            <div class="flex w-max animate-scroll hover:paused">
 
-                <ul class="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none">
+                <ul class="flex w-max flex-shrink-0 items-center justify-center md:justify-start [&_li]:mx-6 [&_img]:max-w-none">
                     <li><img src="{% static 'core/images/opus.svg' %}" alt="Logo Opus" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
-                    <li><img src="{% static 'core/images/fr.png' %}" alt="Logo FR Incorporadora" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
+                    <li><img src="{% static 'core/images/elmo.svg' %}" alt="Logo Elmo" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/ebm.svg' %}" alt="Logo EBM" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/city.png' %}" alt="Logo City" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/cmo.png' %}" alt="Logo CMO" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
@@ -278,12 +290,11 @@
                     <li><img src="{% static 'core/images/brasal.svg' %}" alt="Logo Brasal" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/consciente.png' %}" alt="Logo Consciente" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/dinamica.svg' %}" alt="Logo Dinâmica" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
-                    <li><img src="{% static 'core/images/elmo.svg' %}" alt="Logo Elmo" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                 </ul>
                 
-                <ul class="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none" aria-hidden="true">
+                <ul class="flex w-max flex-shrink-0 items-center justify-center md:justify-start [&_li]:mx-6 [&_img]:max-w-none" aria-hidden="true">
                     <li><img src="{% static 'core/images/opus.svg' %}" alt="Logo Opus" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
-                    <li><img src="{% static 'core/images/fr.png' %}" alt="Logo FR Incorporadora" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
+                    <li><img src="{% static 'core/images/elmo.svg' %}" alt="Logo Elmo" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/ebm.svg' %}" alt="Logo EBM" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/city.png' %}" alt="Logo City" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/cmo.png' %}" alt="Logo CMO" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
@@ -291,7 +302,6 @@
                     <li><img src="{% static 'core/images/brasal.svg' %}" alt="Logo Brasal" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/consciente.png' %}" alt="Logo Consciente" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                     <li><img src="{% static 'core/images/dinamica.svg' %}" alt="Logo Dinâmica" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
-                    <li><img src="{% static 'core/images/elmo.svg' %}" alt="Logo Elmo" class="h-10 w-auto filter brightness-0 invert opacity-70 transition-all duration-300 hover:opacity-100"></li>
                 </ul>
 
             </div> </div> </div>

@@ -38,13 +38,52 @@
     </script>
     
     <style>
+        /* Favoritos */
         .btn-favorito svg { transition: all 0.3s ease; }
         .btn-favorito svg path { fill: transparent; stroke: white; stroke-width: 2; }
         .btn-favorito.ativo svg path { fill: #E11D48; stroke: #E11D48; }
         .btn-favorito:hover svg { transform: scale(1.15); }
+        
+        /* Dropdown Menu */
         .dropdown-menu { display: none; transform-origin: top right; animation: scale-in 0.1s ease-out forwards; }
         .group:hover .dropdown-menu { display: block; }
         @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* === NOVOS ESTILOS - COMPARAÇÃO === */
+        .btn-comparar {
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            border-radius: 9999px;
+            padding: 0.5rem; /* p-2 */
+            position: absolute;
+            top: 4rem; /* Fica abaixo do coração */
+            right: 1rem; /* r-4 */
+            transition: all 0.3s ease;
+        }
+        .btn-comparar svg {
+            width: 1.5rem; /* h-6 w-6 */
+            height: 1.5rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-comparar:hover {
+            transform: scale(1.15);
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        /* Estilo do botão "Ativo" (quando está na lista) */
+        .btn-comparar.ativo {
+            background-color: #B48C5A; /* Cor 'ouro' */
+        }
+        .btn-comparar.ativo svg {
+            color: #142048; /* Cor 'marinho' */
+        }
+
+        /* Bandeja de Comparação */
+        #compare-tray {
+            display: none; /* Começa oculta */
+            transition: transform 0.3s ease-out;
+        }
+        
         {% block extra_head %}{% endblock %}
     </style>
     <link href="https://cdn.jsdelivr.net/npm/photoswipe@5.4.4/dist/photoswipe.min.css" rel="stylesheet">
@@ -121,8 +160,7 @@
         </nav>
     </header>
 
-    <main>
-        {% block content %}{% endblock %}
+    <main class="pb-32"> {% block content %}{% endblock %}
     </main>
 
     <footer class="bg-marinho-escuro text-cinza-claro/70">
@@ -147,7 +185,10 @@
                         <li><a href="{% url 'core:sobre' %}" class="hover:text-ouro transition-colors">Sobre Nós</a></li>
                         <li><a href="{% url 'core:lista_corretores' %}" class="hover:text-ouro transition-colors">Corretores</a></li>
                         <li><a href="{% url 'core:contato' %}" class="hover:text-ouro transition-colors">Contato</a></li>
-                        <li><a href="{% url 'core:trabalhe_conosco' %}" class="hover:text-ouro transition-colors font-bold">Trabalhe Conosco</a></li>
+                        <li>
+                            <a href="{% url 'core:trabalhe_conosco' %}" class="hover:text-ouro transition-colors font-bold">Trabalhe Conosco</a>
+                        </li>
+                        
                         <li class="pt-3 mt-3 border-t border-cinza-claro/10">
                             <a href="{% url 'core:termos_de_uso' %}" class="hover:text-ouro transition-colors">Termos de Uso</a>
                         </li>
@@ -186,32 +227,55 @@
             </div>
         </div>
     </footer>
+
+    <div id="compare-tray" class="fixed bottom-0 left-0 right-0 z-50 bg-marinho-escuro text-white p-4 shadow-2xl transform translate-y-full">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
+            
+            <div class="flex-grow flex items-center space-x-4">
+                <span class="text-lg font-semibold">
+                    Comparando (<span id="compare-count">0</span>/3)
+                </span>
+                <div id="compare-items" class="hidden md:flex items-center space-x-2">
+                    </div>
+            </div>
+            
+            <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                <a href="#" id="compare-link" class="bg-ouro text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Comparar Agora
+                </a>
+                <button id="compare-clear" class="bg-transparent text-cinza-claro/70 hover:text-white transition-colors">
+                    Limpar
+                </button>
+            </div>
+
+        </div>
+    </div>
     {% block extra_js %}{% endblock %}
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        
+        // --- CHAVES DO LOCALSTORAGE ---
         const FAVORITES_KEY = 'lotus_favoritos';
+        const COMPARE_KEY = 'lotus_comparar';
+        const MAX_COMPARE = 3; // Limite de 3 imóveis
         const IS_LOGGED_IN = window.IS_AUTHENTICATED;
 
+        // --- LÓGICA DE FAVORITOS (Sem mudança) ---
         function getLocalFavorites() {
             const favs = localStorage.getItem(FAVORITES_KEY);
             return favs ? JSON.parse(favs) : [];
         }
-
         function saveLocalFavorites(favorites) {
             localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(new Set(favorites))));
         }
-
         async function syncFavoritesWithServer() {
             const localFavorites = getLocalFavorites();
             if (localFavorites.length > 0) {
                 try {
                     const response = await fetch(window.SYNC_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': window.CSRF_TOKEN
-                        },
+                        headers: {'Content-Type': 'application/json', 'X-CSRFToken': window.CSRF_TOKEN},
                         body: JSON.stringify({ ids: localFavorites })
                     });
                     const data = await response.json();
@@ -219,28 +283,19 @@
                         saveLocalFavorites(data.server_favorites.map(String));
                         syncUI();
                     }
-                } catch (error) {
-                    console.error('Falha ao sincronizar favoritos no login:', error);
-                }
+                } catch (error) { console.error('Falha ao sincronizar favoritos:', error); }
             }
         }
-
         async function toggleServerFavorite(imovelId, action) {
             if (!IS_LOGGED_IN) return;
             try {
                 await fetch(window.TOGGLE_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': window.CSRF_TOKEN
-                    },
+                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': window.CSRF_TOKEN},
                     body: JSON.stringify({ id: imovelId, action: action })
                 });
-            } catch (error) {
-                console.error('Falha ao favoritar:', error);
-            }
+            } catch (error) { console.error('Falha ao favoritar:', error); }
         }
-
         function handleFavoriteClick(button) {
             const imovelId = button.dataset.imovelId;
             let favorites = getLocalFavorites();
@@ -272,15 +327,6 @@
                 }
             }
         }
-
-        document.body.addEventListener('click', e => {
-            const button = e.target.closest('.btn-favorito');
-            if (button) {
-                e.preventDefault();
-                handleFavoriteClick(button);
-            }
-        });
-
         function goToFavorites(e) {
             e.preventDefault();
             if (IS_LOGGED_IN) {
@@ -294,17 +340,12 @@
                 window.location.href = url.href;
             }
         }
-
-        document.getElementById('link-favoritos-header')?.addEventListener('click', goToFavorites);
-        document.getElementById('link-favoritos-dropdown')?.addEventListener('click', goToFavorites);
-
         function syncUI() {
             const favorites = getLocalFavorites();
             document.querySelectorAll('.btn-favorito').forEach(button => {
                 button.classList.toggle('ativo', favorites.includes(button.dataset.imovelId));
             });
         }
-
         function initializeFavorites() {
             if (IS_LOGGED_IN) {
                 const serverFavsData = document.getElementById('user-favorites');
@@ -320,8 +361,134 @@
             }
             syncUI();
         }
+        
+        // --- 
+        // --- INÍCIO DA NOVA LÓGICA DE COMPARAÇÃO ---
+        // --- 
+        
+        function getLocalCompare() {
+            const items = localStorage.getItem(COMPARE_KEY);
+            return items ? JSON.parse(items) : [];
+        }
 
+        function saveLocalCompare(compareList) {
+            localStorage.setItem(COMPARE_KEY, JSON.stringify(compareList));
+        }
+
+        function handleCompareClick(button) {
+            const imovelId = button.dataset.imovelId;
+            let compareList = getLocalCompare();
+            const isComparing = compareList.some(item => item.id === imovelId);
+
+            if (isComparing) {
+                // Remove
+                compareList = compareList.filter(item => item.id !== imovelId);
+            } else {
+                // Adiciona, se houver espaço
+                if (compareList.length >= MAX_COMPARE) {
+                    alert(`Você só pode comparar até ${MAX_COMPARE} imóveis por vez.`);
+                    return; // Para a execução
+                }
+                
+                // Pega os dados do botão para salvar no localStorage
+                const imovelTitulo = button.dataset.imovelTitulo;
+                const imovelImagem = button.dataset.imovelImagem;
+                compareList.push({ id: imovelId, titulo: imovelTitulo, imagem: imovelImagem });
+            }
+            
+            saveLocalCompare(compareList);
+            updateCompareUI(); // Atualiza a bandeja e os botões
+        }
+
+        function clearCompareList() {
+            localStorage.removeItem(COMPARE_KEY);
+            updateCompareUI();
+        }
+
+        function updateCompareUI() {
+            const compareList = getLocalCompare();
+            const compareIds = compareList.map(item => item.id); // Apenas os IDs
+
+            // 1. Atualiza todos os botões da página
+            document.querySelectorAll('.btn-comparar').forEach(button => {
+                const isSelected = compareIds.includes(button.dataset.imovelId);
+                button.classList.toggle('ativo', isSelected);
+                button.setAttribute('title', isSelected ? 'Remover da Comparação' : 'Adicionar para Comparar');
+            });
+
+            // 2. Atualiza a Bandeja Flutuante
+            const tray = document.getElementById('compare-tray');
+            const countEl = document.getElementById('compare-count');
+            const itemsEl = document.getElementById('compare-items');
+            const linkEl = document.getElementById('compare-link');
+            
+            if (compareList.length === 0) {
+                tray.style.transform = 'translateY(100%)'; // Esconde a bandeja
+                setTimeout(() => tray.style.display = 'none', 300);
+                return;
+            }
+
+            // Mostra e preenche a bandeja
+            tray.style.display = 'block';
+            setTimeout(() => tray.style.transform = 'translateY(0)', 50); // Anima a subida
+
+            countEl.textContent = compareList.length;
+            
+            // Cria os mini-cards na bandeja
+            itemsEl.innerHTML = ''; // Limpa antes de adicionar
+            compareList.forEach(item => {
+                const itemHtml = `
+                    <div class="flex items-center space-x-2 bg-marinho-claro p-2 rounded-lg" title="${item.titulo}">
+                        <img src="${item.imagem}" class="h-10 w-10 object-cover rounded flex-shrink-0">
+                        <span class="text-sm text-white/80 truncate w-32 hidden lg:block">${item.titulo}</span>
+                    </div>
+                `;
+                itemsEl.innerHTML += itemHtml;
+            });
+
+            // 3. Atualiza o Link "Comparar Agora"
+            const idsQuery = compareIds.join(',');
+            // IMPORTANTE: Precisamos criar a URL '/comparar/' no Django
+            const url = new URL("{% url 'core:index' %}comparar/", window.location.origin);
+            url.searchParams.set('ids', idsQuery);
+            linkEl.href = url.href;
+        }
+
+        // --- FIM DA LÓGICA DE COMPARAÇÃO ---
+
+
+        // --- INICIALIZAÇÃO E EVENT LISTENERS ---
+
+        // Listener Global de Cliques (para Favoritos e Comparação)
+        document.body.addEventListener('click', e => {
+            // Favoritos
+            const favoriteButton = e.target.closest('.btn-favorito');
+            if (favoriteButton) {
+                e.preventDefault();
+                handleFavoriteClick(favoriteButton);
+            }
+
+            // Comparação
+            const compareButton = e.target.closest('.btn-comparar');
+            if (compareButton) {
+                e.preventDefault();
+                handleCompareClick(compareButton);
+            }
+        });
+
+        // Listeners dos links (Favoritos)
+        document.getElementById('link-favoritos-header')?.addEventListener('click', goToFavorites);
+        document.getElementById('link-favoritos-dropdown')?.addEventListener('click', goToFavorites);
+
+        // Listener do botão Limpar (Comparação)
+        document.getElementById('compare-clear')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearCompareList();
+        });
+
+        // Inicialização (Carrega o estado dos botões de Favorito e Comparação)
         initializeFavorites();
+        updateCompareUI();
     });
     </script>
     </body>

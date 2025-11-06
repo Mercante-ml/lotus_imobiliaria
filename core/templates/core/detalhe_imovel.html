@@ -95,6 +95,24 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.398 1.919 6.191l-.84 3.095 3.147-.817z"/></svg>
                         Agende uma visita
                     </a>
+                    
+                    <button class="btn-comparar mt-3 flex items-center justify-center w-full text-center bg-marinho-claro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-marinho-escuro transition duration-300"
+                            style="position: relative; top: 0; right: 0; background-color: #293769;"
+                            data-imovel-id="{{ imovel.id }}"
+                            data-imovel-titulo="{{ imovel.titulo }}"
+                            data-imovel-imagem="{% if imovel.imagem_principal %}{{ imovel.imagem_principal.url }}{% else %}https://placehold.co/100x100/142048/FFF?text=Lotus{% endif %}"
+                            title="Adicionar para Comparar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5 mr-3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span>Adicionar à Comparação</span>
+                    </button>
+                    <style>
+                        .btn-comparar.ativo[style] {
+                            background-color: #B48C5A !important;
+                            color: #142048 !important;
+                        }
+                    </style>
 
                     <h3 class="font-serif text-xl text-marinho font-bold mt-6 mb-4 border-t pt-4">Especificações</h3>
                     <div class="space-y-3 text-graphite">

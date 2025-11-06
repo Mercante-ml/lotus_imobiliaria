@@ -23,4 +23,5 @@ urlpatterns = [
     path('politica-de-privacidade/', views.lgpd, name='lgpd'),
     path('trabalhe-conosco/', views.trabalhe_conosco, name='trabalhe_conosco'),
     path('trabalhe-conosco/sucesso/', views.trabalhe_conosco_sucesso, name='trabalhe_conosco_sucesso'),
+    path('comparar/', views.comparar, name='comparar'),
 ]

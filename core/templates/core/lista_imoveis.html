@@ -1,6 +1,8 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load humanize %} {% block title %}Portfólio de Imóveis{% endblock %}
+{% load humanize %} 
+
+{% block title %}Portfólio de Imóveis{% endblock %}
 
 {% block content %}
 
@@ -260,6 +262,17 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                             </button>
+                            
+                            <button class="btn-comparar"
+                                    data-imovel-id="{{ imovel.id }}"
+                                    data-imovel-titulo="{{ imovel.titulo }}"
+                                    data-imovel-imagem="{% if imovel.imagem_principal %}{{ imovel.imagem_principal.url }}{% else %}https://placehold.co/100x100/142048/FFF?text=Lotus{% endif %}"
+                                    title="Adicionar para Comparar">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                            
                         </div>
                         <div class="p-5">
                             <h3 class="font-serif text-2xl font-bold text-marinho truncate" title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
@@ -317,7 +330,10 @@
         </div>
     </div>
 </section>
+{% endblock %}
 
+
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.querySelector('aside form');
@@ -366,5 +382,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
 {% endblock %}

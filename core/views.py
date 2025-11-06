@@ -6,7 +6,6 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-# Importações de Email (já presentes da última alteração)
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -179,21 +178,21 @@ def minha_conta(request):
     return render(request, 'core/minha_conta.html', context)
 
 def favoritos(request):
-    imoveis_favoritos = []
+    imoveis = []
     if request.user.is_authenticated:
-        imoveis_favoritos = request.user.profile.favoritos.all().order_by('-data_atualizacao')
+        imoveis = request.user.profile.favoritos.all().order_by('-data_atualizacao')
     else:
         ids_str = request.GET.get('ids', '')
         if ids_str:
             try:
                 ids_list = [int(id) for id in ids_str.split(',')]
-                imoveis_favoritos = Imovel.objects.filter(id__in=ids_list)
-                imoveis_dict = {imovel.id: imovel for imovel in imoveis_favoritos}
-                imoveis_favoritos = [imoveis_dict[id] for id in ids_list if id in imoveis_dict]
+                imoveis_query = Imovel.objects.filter(id__in=ids_list)
+                imoveis_dict = {imovel.id: imovel for imovel in imoveis_query}
+                imoveis = [imoveis_dict[id] for id in ids_list if id in imoveis_dict]
             except ValueError:
                 pass
     last_search_url = request.session.get('last_search_url', '/imoveis/')
-    context = {'imoveis': imoveis_favoritos, 'last_search_url': last_search_url}
+    context = {'imoveis': imoveis, 'last_search_url': last_search_url}
     return render(request, 'core/favoritos.html', context)
 
 # --- (Views de Favoritos API - sem mudança) ---
@@ -277,17 +276,13 @@ def lgpd(request):
     context = {}
     return render(request, 'core/lgpd.html', context)
     
-# ---
-# ATUALIZAÇÃO DA VIEW "TRABALHE CONOSCO"
-# ---
+# --- (Views de Trabalhe Conosco - com email) ---
 def trabalhe_conosco(request):
     if request.method == 'POST':
         form = CandidaturaForm(request.POST, request.FILES)
         if form.is_valid():
-            # 1. Salva a candidatura no banco (como já fazia)
             candidatura = form.save()
             
-            # --- 2. NOVO: Envia o email de notificação ---
             try:
                 subject = f'Nova Candidatura Recebida: {candidatura.nome}'
                 message = f"""
@@ -303,15 +298,13 @@ def trabalhe_conosco(request):
                 send_mail(
                     subject,
                     message,
-                    settings.DEFAULT_FROM_EMAIL, # Remetente
-                    [settings.DEFAULT_FROM_EMAIL], # Destinatário (você/Livia)
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.DEFAULT_FROM_EMAIL],
                     fail_silently=False,
                 )
             except Exception as e:
                 print(f"Erro ao enviar email de notificação de candidatura: {e}")
-            # ---------------------------------------------------
 
-            # 3. Redireciona para a página de sucesso
             return redirect('core:trabalhe_conosco_sucesso')
     else:
         form = CandidaturaForm()
@@ -319,3 +312,37 @@ def trabalhe_conosco(request):
 
 def trabalhe_conosco_sucesso(request):
     return render(request, 'core/trabalhe_conosco_sucesso.html')
+
+# ---
+# --- NOVA VIEW DE COMPARAÇÃO ADICIONADA AQUI ---
+# ---
+def comparar(request):
+    """
+    Renderiza a página de comparação com os imóveis
+    selecionados (cujos IDs vêm da URL).
+    """
+    imoveis = []
+    ids_str = request.GET.get('ids', '')
+    
+    if ids_str:
+        try:
+            # Pega os IDs da URL
+            ids_list = [int(id) for id in ids_str.split(',')]
+            
+            # Busca os imóveis no banco
+            imoveis_query = Imovel.objects.filter(id__in=ids_list)
+            
+            # Coloca na ordem correta que o usuário clicou
+            imoveis_dict = {imovel.id: imovel for imovel in imoveis_query}
+            imoveis = [imoveis_dict[id] for id in ids_list if id in imoveis_dict]
+            
+        except ValueError:
+            pass # Ignora IDs inválidos
+            
+    last_search_url = request.session.get('last_search_url', '/imoveis/')
+    
+    context = {
+        'imoveis': imoveis,
+        'last_search_url': last_search_url
+    }
+    return render(request, 'core/comparar.html', context)

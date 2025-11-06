@@ -1,0 +1,188 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %} 
+
+{% block title %}Comparar Imóveis{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Comparar Imóveis
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Analise lado a lado os imóveis que você selecionou.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <a href="{{ last_search_url }}" class="inline-flex items-center text-marinho hover:text-ouro font-medium mb-8 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            Voltar para a busca
+        </a>
+        
+        {% if imoveis %}
+        
+        <div class="hidden lg:block bg-white rounded-lg shadow-xl overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-cinza-fundo">
+                    <tr>
+                        <th class="p-6 font-serif text-xl text-marinho sticky left-0 bg-cinza-fundo z-10">Características</th>
+                        
+                        {% for imovel in imoveis %}
+                        <th class="p-6 min-w-[300px]">
+                            <a href="{% url 'core:detalhe_imovel' imovel.id %}">
+                                {% if imovel.imagem_principal %}
+                                    <img src="{{ imovel.imagem_principal.url }}" alt="{{ imovel.titulo }}" class="h-40 w-full object-cover rounded-lg shadow">
+                                {% else %}
+                                    <div class="h-40 w-full rounded-lg shadow bg-cinza-claro flex items-center justify-center">
+                                        <span class="text-marinho">Sem Foto</span>
+                                    </div>
+                                {% endif %}
+                                <h3 class="font-serif text-xl font-bold text-marinho truncate mt-4">{{ imovel.titulo }}</h3>
+                            </a>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-cinza-claro">
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Preço</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6">
+                            {% if imovel.valor %}
+                                <span class="font-serif text-2xl text-marinho-claro font-bold">R$ {{ imovel.valor|intcomma }}</span>
+                            {% else %}
+                                <span class="font-serif text-xl text-marinho-claro font-bold">Sob Consulta</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Bairro</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.bairro.nome|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Tipo</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.tipo_imovel.nome|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Área Útil</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.area_util|intcomma|default:"-" }} m²</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Quartos</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.quartos|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Suítes</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.suites|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Banheiros</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.banheiros|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Vagas</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">{{ imovel.vagas|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">Condomínio</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">
+                            {% if imovel.taxa_condominio %}R$ {{ imovel.taxa_condominio|intcomma }}{% else %}-{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10">IPTU</td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6 text-graphite/90">
+                            {% if imovel.iptu %}R$ {{ imovel.iptu|intcomma }}{% else %}-{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="hover:bg-cinza-fundo/50">
+                        <td class="p-6 font-medium text-graphite sticky left-0 bg-white z-10"></td>
+                        {% for imovel in imoveis %}
+                        <td class="p-6">
+                            <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="inline-block text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                                Ver Detalhes
+                            </a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="block lg:hidden space-y-8">
+            {% for imovel in imoveis %}
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                    <a href="{% url 'core:detalhe_imovel' imovel.id %}">
+                        {% if imovel.imagem_principal %}
+                            <img src="{{ imovel.imagem_principal.url }}" alt="{{ imovel.titulo }}" class="h-64 w-full object-cover">
+                        {% else %}
+                            <div class="h-64 w-full bg-cinza-claro flex items-center justify-center">
+                                <span class="text-marinho">Sem Foto</span>
+                            </div>
+                        {% endif %}
+                        <h3 class="font-serif text-2xl font-bold text-marinho p-5">{{ imovel.titulo }}</h3>
+                    </a>
+                    
+                    <div class="p-5 border-t border-cinza-claro space-y-3">
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="font-medium text-graphite">Preço</span>
+                            {% if imovel.valor %}
+                                <span class="font-serif text-xl text-marinho-claro font-bold">R$ {{ imovel.valor|intcomma }}</span>
+                            {% else %}
+                                <span class="font-serif text-lg text-marinho-claro font-bold">Sob Consulta</span>
+                            {% endif %}
+                        </div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Bairro</span><span class="text-graphite/90">{{ imovel.bairro.nome|default:"-" }}</span></div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Tipo</span><span class="text-graphite/90">{{ imovel.tipo_imovel.nome|default:"-" }}</span></div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Área Útil</span><span class="text-graphite/90">{{ imovel.area_util|intcomma|default:"-" }} m²</span></div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Quartos</span><span class="text-graphite/90">{{ imovel.quartos|default:"-" }}</span></div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Suítes</span><span class="text-graphite/90">{{ imovel.suites|default:"-" }}</span></div>
+                        <div class="flex justify-between border-b pb-2"><span class="font-medium text-graphite">Vagas</span><span class="text-graphite/90">{{ imovel.vagas|default:"-" }}</span></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+            <div class="text-center py-10 bg-white shadow-xl rounded-lg">
+                <h3 class="font-serif text-2xl text-marinho">Nenhum imóvel para comparar</h3>
+                <p class="text-graphite/80 mt-2">
+                    Adicione 2 ou 3 imóveis à lista de comparação para vê-los aqui.
+                </p>
+                <a href="{% url 'core:lista_imoveis' %}" class="mt-6 inline-block bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Ver Imóveis
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
