@@ -262,3 +262,15 @@ def detalhe_post(request, post_id):
         'post': post,
     }
     return render(request, 'core/blog_detalhe.html', context)
+
+# --- NOVAS VIEWS (LGPD E TERMOS) ---
+
+def termos_de_uso(request):
+    """ Renderiza a página estática de Termos de Uso """
+    context = {}
+    return render(request, 'core/termos_de_uso.html', context)
+
+def lgpd(request):
+    """ Renderiza a página estática da Política de Privacidade (LGPD) """
+    context = {}
+    return render(request, 'core/lgpd.html', context)

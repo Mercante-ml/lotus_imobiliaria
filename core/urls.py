@@ -20,9 +20,9 @@ urlpatterns = [
     
     # APIs de Favoritos
     path('api/toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
-    path('api/sync_favoritos/', views.sync_favoritos, name='sync_favoritos'),
-    
-    # --- NOVAS URLS DO BLOG ---
+    path('api/sync_favoritos/', views.sync_favoritos, name='sync_favoritos'),    
     path('blog/', views.lista_blog, name='lista_blog'),
     path('blog/<int:post_id>/', views.detalhe_post, name='detalhe_post'),
+    path('termos-de-uso/', views.termos_de_uso, name='termos_de_uso'),
+    path('politica-de-privacidade/', views.lgpd, name='lgpd'),
 ]
