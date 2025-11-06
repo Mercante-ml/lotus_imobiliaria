@@ -52,7 +52,7 @@
 
     <script>
         window.CSRF_TOKEN = "{{ csrf_token }}";
-        window.SYNC_URL = "{% url 'core:sync_favoritos' %}";
+        window.TOGGLE_URL = "{% url 'core:toggle_favorito' %}";
         window.IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false" }};
     </script>
 
@@ -130,66 +130,46 @@
         const FAVORITES_KEY = 'lotus_favoritos';
         const IS_LOGGED_IN = window.IS_AUTHENTICATED;
 
-        // --- Funções de Ajuda (LocalStorage) ---
         function getLocalFavorites() {
             return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]');
         }
         function saveLocalFavorites(favorites) {
             localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
         }
-        function clearLocalFavorites() {
-            localStorage.removeItem(FAVORITES_KEY);
-        }
 
-        // --- Função de Sincronização (A Mágica) ---
-        async function syncFavoritesWithServer(ids) {
-            // Envia os IDs para o Django
+        async function toggleServerFavorite(imovelId, action) {
             try {
-                await fetch(window.SYNC_URL, {
+                await fetch(window.TOGGLE_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': window.CSRF_TOKEN
                     },
-                    body: JSON.stringify({ ids: ids })
+                    body: JSON.stringify({ id: imovelId, action: action })
                 });
             } catch (error) {
-                console.error('Falha ao sincronizar favoritos:', error);
+                console.error('Falha ao sincronizar favorito:', error);
             }
         }
 
-        // --- Função Principal de Clique ---
         async function handleFavoriteClick(button) {
             const imovelId = button.dataset.imovelId;
             let favorites = getLocalFavorites();
-            const index = favorites.indexOf(imovelId);
-            let foiAdicionado;
-
-            if (index > -1) {
-                // Remove
-                favorites.splice(index, 1);
-                foiAdicionado = false;
-            } else {
-                // Adiciona
-                favorites.push(imovelId);
-                foiAdicionado = true;
-            }
+            const isFavorited = favorites.includes(imovelId);
             
-            // Atualiza o estado visual IMEDIATAMENTE
-            button.classList.toggle('ativo', foiAdicionado);
+            button.classList.toggle('ativo', !isFavorited);
 
-            if (IS_LOGGED_IN) {
-                // Se está logado, salva no localStorage E no servidor
-                saveLocalFavorites(favorites); // Salva local para a UI ficar consistente
-                await syncFavoritesWithServer(favorites); // Envia a lista COMPLETA
+            if (isFavorited) {
+                favorites = favorites.filter(id => id !== imovelId);
+                if (IS_LOGGED_IN) await toggleServerFavorite(imovelId, 'remove');
             } else {
-                // Se anônimo, salva SÓ no localStorage
-                saveLocalFavorites(favorites);
+                favorites.push(imovelId);
+                if (IS_LOGGED_IN) await toggleServerFavorite(imovelId, 'add');
             }
+            saveLocalFavorites(favorites);
 
-            // Lógica para remover o card da página de favoritos (se existir)
             const paginaFavoritos = document.getElementById('pagina-favoritos');
-            if (paginaFavoritos && !foiAdicionado) {
+            if (paginaFavoritos && isFavorited) {
                 const card = button.closest('.imovel-card');
                 if (card) {
                     card.style.transition = 'opacity 0.4s';
@@ -199,7 +179,6 @@
             }
         }
 
-        // --- Event Listeners ---
         document.body.addEventListener('click', function(e) {
             const button = e.target.closest('.btn-favorito');
             if (button) {
@@ -208,14 +187,11 @@
             }
         });
 
-        // --- Links de "Meus Favoritos" (Header e Dropdown) ---
         function goToFavorites(e) {
             e.preventDefault();
             if (IS_LOGGED_IN) {
-                // Se logado, vai para a URL base (a view vai ler do perfil)
                 window.location.href = "{% url 'core:favoritos' %}";
             } else {
-                // Se anônimo, constrói a URL com os IDs (método antigo)
                 const favorites = getLocalFavorites();
                 let url = "{% url 'core:favoritos' %}";
                 if (favorites.length > 0) {
@@ -227,31 +203,13 @@
         document.getElementById('link-favoritos-header')?.addEventListener('click', goToFavorites);
         document.getElementById('link-favoritos-dropdown')?.addEventListener('click', goToFavorites);
 
-        // --- Inicialização ---
-        
-        // 1. Sincroniza ao carregar a página (se logado)
-        if (IS_LOGGED_IN) {
-            const localFavs = getLocalFavorites();
-            if (localFavs.length > 0) {
-                // Se o usuário logou e tem favoritos anônimos, envia
-                syncFavoritesWithServer(localFavs).then(() => {
-                    // (Opcional: poderia limpar o local storage,
-                    // mas é melhor manter para a UI ser rápida)
-                });
-            }
+        function syncUI() {
+            const favorites = getLocalFavorites();
+            document.querySelectorAll('.btn-favorito').forEach(button => {
+                button.classList.toggle('ativo', favorites.includes(button.dataset.imovelId));
+            });
         }
-        
-        // 2. Atualiza os ícones (lendo do localStorage, que é a fonte da verdade)
-        // (Em um sistema 100% perfeito, se logado, nós buscaríamos os favoritos
-        // do servidor e preencheríamos o localStorage, mas isso é mais complexo)
-        const favorites = getLocalFavorites();
-        document.querySelectorAll('.btn-favorito').forEach(button => {
-            if (favorites.includes(button.dataset.imovelId)) {
-                button.classList.add('ativo');
-            } else {
-                button.classList.remove('ativo');
-            }
-        });
+        syncUI();
     });
     </script>
     </body>

@@ -168,16 +168,24 @@ def favoritos(request):
 
 @login_required
 @require_POST
-def sync_favoritos(request):
+def toggle_favorito(request):
     try:
         data = json.loads(request.body)
-        ids = data.get('ids', [])
-        if not isinstance(ids, list):
-            return JsonResponse({'status': 'error', 'message': 'IDs inválidos'}, status=400)
-        ids_int = [int(id_str) for id_str in ids]
-        imoveis = Imovel.objects.filter(id__in=ids_int)
-        request.user.profile.favoritos.add(*imoveis)
-        return JsonResponse({'status': 'success', 'total': request.user.profile.favoritos.count()})
+        imovel_id = data.get('id')
+        action = data.get('action')
+
+        if not imovel_id or action not in ['add', 'remove']:
+            return JsonResponse({'status': 'error', 'message': 'Dados inválidos'}, status=400)
+
+        imovel = get_object_or_404(Imovel, id=imovel_id)
+        profile = request.user.profile
+
+        if action == 'add':
+            profile.favoritos.add(imovel)
+        else:
+            profile.favoritos.remove(imovel)
+
+        return JsonResponse({'status': 'success', 'total': profile.favoritos.count()})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 

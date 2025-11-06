@@ -122,3 +122,23 @@
 </section>
 
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if user.is_authenticated %}
+    const favoriteIds = [
+        {% for imovel in imoveis %}
+        "{{ imovel.id }}",
+        {% endfor %}
+    ];
+    localStorage.setItem('lotus_favoritos', JSON.stringify(favoriteIds));
+
+    document.querySelectorAll('.btn-favorito').forEach(button => {
+        const imovelId = button.dataset.imovelId;
+        button.classList.toggle('ativo', favoriteIds.includes(imovelId));
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}
