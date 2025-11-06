@@ -173,3 +173,33 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         instance.profile.save()
     except Profile.DoesNotExist:
         Profile.objects.create(user=instance)
+        
+# --- MODELO DO BLOG ---
+
+class PostBlog(models.Model):
+    TIPO_CONTEUDO_CHOICES = [
+        ('link', 'Link Externo (Artigo, PDF, Notícia)'),
+        ('embed', 'Conteúdo Incorporado (Vídeo, Gamma, Facebook)'),
+    ]
+
+    titulo = models.CharField(max_length=200)
+    resumo = models.TextField(help_text="Um parágrafo curto sobre o conteúdo.")
+    imagem_card = models.ImageField(upload_to='blog_cards/', help_text="Imagem de capa que aparecerá no card do site.")
+    
+    tipo_conteudo = models.CharField(max_length=10, choices=TIPO_CONTEUDO_CHOICES, default='link')
+    
+    link_url = models.URLField(max_length=500, blank=True, null=True, 
+                               help_text="Se 'Tipo' for Link Externo, cole a URL completa aqui.")
+    
+    embed_code = models.TextField(blank=True, null=True, 
+                                  help_text="Se 'Tipo' for Conteúdo Incorporado, cole o código HTML (iframe, etc.) aqui.")
+    
+    data_publicacao = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_publicacao'] # Mais novos primeiro
+        verbose_name = "Post do Blog"
+        verbose_name_plural = "Posts do Blog"
+
+    def __str__(self):
+        return self.titulo

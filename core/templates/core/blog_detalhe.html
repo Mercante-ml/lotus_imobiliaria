@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.titulo }} - Blog{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-4xl md:text-6xl font-bold">
+            {{ post.titulo }}
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-3xl mx-auto text-cinza-claro/80">
+            {{ post.resumo }}
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="max-w-4xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-xl">
+            
+            {% if post.tipo_conteudo == 'embed' %}
+                <div class="aspect-w-16 aspect-h-9">
+                    {{ post.embed_code|safe }}
+                </div>
+                
+                <style>
+                    /* Garante que o iframe cole nas bordas */
+                    .aspect-w-16 iframe {
+                        width: 100%;
+                        height: 100%;
+                    }
+                </style>
+
+            {% else %}
+                <p class="text-center text-lg text-graphite">
+                    Este é um link para um conteúdo externo.
+                </p>
+                <a href="{{ post.link_url }}" 
+                   target="_blank"
+                   class="mt-6 flex items-center justify-center w-full max-w-md mx-auto text-center bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Acessar Conteúdo Externo
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="{% url 'core:lista_blog' %}" class="inline-flex items-center text-marinho hover:text-ouro font-medium transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Voltar para o Blog
+            </a>
+        </div>
+        
+    </div>
+</section>
+{% endblock %}

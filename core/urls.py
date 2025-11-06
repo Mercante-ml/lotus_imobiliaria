@@ -16,5 +16,13 @@ urlpatterns = [
 
     # --- ROTAS ADICIONADAS ---
     path('toggle-favorito/', views.toggle_favorito, name='toggle_favorito'),
-    path('sync-favoritos/', views.sync_favoritos, name='sync_favoritos'),
+    path('sync-favoritos/', views.sync_favoritos, name='sync_favoritos'),    
+    
+    # APIs de Favoritos
+    path('api/toggle_favorito/', views.toggle_favorito, name='toggle_favorito'),
+    path('api/sync_favoritos/', views.sync_favoritos, name='sync_favoritos'),
+    
+    # --- NOVAS URLS DO BLOG ---
+    path('blog/', views.lista_blog, name='lista_blog'),
+    path('blog/<int:post_id>/', views.detalhe_post, name='detalhe_post'),
 ]

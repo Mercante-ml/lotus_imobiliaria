@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Blog - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+
+<section class="bg-marinho-escuro text-white">
+    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+            Nosso Blog
+        </h1>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+            Acompanhe notícias, tendências e novidades do mercado imobiliário de alto padrão.
+        </p>
+    </div>
+</section>
+
+<section class="py-20 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <main class="lg:col-span-3">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                {% for post in page_obj %}
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                    <div class="relative h-64">
+                        <a href="{% url 'core:detalhe_post' post.id %}" {% if post.tipo_conteudo == 'link' %}target="_blank"{% endif %}>
+                            <img src="{{ post.imagem_card.url }}" 
+                                 alt="{{ post.titulo }}" 
+                                 class="w-full h-full object-cover">
+                        </a>
+                        
+                        {% if post.tipo_conteudo == 'embed' %}
+                            <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                Conteúdo
+                            </div>
+                        {% else %}
+                            <div class="absolute top-4 left-4 bg-ouro text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                Artigo
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="p-6">
+                    <h3 class.="font-serif text-2xl font-bold text-graphite min-h-16" title="{{ post.titulo }}">
+                        {{ post.titulo }}
+                    </h3>
+                    
+                    <p class="text-graphite/70 text-sm mt-2 h-24">
+                        {{ post.resumo }}
+                    </p>
+                    
+                    <a href="{% url 'core:detalhe_post' post.id %}" 
+                       class="mt-6 flex items-center justify-center w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300"
+                       {% if post.tipo_conteudo == 'link' %}target="_blank"{% endif %}>
+                        Ler Mais
+                    </a>
+                </div>
+                </div>
+                
+                {% empty %}
+                <p class="text-graphite/80 md:col-span-3 text-center py-10">
+                    Nenhuma publicação no blog ainda.
+                </p>
+                {% endfor %}
+
+            </div>
+
+            {% if page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-16">
+                <div class="flex justify-center items-center space-x-1">
+                    
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}"
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium text-marinho bg-white rounded-md border border-gray-300 hover:bg-gray-100">
+                            Anterior
+                        </a>
+                    {% endif %}
+
+                    {% for page_num in page_obj.paginator.get_elided_page_range %}
+                        {% if page_num == page_obj.paginator.ELLIPSIS %}
+                            <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                        {% else %}
+                            <a href="?page={{ page_num }}"
+                               class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border
+                               {% if page_num == page_obj.number %}
+                                    bg-ouro text-white border-ouro z-10
+                               {% else %}
+                                    text-marinho bg-white border-gray-300 hover:bg-gray-100
+                               {% endif %}">
+                                {{ page_num }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}"
+                           class="inline-flex items-center px-3 py-2 text-sm font-medium text-marinho bg-white rounded-md border border-gray-300 hover:bg-gray-100">
+                            Próxima
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+            {% endif %}
+            
+        </main>
+    </div>
+</section>
+{% endblock %}

@@ -9,7 +9,8 @@ from django.views.decorators.http import require_POST
 from .forms import LeadForm, UserUpdateForm, ProfileUpdateForm
 from .models import (
     Imovel, Bairro, Corretor, ConteudoPagina, 
-    TipoImovel, Caracteristica, ImagemImovel, Profile
+    TipoImovel, Caracteristica, ImagemImovel, Profile,
+    PostBlog
 )
 from django.db.models import Q
 import re
@@ -20,7 +21,14 @@ import html
 def index(request):
     destaques = Imovel.objects.filter(finalidade='lancamento', em_destaque=True).order_by('-data_atualizacao')[:3]
     bairros = Bairro.objects.all().order_by('nome')
-    context = {'destaques': destaques, 'bairros': bairros}
+    ultimos_posts = PostBlog.objects.all().order_by('-data_publicacao')[:3]
+    
+    # --- 
+    # A CORREÇÃO ESTÁ AQUI:
+    # Adicionamos 'ultimos_posts': ultimos_posts ao dicionário
+    # ---
+    context = {'destaques': destaques, 'bairros': bairros, 'ultimos_posts': ultimos_posts}
+    
     return render(request, 'core/index.html', context)
 
 def sobre(request):
@@ -223,3 +231,34 @@ def custom_password_change_done(request):
     
     # 2. Redireciona o usuário de volta para a página "Minha Conta"
     return redirect('core:minha_conta')
+
+def lista_blog(request):
+    """
+    Lista todos os posts do blog, com paginação.
+    """
+    posts_list = PostBlog.objects.all()
+    paginator = Paginator(posts_list, 9) # 9 posts por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+    }
+    return render(request, 'core/blog.html', context)
+
+
+def detalhe_post(request, post_id):
+    """
+    Exibe um único post do blog (seja link ou embed).
+    """
+    post = get_object_or_404(PostBlog, id=post_id)
+
+    # Se for um link, apenas redireciona
+    if post.tipo_conteudo == 'link' and post.link_url:
+        return redirect(post.link_url)
+
+    # Se for embed, renderiza a página que vai exibir
+    context = {
+        'post': post,
+    }
+    return render(request, 'core/blog_detalhe.html', context)

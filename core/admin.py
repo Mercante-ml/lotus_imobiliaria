@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
     ConteudoPagina, TipoImovel, Caracteristica,
-    Profile  # <-- Importar o novo modelo Profile
+    Profile, PostBlog
 )
 
 # --- Registos Simples (Evoluído) ---
@@ -70,3 +70,23 @@ class UserAdmin(BaseUserAdmin):
 admin.site.unregister(User)
 # Re-registra o User com o nosso Profile inline
 admin.site.register(User, UserAdmin)
+
+@admin.register(PostBlog)
+class PostBlogAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'tipo_conteudo', 'data_publicacao')
+    list_filter = ('tipo_conteudo', 'data_publicacao')
+    search_fields = ('titulo', 'resumo')
+
+    fieldsets = (
+        (None, {
+            'fields': ('titulo', 'resumo', 'imagem_card')
+        }),
+        ('O Conteúdo (Escolha um tipo e preencha UM campo)', {
+            'fields': ('tipo_conteudo', 'link_url', 'embed_code')
+        }),
+    )
+
+    # Adiciona um pequeno script para mostrar/esconder os campos no admin
+    # (Isso é opcional, mas melhora muito a usabilidade)
+    class Media:
+        js = ('//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js', 'admin/js/blog_admin.js',)

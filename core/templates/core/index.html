@@ -152,4 +152,93 @@
     </div>
 </section>
 
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-6 text-center max-w-3xl">
+        <h2 class="font-serif text-4xl md:text-5xl font-bold text-marinho">
+            Quer Vender Seu Imóvel?
+        </h2>
+        <p class="mt-4 text-lg text-graphite/80">
+            Anuncie seu imóvel com a Lotus e deixe nossa equipe de especialistas cuidar de toda a negociação. 
+            Temos uma carteira de clientes qualificada e a melhor estratégia de marketing para o seu imóvel.
+        </p>
+        
+        <a href="https://wa.me/5562982501403?text=Ol%C3%A1%21%20Gostaria%20de%20deixar%20meu%20im%C3%B3vel%20%C3%A0%20venda." 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="mt-10 inline-flex items-center justify-center bg-green-500 text-white font-medium px-10 py-4 rounded-full shadow-lg hover:bg-green-600 transition duration-300 transform hover:scale-105">
+            
+            <svg class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 21.94L7.31 20.58C8.76 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2ZM12.04 20.13C10.56 20.13 9.11 19.74 7.85 19L7.52 18.8L3.8 19.81L4.83 16.2L4.61 15.86C3.91 14.5 3.5 13.01 3.5 11.41C3.5 7.32 7.36 3.47 11.54 3.47C15.72 3.47 19.57 7.32 19.57 11.41C19.57 15.49 15.72 19.34 11.54 19.34L12.04 20.13ZM17.21 14.76C16.96 14.64 15.82 14.08 15.59 14C15.36 13.92 15.2 13.88 15.04 14.12C14.88 14.37 14.37 14.93 14.21 15.1C14.06 15.27 13.9 15.31 13.66 15.19C13.41 15.07 12.61 14.82 11.66 13.97C10.91 13.3 10.39 12.44 10.24 12.19C10.08 11.95 10.2 11.83 10.32 11.71C10.43 11.6 10.57 11.42 10.73 11.26C10.89 11.1 10.95 11.01 11.07 10.76C11.19 10.52 11.13 10.32 11.05 10.2C10.97 10.08 10.5 9 10.31 8.53C10.12 8.08 9.93 8.16 9.79 8.15C9.65 8.14 9.5 8.14 9.34 8.14C9.18 8.14 8.91 8.2 8.68 8.44C8.45 8.68 7.9 9.17 7.9 10.2C7.9 11.23 8.7 12.21 8.82 12.37C8.94 12.53 10.26 14.71 12.38 15.5C14.28 16.2 14.52 16.1 14.89 16.06C15.3 16 16.18 15.52 16.38 15.05C16.58 14.58 16.58 14.19 16.5 14.08C16.42 13.96 16.26 13.92 16.02 13.8C15.77 13.68 17.45 14.88 17.21 14.76Z" />
+            </svg>
+            <span>Anunciar meu imóvel agora</span>
+        </a>
+    </div>
+</section>
+<section class="bg-marinho text-white">
+...
+</section>
+
+{% if ultimos_posts %}
+<section id="blog" class="py-20 md:py-28 bg-white">
+    <div class="container mx-auto px-6">
+        
+        <div class="text-center mb-16">
+            <h2 class="font-serif text-4xl md:text-5xl font-bold text-marinho">Últimas do Blog</h2>
+            <p class="mt-4 text-lg text-graphite/80 max-w-xl mx-auto">
+                Notícias, tendências e novidades do mercado imobiliário.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {% for post in ultimos_posts %}
+            <div class="bg-cinza-fundo rounded-lg shadow-xl overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:scale-[1.02]">
+                <div class="relative h-64">
+                    
+                    <img src="{{ post.imagem_card.url }}" 
+                         alt="{{ post.titulo }}" 
+                         class="w-full h-full object-cover">
+                    
+                    {% if post.tipo_conteudo == 'embed' %}
+                        <div class="absolute top-4 left-4 bg-marinho text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Conteúdo
+                        </div>
+                    {% else %}
+                        <div class="absolute top-4 left-4 bg-ouro text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Artigo
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="p-6">
+                    <h3 class="font-serif text-2xl font-bold text-graphite truncate" title="{{ post.titulo }}">
+                        {{ post.titulo }}
+                    </h3>
+                    
+                    <p class="text-graphite/70 text-sm mt-2 h-20">
+                        {{ post.resumo|truncatewords:20 }}
+                    </p>
+                    
+                    <a href="{% url 'core:detalhe_post' post.id %}" 
+                       class="mt-6 flex items-center justify-center w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300"
+                       {% if post.tipo_conteudo == 'link' %}target="_blank"{% endif %}>
+                        Ler Mais
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+        
+        <div class="text-center mt-16">
+            <a href="{% url 'core:lista_blog' %}" class="inline-flex items-center justify-center bg-marinho text-white font-medium px-10 py-4 rounded-full shadow-lg hover:bg-marinho-claro transition duration-300 transform hover:scale-105">
+                Ver todas as publicações
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="bg-marinho text-white">
+    </section>
+
 {% endblock %}
