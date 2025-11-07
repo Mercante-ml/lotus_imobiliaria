@@ -52,24 +52,25 @@ class ProfileUpdateForm(forms.ModelForm):
         fields = ('telefone',)
 
 
-# --- 3. NOVO FORMULÁRIO DE CADASTRO (Signup) ---
+# --- 3. FORMULÁRIO DE CADASTRO (Signup) CORRIGIDO ---
 class CustomSignupForm(SignupForm):
-    # Adicionamos os campos que queremos
-    first_name = forms.CharField(max_length=30, label='Nome')
-    last_name = forms.CharField(max_length=150, label='Sobrenome')
-
-    def save(self, request):
-        # Chama o 'save' original do allauth
-        user = super(CustomSignupForm, self).save(request)
+    
+    # === A CORREÇÃO ESTÁ AQUI ===
+    # Esta é a maneira robusta de adicionar campos ao allauth
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['first_name'] = forms.CharField(max_length=30, label='Nome', required=True)
+        self.fields['last_name'] = forms.CharField(max_length=150, label='Sobrenome', required=True)
         
-        # Pega os dados dos nossos novos campos e salva no User
+    def save(self, request):
+        user = super().save(request)
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
         user.save()
-        
         return user
     
-# --- 4. NOVO FORMULÁRIO "TRABALHE CONOSCO" ---
+# --- 4. FORMULÁRIO "TRABALHE CONOSCO" ---
 
 class CandidaturaForm(forms.ModelForm):
     

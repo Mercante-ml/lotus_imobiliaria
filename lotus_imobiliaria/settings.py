@@ -54,7 +54,7 @@ ROOT_URLCONF = 'lotus_imobiliaria.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,7 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # --- INTERNACIONALIZAÇÃO ---
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
-USE_I18N = True
+USE_I1N = True
 USE_TZ = True
 
 
@@ -128,7 +128,7 @@ SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'none'   # 🔑 sem confirmação de email
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'   # 🔑 sem confirmação de email
 
 # Desativa login por código (passwordless)
 ACCOUNT_LOGIN_BY_CODE_ENABLED = False
@@ -143,3 +143,10 @@ ACCOUNT_SESSION_REMEMBER = True
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Lotus Imobiliária] '
+
+# ---
+# --- A CORREÇÃO DE 1 LINHA ESTÁ AQUI ---
+# ---
+# Diz ao allauth para onde ir DEPOIS de trocar a senha.
+# Isso fará com que seu urls.py (que já está correto) funcione.
+ACCOUNT_PASSWORD_CHANGE_REDIRECT_URL = "/accounts/password/change/done/"

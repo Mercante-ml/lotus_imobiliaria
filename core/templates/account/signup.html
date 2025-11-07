@@ -4,111 +4,108 @@
 {% block title %}Criar sua Conta{% endblock %}
 
 {% block content %}
-
 <section class="bg-marinho-escuro text-white">
-    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
-        <h1 class="font-serif text-5xl md:text-7xl font-bold">
-            Criar Conta
-        </h1>
-        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
-            Rápido e fácil. Crie sua conta para salvar seus imóveis favoritos.
-        </p>
-    </div>
+  <div class="container mx-auto px-6 py-20 md:py-28 text-center">
+    <h1 class="font-serif text-5xl md:text-7xl font-bold">Criar Conta</h1>
+    <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
+      Rápido e fácil. Crie sua conta para salvar seus imóveis favoritos.
+    </p>
+  </div>
 </section>
 
 <section class="py-20 bg-cinza-fundo">
-    <div class="container mx-auto px-6">
-        
-        <div class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
-            
-            <h2 class="font-serif text-3xl text-marinho font-bold mb-6 text-center">
-                Preencha seus dados
-            </h2>
+  <div class="container mx-auto px-6">
+    <div class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-lg shadow-xl">
+      <h2 class="font-serif text-3xl text-marinho font-bold mb-6 text-center">Preencha seus dados</h2>
+      
+      <form method="POST" action="{% url 'account_signup' %}" class="space-y-6" novalidate>
+          {% csrf_token %}
+          
+          {% if form.errors or form.non_field_errors %}
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+              <strong class="font-bold">Por favor, corrija os erros abaixo:</strong>
+              <ul class="list-disc list-inside mt-2">
+                  {% for error in form.non_field_errors %}
+                  <li>{{ error|escape }}</li>
+                  {% endfor %}
+                  {% for field in form %}
+                      {% for error in field.errors %}
+                      <li>{{ field.label }}: {{ error|escape }}</li>
+                      {% endfor %}
+                  {% endfor %}
+              </ul>
+          </div>
+          {% endif %}
 
-            <form method="POST" action="{% url 'account_signup' %}" class="space-y-6">
-                {% csrf_token %}
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Nome</label>
-                        <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}"
-                               value="{{ form.first_name.value|default:'' }}"
-                               required
-                               class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
-                               placeholder="Seu primeiro nome">
-                        {% for error in form.first_name.errors %}
-                            <p class="text-red-600 text-sm mt-1">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                    <div>
-                        <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Sobrenome</label>
-                        <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}"
-                               value="{{ form.last_name.value|default:'' }}"
-                               required
-                               class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
-                               placeholder="Seu sobrenome">
-                        {% for error in form.last_name.errors %}
-                            <p class="text-red-600 text-sm mt-1">{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                  <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Nome</label>
+                  <input type="text" name="first_name" id="{{ form.first_name.id_for_label }}"
+                         value="{{ form.first_name.value|default:'' }}" required
+                         class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                         placeholder="Seu primeiro nome">
+                  {% for error in form.first_name.errors %}
+                      <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                  {% endfor %}
+              </div>
+              <div>
+                  <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Sobrenome</label>
+                  <input type="text" name="last_name" id="{{ form.last_name.id_for_label }}"
+                         value="{{ form.last_name.value|default:'' }}" required
+                         class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                         placeholder="Seu sobrenome">
+                  {% for error in form.last_name.errors %}
+                      <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+                  {% endfor %}
+              </div>
+          </div>
 
-                <div>
-                    <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
-                    <input type="email" name="email" id="{{ form.email.id_for_label }}"
-                           value="{{ form.email.value|default:'' }}"
-                           required
-                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
-                           placeholder="seu.email@exemplo.com">
-                    
-                    {% for error in form.email.errors %}
-                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
-                    {% endfor %}
-                    </div>
+          <div>
+              <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+              <input type="email" name="email" id="{{ form.email.id_for_label }}"
+                     value="{{ form.email.value|default:'' }}" required
+                     class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                     placeholder="seu.email@exemplo.com">
+              {% for error in form.email.errors %}
+                  <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+              {% endfor %}
+          </div>
 
-                <div>
-                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Senha</label>
-                    <input type="password" name="password" id="{{ form.password.id_for_label }}"
-                           required
-                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
-                           placeholder="Crie uma senha forte">
-                    {% for error in form.password.errors %}
-                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
-                
-                <div>
-                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Confirmar Senha</label>
-                    <input type="password" name="password2" id="{{ form.password2.id_for_label }}"
-                           required
-                           class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
-                           placeholder="Repita a senha">
-                    {% for error in form.password2.errors %}
-                        <p class="text-red-600 text-sm mt-1">{{ error }}</p>
-                    {% endfor %}
-                </div>
-                
-                {% for error in form.non_field_errors %}
-                    <p class="text-red-600 text-sm mt-1 font-bold">{{ error }}</p>
-                {% endfor %}
+          <div>
+              <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Senha</label>
+              <input type="password" name="password1" id="{{ form.password1.id_for_label }}" required
+                     class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                     placeholder="Crie uma senha forte">
+              {% for error in form.password1.errors %}
+                  <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+              {% endfor %}
+          </div>
+          
+          <div>
+              <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Confirmar Senha</label>
+              <input type="password" name="password2" id="{{ form.password2.id_for_label }}" required
+                     class="w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50"
+                     placeholder="Repita a senha">
+              {% for error in form.password2.errors %}
+                  <p class="text-red-600 text-sm mt-1">{{ error }}</p>
+              {% endfor %}
+          </div>
+          
+          <div class="pt-4">
+              <button type="submit" 
+                      class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                  Criar minha conta
+              </button>
+          </div>
+      </form>
 
-                <div class="pt-4">
-                    <button type="submit" 
-                            class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
-                        Criar minha conta
-                    </button>
-                </div>
-            </form>
-
-            <p class="text-center text-sm text-graphite mt-8">
-                Já tem uma conta?
-                <a href="{% url 'account_login' %}" class="font-medium text-marinho hover:text-ouro underline">
-                    Faça o login
-                </a>
-            </p>
-
-        </div>
-
+      <p class="text-center text-sm text-graphite mt-8">
+          Já tem uma conta?
+          <a href="{% url 'account_login' %}" class="font-medium text-marinho hover:text-ouro underline">
+              Faça o login
+          </a>
+      </p>
     </div>
+  </div>
 </section>
 {% endblock %}
