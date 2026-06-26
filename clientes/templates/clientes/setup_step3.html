@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passo 3 - Quem Somos - ImobGold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    
+    <div class="max-w-2xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <!-- Progress Bar -->
+        <div class="flex items-center justify-between mb-8 relative">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3/4 h-1 bg-[#C6A87C] -z-10"></div>
+            
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">3</div>
+            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">4</div>
+        </div>
+
+        <h1 class="text-3xl font-serif text-gray-900 mb-2">Quem Somos</h1>
+        <p class="text-gray-500 mb-8">Conte um pouco da sua história. Isso aparecerá na página inicial e no sobre.</p>
+
+        <form method="POST" action="{% url 'saas_setup' 3 %}">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.texto_quem_somos.label }}</label>
+                    <textarea name="{{ form.texto_quem_somos.name }}" rows="6" placeholder="Somos a imobiliária referência em alto padrão..."
+                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">{{ form.texto_quem_somos.value|default:'' }}</textarea>
+                    <p class="text-xs text-gray-400 mt-2">Você poderá alterar ou usar Inteligência Artificial para melhorar este texto depois.</p>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-between">
+                <a href="{% url 'saas_setup' 2 %}" class="text-gray-500 px-6 py-3 hover:text-gray-900 transition">Voltar</a>
+                <button type="submit" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition">
+                    Próximo Passo &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>

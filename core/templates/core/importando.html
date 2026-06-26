@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Atualizando Portfólio - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="min-h-[80vh] flex items-center justify-center bg-cinza-fundo py-20 px-6">
+    <div class="max-w-2xl w-full text-center">
+        <!-- Ícone de Sincronização -->
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-ouro/10 mb-8 animate-pulse">
+            <svg class="w-12 h-12 text-ouro animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+        </div>
+
+        <h1 class="font-serif text-4xl md:text-5xl font-medium text-marinho-escuro mb-4">
+            Atualizando Portfólio
+        </h1>
+        
+        <p class="text-lg text-graphite/70 mb-12 max-w-lg mx-auto">
+            Estamos sincronizando nossa base de dados com as propriedades mais exclusivas do mercado. Em breve seu portfólio estará 100% disponível.
+        </p>
+
+        <!-- Barra de Progresso -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-cinza-claro/80">
+            <div class="flex justify-between items-center mb-4 text-sm font-bold uppercase tracking-wider">
+                <span class="text-marinho-claro">Progresso da Sincronização</span>
+                <span class="text-ouro">{{ percent }}%</span>
+            </div>
+            
+            <div class="w-full bg-cinza-fundo rounded-full h-4 mb-4 overflow-hidden border border-cinza-claro/50">
+                <div class="bg-gradient-to-r from-ouro to-[#cba471] h-4 rounded-full transition-all duration-1000 ease-out relative overflow-hidden" style="width: {{ percent }}%">
+                    <div class="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
+                </div>
+            </div>
+            
+            <div class="text-xs text-graphite/60 font-medium">
+                {{ total }} de {{ meta }} imóveis importados
+            </div>
+        </div>
+        
+        <!-- Script para auto-refresh da página a cada 5 segundos -->
+        <script>
+            setTimeout(function() {
+                window.location.reload();
+            }, 5000);
+        </script>
+    </div>
+</section>
+
+<style>
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+</style>
+{% endblock %}

@@ -9,9 +9,9 @@ from django.views.decorators.http import require_POST
 from .forms import LeadForm, UserUpdateForm, ProfileUpdateForm
 from .models import (
     Imovel, Bairro, Corretor, ConteudoPagina, 
-    TipoImovel, Caracteristica, ImagemImovel, Profile
+    TipoImovel, Caracteristica, ImagemImovel, Profile, PostBlog, AlertaBusca
 )
-from django.db.models import Q
+from django.db.models import Q, F
 import re
 import urllib.parse
 import html
@@ -20,7 +20,8 @@ import html
 def index(request):
     destaques = Imovel.objects.filter(finalidade='lancamento', em_destaque=True).order_by('-data_atualizacao')[:3]
     bairros = Bairro.objects.all().order_by('nome')
-    context = {'destaques': destaques, 'bairros': bairros}
+    ultimos_posts = PostBlog.objects.all().order_by('-data_publicacao')[:3]
+    context = {'destaques': destaques, 'bairros': bairros, 'ultimos_posts': ultimos_posts}
     return render(request, 'core/index.html', context)
 
 def sobre(request):
@@ -33,9 +34,16 @@ def sobre(request):
 
 # --- VIEW LISTA_IMOVEIS (CORRIGIDA) ---
 def lista_imoveis(request):
+    # Trava: Se a importação estiver rodando ou a base estiver zerada, mostra tela de manutenção
+    status_importacao = ConteudoPagina.objects.filter(chave='status_importacao').first()
+    is_rodando = status_importacao and status_importacao.titulo == 'rodando'
+    
+    if is_rodando or not Imovel.objects.exists():
+        progresso = status_importacao.subtitulo if status_importacao else "Iniciando..."
+        return render(request, 'core/manutencao.html', {'progresso': progresso})
+
     request.session['last_search_url'] = request.get_full_path()
     imoveis = Imovel.objects.filter(valor__isnull=False).order_by('-data_atualizacao')
-    bairros = Bairro.objects.all().order_by('nome')
     tipos_imovel = TipoImovel.objects.all().order_by('nome')
     caracteristicas = Caracteristica.objects.all().order_by('nome')
     
@@ -52,11 +60,21 @@ def lista_imoveis(request):
     query = filtros_aplicados.get('query')
     if query: imoveis = imoveis.filter(titulo__icontains=query)
     
-    bairro_id = filtros_aplicados.get('bairro')
-    if bairro_id: imoveis = imoveis.filter(bairro_id=bairro_id)
+    estado = filtros_aplicados.get('estado')
+    if estado: imoveis = imoveis.filter(estado=estado)
+    
+    cidade = filtros_aplicados.get('cidade')
+    if cidade:
+        imoveis = imoveis.filter(cidade__iexact=cidade)
     
     tipos_slugs = filtros_aplicados.getlist('tipo_imovel')
     if tipos_slugs: imoveis = imoveis.filter(tipo_imovel__slug__in=tipos_slugs)
+    
+    # Mostrar TODOS os bairros (não apenas os filtrados) para a barra não sumir
+    bairros = Bairro.objects.all().order_by('nome')
+
+    bairro_ids = filtros_aplicados.getlist('bairro')
+    if bairro_ids: imoveis = imoveis.filter(bairro_id__in=bairro_ids)
     
     valor_min = filtros_aplicados.get('valor_min')
     valor_max = filtros_aplicados.get('valor_max')
@@ -86,14 +104,31 @@ def lista_imoveis(request):
         num = re.sub(r'\D', '', banheiros)
         imoveis = imoveis.filter(banheiros__gte=num)
         
+    ordenacao = filtros_aplicados.get('ordenacao', 'relevancia')
+    if ordenacao == 'valor_asc':
+        imoveis = imoveis.order_by(F('valor').asc(nulls_last=True))
+    elif ordenacao == 'valor_desc':
+        imoveis = imoveis.order_by(F('valor').desc(nulls_last=True))
+    elif ordenacao == 'area_desc':
+        imoveis = imoveis.order_by(F('area_util').desc(nulls_last=True))
+    elif ordenacao == 'area_asc':
+        imoveis = imoveis.order_by(F('area_util').asc(nulls_last=True))
+    else:
+        imoveis = imoveis.order_by('-em_destaque', '-data_atualizacao')
+        
     imoveis_list = imoveis.distinct()
     paginator = Paginator(imoveis_list, 12) 
     page_obj = paginator.get_page(page_number)
     filtros_aplicados_query = filtros_aplicados.urlencode()
     
+    elided_page_range = paginator.get_elided_page_range(number=page_obj.number, on_each_side=2, on_ends=1)
+    bairros_selecionados_objs = Bairro.objects.filter(id__in=bairro_ids) if bairro_ids else []
+
     context = {
         'page_obj': page_obj, 'filtros_aplicados_query': filtros_aplicados_query, 
         'bairros': bairros, 'tipos_imovel': tipos_imovel, 
+        'elided_page_range': elided_page_range,
+        'bairros_selecionados_objs': bairros_selecionados_objs,
         'caracteristicas': caracteristicas, 'filtros_aplicados': filtros_aplicados,
     }
     return render(request, 'core/lista_imoveis.html', context)
@@ -145,23 +180,16 @@ def minha_conta(request):
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=request.user.profile)
-    context = {'user_form': user_form, 'profile_form': profile_form}
+    
+    # Busca os alertas ativos do usuário
+    alertas = request.user.alertas.filter(ativo=True).order_by('-data_criacao')
+    
+    context = {'user_form': user_form, 'profile_form': profile_form, 'alertas': alertas}
     return render(request, 'core/minha_conta.html', context)
 
+@login_required
 def favoritos(request):
-    imoveis_favoritos = []
-    if request.user.is_authenticated:
-        imoveis_favoritos = request.user.profile.favoritos.all().order_by('-data_atualizacao')
-    else:
-        ids_str = request.GET.get('ids', '')
-        if ids_str:
-            try:
-                ids_list = [int(id) for id in ids_str.split(',')]
-                imoveis_favoritos = Imovel.objects.filter(id__in=ids_list)
-                imoveis_dict = {imovel.id: imovel for imovel in imoveis_favoritos}
-                imoveis_favoritos = [imoveis_dict[id] for id in ids_list if id in imoveis_dict]
-            except ValueError:
-                pass
+    imoveis_favoritos = request.user.profile.favoritos.all().order_by('-data_atualizacao')
     last_search_url = request.session.get('last_search_url', '/imoveis/')
     context = {'imoveis': imoveis_favoritos, 'last_search_url': last_search_url}
     return render(request, 'core/favoritos.html', context)
@@ -190,4 +218,61 @@ def custom_password_change_done(request):
     messages.success(request, 'Sua senha foi alterada com sucesso!', extra_tags='password_update')
     
     # 2. Redireciona o usuário de volta para a página "Minha Conta"
+    return redirect('core:minha_conta')
+
+def comparar(request):
+    return render(request, 'core/comparar.html')
+
+def politica_privacidade(request):
+    return render(request, 'core/politica_privacidade.html')
+
+def custom_404(request, exception):
+    return render(request, 'core/404.html', status=404)
+
+def saas_landing(request):
+    """Landing page para vender o próprio sistema como SaaS"""
+    return render(request, 'core/saas_landing.html')
+
+def termos_uso(request):
+    return render(request, 'core/termos_uso.html')
+
+def lista_blog(request):
+    posts_list = PostBlog.objects.all().order_by('-data_publicacao')
+    paginator = Paginator(posts_list, 9) # 9 posts por página
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'core/blog.html', {'page_obj': page_obj})
+
+def detalhe_post(request, post_id):
+    post = get_object_or_404(PostBlog, id=post_id)
+    return render(request, 'core/blog_detalhe.html', {'post': post})
+
+@login_required
+@require_POST
+def salvar_alerta(request):
+    try:
+        data = json.loads(request.body)
+        query_string = data.get('query_string', '')
+        resumo_busca = data.get('resumo_busca', 'Busca Personalizada')
+        
+        nome = request.user.first_name or request.user.username
+        email = request.user.email
+            
+        alerta = AlertaBusca.objects.create(
+            user=request.user,
+            nome=nome,
+            email=email,
+            query_string=query_string,
+            resumo_busca=resumo_busca
+        )
+        return JsonResponse({'status': 'success', 'message': 'Alerta salvo com sucesso!'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@require_POST
+def excluir_alerta(request, alerta_id):
+    alerta = get_object_or_404(AlertaBusca, id=alerta_id, user=request.user)
+    alerta.delete()
+    messages.success(request, 'Alerta removido com sucesso!', extra_tags='profile_update')
     return redirect('core:minha_conta')

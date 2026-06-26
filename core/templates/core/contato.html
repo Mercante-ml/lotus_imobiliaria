@@ -1,93 +1,132 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Contato{% endblock %}
+{% block title %}Contato - Lotus Imobiliária{% endblock %}
 
 {% block content %}
-<section class="bg-marinho-escuro text-white">
-    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
-        <h1 class="font-serif text-5xl md:text-7xl font-bold">
+<!-- HERO DO CONTATO -->
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-marinho-escuro overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-marinho-escuro to-marinho-claro/50 opacity-90"></div>
+
+    <div class="container mx-auto px-6 relative z-10 text-center">
+        <span class="text-ouro uppercase tracking-[0.3em] text-xs md:text-sm font-bold mb-4 block">Atendimento Exclusivo</span>
+        <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl font-medium text-white mb-6">
             Fale Conosco
         </h1>
-        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
-            Estamos prontos para o ajudar a encontrar o seu imóvel. Envie-nos uma mensagem.
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-white/70 font-light">
+            Estamos prontos para oferecer uma consultoria personalizada e ajudá-lo a encontrar o seu próximo grande investimento.
         </p>
     </div>
 </section>
 
-<section class="py-20 md:py-28 bg-cinza-fundo">
-    <div class="container mx-auto px-6">
+<!-- SEÇÃO DE CONTATO -->
+<section class="py-24 md:py-32 bg-cinza-fundo">
+    <div class="container mx-auto px-6 max-w-7xl">
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
 
-            <div class="bg-white p-8 md:p-12 rounded-lg shadow-xl">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-marinho mb-8">Envie a sua mensagem</h2>
+            <!-- Formulário -->
+            <div class="lg:col-span-7 bg-white p-10 md:p-14 rounded-3xl shadow-sm border border-cinza-claro/80">
+                <h2 class="font-serif text-3xl md:text-4xl font-medium text-marinho-escuro mb-2">Envie a sua mensagem</h2>
+                <p class="text-graphite/60 mb-10 font-light text-lg">Preencha os dados abaixo e um dos nossos consultores entrará em contato em breve.</p>
                 
-                <form action="{% url 'core:contato' %}" method="POST" novalidate>
+                <form action="{% url 'core:contato' %}" method="POST" novalidate class="space-y-8">
                     {% csrf_token %}
                     
-                    <div class="space-y-6">
-                        <div>
-                            <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Nome Completo</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="relative group">
+                            <label for="{{ form.nome.id_for_label }}" class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-2 group-focus-within:text-ouro transition-colors">Nome Completo</label>
                             {{ form.nome }}
                             {% if form.nome.errors %}
-                                <p class="text-red-600 text-sm mt-1">{{ form.nome.errors.0 }}</p>
+                                <p class="text-red-500 text-xs mt-2 italic">{{ form.nome.errors.0 }}</p>
                             {% endif %}
                         </div>
 
-                        <div>
-                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Email</label>
+                        <div class="relative group">
+                            <label for="{{ form.email.id_for_label }}" class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-2 group-focus-within:text-ouro transition-colors">E-mail</label>
                             {{ form.email }}
                              {% if form.email.errors %}
-                                <p class="text-red-600 text-sm mt-1">{{ form.email.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-
-                        <div>
-                            <label for="{{ form.telefone.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Telefone (Opcional)</label>
-                            {{ form.telefone }}
-                        </div>
-
-                        <div>
-                            <label for="{{ form.mensagem.id_for_label }}" class="block text-sm font-medium text-graphite mb-2">Mensagem</label>
-                            {{ form.mensagem }}
-                             {% if form.mensagem.errors %}
-                                <p class="text-red-600 text-sm mt-1">{{ form.mensagem.errors.0 }}</p>
+                                <p class="text-red-500 text-xs mt-2 italic">{{ form.email.errors.0 }}</p>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="mt-8">
+                    <div class="relative group">
+                        <label for="{{ form.telefone.id_for_label }}" class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-2 group-focus-within:text-ouro transition-colors">Telefone <span class="text-graphite/40 font-normal normal-case tracking-normal">(Opcional)</span></label>
+                        {{ form.telefone }}
+                    </div>
+
+                    <div class="relative group">
+                        <label for="{{ form.mensagem.id_for_label }}" class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-2 group-focus-within:text-ouro transition-colors">Sua Mensagem</label>
+                        {{ form.mensagem }}
+                         {% if form.mensagem.errors %}
+                            <p class="text-red-500 text-xs mt-2 italic">{{ form.mensagem.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="pt-4">
                         <button type="submit" 
-                                class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                                class="flex items-center justify-center w-full md:w-auto px-12 bg-ouro text-white font-medium py-4 rounded-xl shadow-[0_4px_14px_0_rgba(180,140,90,0.39)] hover:shadow-[0_6px_20px_rgba(180,140,90,0.23)] hover:bg-[#cba471] transition-all duration-300 transform hover:-translate-y-1">
                             Enviar Mensagem
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="sticky top-28">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-marinho mb-8">Onde estamos</h2>
-                <p class="text-lg text-graphite/80 mb-6">
-                    Venha tomar um café conosco e descobrir como podemos ajudá-lo a encontrar o seu espaço de renascimento.
-                </p>
+            <!-- Informações / Mapa -->
+            <div class="lg:col-span-5 lg:sticky lg:top-32 flex flex-col gap-10">
+                
+                <!-- Cards de Info -->
+                <div class="bg-marinho-escuro rounded-3xl p-10 text-white shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-ouro/20 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+                    
+                    <h3 class="font-serif text-3xl font-medium mb-10 relative z-10 border-b border-white/10 pb-4">Nosso Escritório</h3>
+                    
+                    <div class="space-y-8 relative z-10 font-light">
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">Endereço</p>
+                                <p class="text-white/90 text-lg leading-snug">Rua C-259, 519<br>Setor Nova Suiça<br>Goiânia - GO</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">Telefone</p>
+                                <p class="text-white/90 text-lg">(62) 98250-1403</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">E-mail</p>
+                                <p class="text-white/90 text-lg">contato@lotusimob.com.br</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="w-full h-80 rounded-lg shadow-xl overflow-hidden border-4 border-white">
+                <!-- Mapa -->
+                <div class="w-full h-64 md:h-80 rounded-3xl shadow-lg overflow-hidden border-4 border-white bg-cinza-claro">
                     <iframe 
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3821.571441617117!2d-49.28448732509172!3d-16.70014348405527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x935ef12973167b7b%3A0x6a1d4b6f4e6e6a1!2sR.%20C-259%2C%20519%20-%20Setor%20Nova%20Sui%C3%A7a%2C%20Goi%C3%A2nia%20-%20GO%2C%2074280-220!5e0!3m2!1spt-BR!2sbr!4v1730521481656!5m2!1spt-BR!2sbr" 
                         width="100%" 
                         height="100%" 
-                        style="border:0;" 
+                        style="border:0; filter: grayscale(0.5) contrast(1.1);" 
                         allowfullscreen="" 
                         loading="lazy" 
                         referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
-                </div>
-
-                <div class="mt-6 text-graphite/80">
-                    <p class="text-lg"><strong>Endereço:</strong> Rua C-259, 519, Setor Nova Suiça, Goiânia - GO, 74280-220</p>
-                    <p class="text-lg mt-2"><strong>Telefone:</strong> (62) 98250-1403</p>
-                    <p class="text-lg mt-2"><strong>Email:</strong> contato@lotusimob.com.br</p>
                 </div>
 
             </div>
@@ -96,8 +135,31 @@
 
     </div>
 </section>
-{% endblock %}
 
-
-{% block extra_head %}
+<!-- Adicionando estilos para os inputs do formulário injetado pelo Django -->
+<style>
+    form input[type="text"],
+    form input[type="email"],
+    form textarea {
+        width: 100%;
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        color: #333F58;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    form textarea {
+        min-height: 150px;
+    }
+    form input[type="text"]:focus,
+    form input[type="email"]:focus,
+    form textarea:focus {
+        background-color: white;
+        border-color: #B48C5A;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(180, 140, 90, 0.1);
+    }
+</style>
 {% endblock %}

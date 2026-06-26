@@ -47,7 +47,12 @@ class Caracteristica(models.Model):
 class Corretor(models.Model):
     nome = models.CharField(max_length=80)
     email = models.EmailField(blank=True, null=True)
-    telefone = models.CharField(max_length=20, blank=True, null=True)
+    
+    telefone_validator = RegexValidator(
+        regex=r'^\(\d{2}\) 9\d{4}-\d{4}$',  
+        message='O telefone deve estar no formato (DD) 9XXXX-XXXX'
+    )
+    telefone = models.CharField(max_length=20, blank=True, null=True, validators=[telefone_validator], help_text="Formato: (62) 99999-9999")
     
     # Validador do CRECI (que corrigimos)
     creci_validator = RegexValidator(
@@ -65,6 +70,13 @@ class Corretor(models.Model):
     def __str__(self):
         return self.nome
 
+    @property
+    def whatsapp_numero(self):
+        if not self.telefone:
+            return ""
+        import re
+        return re.sub(r'\D', '', self.telefone)
+
     def get_foto_preview(self):
         if self.foto:
             return mark_safe(f'<img src="{self.foto.url}" style="max-height: 100px; max-width: 100px;" />')
@@ -78,7 +90,7 @@ class Corretor(models.Model):
 class Imovel(models.Model):
     
     # --- Identificação e Classificação ---
-    titulo = models.CharField(max_length=120)
+    titulo = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
     FINALIDADE_CHOICES = [('lancamento', 'Lançamento'), ('revenda', 'Revenda')]
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES, default='revenda', help_text="Deduzido do Título (ex: 'lançamento') ou 'Revenda' como padrão")
@@ -101,7 +113,9 @@ class Imovel(models.Model):
 
     # --- Localização e Mídia ---
     bairro = models.ForeignKey(Bairro, on_delete=models.SET_NULL, null=True, blank=True)
-    endereco = models.CharField(max_length=120, blank=True)
+    endereco = models.CharField(max_length=255, blank=True)
+    cidade = models.CharField(max_length=100, blank=True)
+    estado = models.CharField(max_length=2, blank=True)
     imagem_principal = models.ImageField(upload_to='fotos_imoveis/', null=True, blank=True)
     
     # --- Relacionamentos ---
@@ -149,7 +163,9 @@ class Lead(models.Model):
 
 # --- Modelo de Perfil de Usuário (ATUALIZADO) ---
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    # Usamos DO_NOTHING para evitar que o Django tente deletar o profile (que é Tenant-specific)
+    # quando um User (Shared) for deletado do schema public, causando erro de tabela inexistente.
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     
     # --- CAMPO ADICIONADO AQUI ---
@@ -162,8 +178,12 @@ class Profile(models.Model):
 
 # --- "Sinal" para criar o Profile automaticamente ---
 # (Roda sempre que um novo 'User' é criado)
+from django.db import connection
+
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if connection.schema_name == 'public':
+        return
     if created:
         Profile.objects.create(user=instance)
     
@@ -173,3 +193,157 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         instance.profile.save()
     except Profile.DoesNotExist:
         Profile.objects.create(user=instance)
+
+# --- MODELO DO BLOG ---
+
+class PostBlog(models.Model):
+    TIPO_CONTEUDO_CHOICES = [
+        ('link', 'Link Externo (Artigo, PDF, Notícia)'),
+        ('embed', 'Conteúdo Incorporado (Vídeo, Gamma, Facebook)'),
+    ]    
+    titulo = models.CharField(max_length=200)
+    resumo = models.TextField(help_text="Um parágrafo curto sobre o conteúdo.")
+    imagem_card = models.ImageField(upload_to='blog_cards/', help_text="Imagem de capa que aparecerá no card do site.")
+    
+    tipo_conteudo = models.CharField(max_length=10, choices=TIPO_CONTEUDO_CHOICES, default='link')
+    
+    link_url = models.URLField(max_length=500, blank=True, null=True, 
+                               help_text="Se 'Tipo' for Link Externo, cole a URL completa aqui.")
+    
+    embed_code = models.TextField(blank=True, null=True, 
+                                  help_text="Se 'Tipo' for Conteúdo Incorporado, cole o código HTML (iframe, etc.) aqui.")
+    
+    data_publicacao = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_publicacao'] # Mais novos primeiro
+        verbose_name = "Post do Blog"
+        verbose_name_plural = "Posts do Blog"
+
+    def __str__(self):
+        return self.titulo
+
+class AlertaBusca(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='alertas', null=True, blank=True)
+    nome = models.CharField(max_length=100)
+    email = models.EmailField()
+    
+    # A query original em formato querystring (urlencode)
+    query_string = models.TextField(blank=True, help_text="Parâmetros da busca salvos")
+    
+    # Resumo para exibir no admin
+    resumo_busca = models.CharField(max_length=255, blank=True, help_text="Resumo amigável. Ex: Lançamentos em Setor Bueno até R$ 2M")
+    
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    ativo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Alerta de {self.nome} ({self.email}) - {self.data_criacao.strftime('%d/%m/%Y')}"
+
+    @property
+    def resumo_legivel(self):
+        if not self.query_string:
+            return "Busca em todos os imóveis"
+        
+        from urllib.parse import parse_qs
+        params = parse_qs(self.query_string)
+        partes = []
+        
+        if 'tipo_imovel' in params:
+            slugs = params['tipo_imovel']
+            partes.append(", ".join([s.replace('-', ' ').title() for s in slugs]))
+        
+        if 'finalidade' in params:
+            finalidade = params['finalidade'][0]
+            if finalidade == 'lancamento':
+                partes.append("Lançamentos")
+            elif finalidade == 'revenda':
+                partes.append("Revenda")
+                
+        if 'bairro' in params:
+            bairro_ids = params['bairro']
+            try:
+                bairros = Bairro.objects.filter(id__in=bairro_ids).values_list('nome', flat=True)
+                if bairros:
+                    partes.append("em " + ", ".join(bairros))
+            except Exception:
+                pass
+                
+        if 'valor_max' in params and params['valor_max'][0]:
+            try:
+                v_max = float(params['valor_max'][0])
+                partes.append(f"até R$ {v_max:,.0f}".replace(',', '.'))
+            except Exception:
+                pass
+                
+        if 'quartos' in params and params['quartos'][0]:
+            partes.append(f"{params['quartos'][0]} quartos")
+            
+        if not partes:
+            return "Busca Personalizada"
+            
+        return " ".join(partes)
+
+from urllib.parse import parse_qs
+import re
+from django.core.mail import send_mail
+from django.conf import settings
+
+@receiver(post_save, sender=Imovel)
+def disparar_alertas_busca(sender, instance, created, **kwargs):
+    if not created:
+        return # Idealmente, checaríamos se ele ficou ativo/disponível, mas por ora no cadastro
+
+    alertas = AlertaBusca.objects.filter(ativo=True)
+    for alerta in alertas:
+        params = parse_qs(alerta.query_string)
+        match = True
+        
+        if 'finalidade' in params and instance.finalidade not in params['finalidade']:
+            match = False
+            
+        if match and 'bairro' in params:
+            if str(instance.bairro_id) not in params['bairro']:
+                match = False
+                
+        if match and 'tipo_imovel' in params and instance.tipo_imovel:
+            if instance.tipo_imovel.slug not in params['tipo_imovel']:
+                match = False
+                
+        if match and 'valor_max' in params and params['valor_max'][0]:
+            try:
+                v_max = float(params['valor_max'][0])
+                if not instance.valor or float(instance.valor) > v_max:
+                    match = False
+            except ValueError:
+                pass
+
+        if match and 'quartos' in params and params['quartos'][0]:
+            num = int(re.sub(r'\D', '', params['quartos'][0]) or 0)
+            if not instance.quartos or instance.quartos < num:
+                match = False
+
+        if match and 'banheiros' in params and params['banheiros'][0]:
+            num = int(re.sub(r'\D', '', params['banheiros'][0]) or 0)
+            if not instance.banheiros or instance.banheiros < num:
+                match = False
+
+        if match and 'vagas' in params and params['vagas'][0]:
+            num = int(re.sub(r'\D', '', params['vagas'][0]) or 0)
+            if not instance.vagas or instance.vagas < num:
+                match = False
+                
+        if match:
+            # Enviar e-mail simulado / print (pode ser adaptado para envio real)
+            assunto = f"Lotus Imobiliária: Encontramos um imóvel para você!"
+            mensagem = (
+                f"Olá {alerta.nome},\n\n"
+                f"Um novo imóvel que bate com a sua busca acabou de ser cadastrado:\n\n"
+                f"{instance.titulo} - R$ {instance.valor}\n"
+                f"Confira no nosso site!\n\n"
+                f"Equipe Lotus"
+            )
+            print(f"--- DISPARANDO ALERTA DE BUSCA PARA {alerta.email} ---")
+            print(mensagem)
+            
+            # send_mail(assunto, mensagem, settings.DEFAULT_FROM_EMAIL, [alerta.email], fail_silently=True)

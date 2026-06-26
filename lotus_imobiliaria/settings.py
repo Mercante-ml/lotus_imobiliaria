@@ -6,21 +6,43 @@ from pathlib import Path
 import environ
 import os
 
+env = environ.Env()
+
 # --- CONFIGURAÇÃO DO ENVIRON ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env(
-    DEBUG=(bool, False)
-)
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
+
 # --- CHAVES DO .ENV ---
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env.bool('DEBUG')
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG') == 'True'
+ALLOWED_HOSTS = ['*']
 
+# --- CONFIGURAÇÃO CLOUDFLARE (PROXY) ---
+CSRF_TRUSTED_ORIGINS = ['https://imob.dsprime.org', 'https://*.imob.dsprime.org']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# --- APPS ---
-INSTALLED_APPS = [
+# --- APPS MULTI-TENANT ---
+SHARED_APPS = [
+    'django_tenants',  # obrigatório ser o primeiro
+    'clientes',        # app que vai gerenciar os tenants
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Allauth deve estar no schema publico para login centralizado
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
+]
+
+TENANT_APPS = [
+    # Apps específicos de cada imobiliária
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,16 +51,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'django.contrib.humanize',
-
-    # Allauth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.facebook',
 ]
 
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+
+TENANT_MODEL = "clientes.Client"
+TENANT_DOMAIN_MODEL = "clientes.Domain"
+
 MIDDLEWARE = [
+    'django_tenants.middleware.main.TenantMainMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -50,11 +71,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'lotus_imobiliaria.urls'
+PUBLIC_SCHEMA_URLCONF = 'lotus_imobiliaria.urls_public'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,10 +98,18 @@ WSGI_APPLICATION = 'lotus_imobiliaria.wsgi.application'
 
 
 # --- DATABASE ---
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -102,7 +132,8 @@ USE_TZ = True
 
 # --- STATIC & MEDIA ---
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [ BASE_DIR / "core" / "static", ]
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
@@ -112,10 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- EMAIL ---
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='contato@dsprime.net')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
@@ -128,7 +159,7 @@ SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'none'   # 🔑 sem confirmação de email
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'   # 🔑 confirmação de email obrigatória
 
 # Desativa login por código (passwordless)
 ACCOUNT_LOGIN_BY_CODE_ENABLED = False
@@ -140,6 +171,8 @@ ACCOUNT_FORMS = {
 }
 
 ACCOUNT_SESSION_REMEMBER = True
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/contas/login/'
+LOGIN_REDIRECT_URL = '/login-redirect/'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Lotus Imobiliária] '
+SOCIALACCOUNT_LOGIN_ON_GET = True

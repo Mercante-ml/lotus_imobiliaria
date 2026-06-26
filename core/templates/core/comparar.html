@@ -1,0 +1,149 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Comparador de Imóveis - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-marinho-escuro overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro to-marinho-claro/20 opacity-80"></div>
+    <div class="container mx-auto px-6 relative z-10 text-center">
+        <span class="text-ouro uppercase tracking-[0.3em] text-xs md:text-sm font-bold mb-4 block">Ferramenta Exclusiva</span>
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl font-medium text-white mb-6">
+            Comparador de Imóveis
+        </h1>
+    </div>
+</section>
+
+<section class="py-16 md:py-24 bg-cinza-fundo min-h-[50vh]">
+    <div class="container mx-auto px-6 max-w-7xl">
+        <div class="mb-12 flex justify-between items-center">
+            <a href="javascript:history.back()" class="inline-flex items-center text-marinho hover:text-ouro font-medium transition-colors group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Voltar à Busca
+            </a>
+            <button onclick="limparComparacao()" class="text-sm font-bold text-red-500 hover:text-red-700 uppercase tracking-widest transition-colors">
+                Limpar Seleção
+            </button>
+        </div>
+
+        {% if imoveis %}
+        <div class="overflow-x-auto pb-8">
+            <div class="min-w-[800px] grid grid-cols-{{ imoveis|length|add:1 }} gap-6 bg-white p-6 md:p-10 rounded-3xl shadow-xl border border-cinza-claro/50">
+                
+                <!-- Coluna de Rótulos -->
+                <div class="flex flex-col space-y-6 pt-[300px] font-medium text-graphite/70 text-right pr-6 border-r border-cinza-claro/50 uppercase tracking-widest text-xs hidden md:flex">
+                    <div class="h-14 flex items-center justify-end">Finalidade</div>
+                    <div class="h-14 flex items-center justify-end">Tipo</div>
+                    <div class="h-14 flex items-center justify-end">Localização</div>
+                    <div class="h-14 flex items-center justify-end">Quartos</div>
+                    <div class="h-14 flex items-center justify-end">Banheiros</div>
+                    <div class="h-14 flex items-center justify-end">Vagas</div>
+                    <div class="h-14 flex items-center justify-end">Área Útil</div>
+                    <div class="h-14 flex items-center justify-end font-bold text-marinho-escuro text-sm">Valor</div>
+                    <div class="mt-8"></div>
+                </div>
+
+                <!-- Colunas dos Imóveis -->
+                {% for imovel in imoveis %}
+                <div class="flex flex-col space-y-6 text-center relative group">
+                    <!-- Botão Remover do Comparador (X) -->
+                    <button onclick="removerDaComparacao('{{ imovel.id }}')" class="absolute -top-3 -right-3 z-20 bg-white text-graphite border border-cinza-claro shadow-md rounded-full p-2 hover:text-red-500 hover:border-red-200 transition-colors" title="Remover da comparação">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <!-- Foto e Título -->
+                    <div class="h-[280px] flex flex-col items-center">
+                        <div class="w-full h-48 rounded-xl overflow-hidden mb-4 shadow-sm relative">
+                            {% if imovel.imagem_principal %}
+                                <img src="{{ imovel.imagem_principal.url }}" alt="{{ imovel.titulo }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full bg-cinza-claro flex items-center justify-center text-graphite/40">Sem Foto</div>
+                            {% endif %}
+                        </div>
+                        <h3 class="font-serif text-xl font-bold text-marinho-escuro line-clamp-2 px-2" title="{{ imovel.titulo }}">
+                            {{ imovel.titulo }}
+                        </h3>
+                    </div>
+
+                    <!-- Dados -->
+                    <div class="h-14 flex items-center justify-center text-graphite md:border-t-0 border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Finalidade:</span>
+                        {{ imovel.get_finalidade_display }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Tipo:</span>
+                        {{ imovel.tipo_imovel.nome }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite font-medium border-t border-cinza-fundo px-2">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Bairro:</span>
+                        {{ imovel.bairro.nome }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Quartos:</span>
+                        {{ imovel.quartos|default:"-" }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Banh.:</span>
+                        {{ imovel.banheiros|default:"-" }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Vagas:</span>
+                        {{ imovel.vagas|default:"-" }}
+                    </div>
+                    <div class="h-14 flex items-center justify-center text-graphite border-t border-cinza-fundo">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase">Área:</span>
+                        {{ imovel.area_util|floatformat:0 }} m²
+                    </div>
+                    <div class="h-14 flex items-center justify-center font-serif text-2xl font-bold text-ouro border-t border-cinza-fundo bg-ouro/5 rounded-b-lg mt-2">
+                        <span class="md:hidden text-xs text-graphite/50 mr-2 uppercase font-sans">Valor:</span>
+                        {% if imovel.valor %}R$ {{ imovel.valor|intcomma }}{% else %}Sob Consulta{% endif %}
+                    </div>
+                    
+                    <div class="mt-8 text-center pt-6">
+                        <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="inline-block bg-marinho text-white font-medium px-8 py-3 rounded-xl shadow-md hover:bg-ouro transition-colors">
+                            Ver Imóvel
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-24 bg-white shadow-sm border border-cinza-claro rounded-3xl">
+            <svg class="w-16 h-16 text-cinza-claro mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <h3 class="font-serif text-3xl text-marinho-escuro mb-3">Nenhum imóvel selecionado</h3>
+            <p class="text-graphite/60 text-lg max-w-md mx-auto mb-10">
+                Selecione até 3 imóveis clicando no botão "Comparar" nas listas para analisá-los lado a lado.
+            </p>
+            <a href="{% url 'core:lista_imoveis' %}" class="inline-block bg-ouro text-marinho-escuro font-bold px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:bg-[#cba471] hover:text-white transition-all duration-300">
+                Explorar Imóveis
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+    function removerDaComparacao(id) {
+        let compareList = JSON.parse(localStorage.getItem('lotus_comparar') || '[]');
+        compareList = compareList.filter(item => item !== id);
+        localStorage.setItem('lotus_comparar', JSON.stringify(compareList));
+        
+        // Recarrega a página passando os IDs restantes
+        if (compareList.length > 0) {
+            window.location.href = "?ids=" + compareList.join(',');
+        } else {
+            window.location.href = "?ids=";
+        }
+    }
+
+    function limparComparacao() {
+        localStorage.removeItem('lotus_comparar');
+        window.location.href = "?ids=";
+    }
+</script>
+{% endblock %}

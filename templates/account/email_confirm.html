@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar E-mail - ImobGold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .auth-bg {
+            background: linear-gradient(135deg, #0A0F1C 0%, #1a2235 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="auth-bg min-h-screen flex items-center justify-center p-6 text-white font-sans selection:bg-[#C6A87C]">
+
+    <div class="glass-panel p-8 md:p-12 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden text-center">
+        <!-- Decorativo -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#C6A87C] rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+        <div class="relative z-10">
+            <a href="/" class="inline-block font-serif text-3xl font-bold tracking-wider mb-8">Imob<span class="text-[#C6A87C]">Gold</span></a>
+            
+            {% if confirmation %}
+                <h1 class="text-2xl font-bold mb-4">Confirmar E-mail</h1>
+                <p class="text-white/70 mb-8">
+                    Por favor, confirme que o e-mail <strong>{{ confirmation.email_address.email }}</strong> pertence a você.
+                </p>
+
+                <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-[#C6A87C] text-white font-bold py-3.5 rounded-xl hover:bg-[#b5966c] transition duration-300 shadow-[0_0_15px_rgba(198,168,124,0.3)]">
+                        Confirmar e Continuar
+                    </button>
+                </form>
+            {% else %}
+                <div class="w-20 h-20 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold mb-4">Link Inválido</h1>
+                <p class="text-white/70 mb-8">
+                    Este link de confirmação é inválido ou já expirou. 
+                </p>
+                <a href="{% url 'account_login' %}" class="inline-block text-[#C6A87C] hover:text-white transition font-medium">Ir para Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

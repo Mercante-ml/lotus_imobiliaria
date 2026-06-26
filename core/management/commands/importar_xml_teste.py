@@ -6,9 +6,10 @@ import logging
 from decimal import Decimal, InvalidOperation
 from django.core.management.base import BaseCommand
 from django.core.files.base import ContentFile
+from django.db import reset_queries
 from django.utils.text import slugify
 # Importe todos os modelos necessários
-from core.models import Imovel, ImagemImovel, Bairro, TipoImovel, Caracteristica
+from core.models import Imovel, ImagemImovel, Bairro, TipoImovel, Caracteristica, ConteudoPagina
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,79 @@ def get_text(element, tag, default=''):
         return default
     except AttributeError:
         return default
+
+def format_bairro_name(bairro_name):
+    if not bairro_name:
+        return ''
+        
+    # Expansões de abreviações comuns via Regex (case insensitive)
+    # \b garante que é uma palavra inteira (não vai substituir "Avenida" em "Boa Vista" se for "v", mas sim "Av " ou "Av. ")
+    subs = {
+        r'\b(?:str|st|st\.)\b': 'Setor',
+        r'\b(?:cond|cond\.)\b': 'Condomínio',
+        r'\b(?:res|res\.)\b': 'Residencial',
+        r'\b(?:pq|pq\.)\b': 'Parque',
+        r'\b(?:jd|jd\.)\b': 'Jardim',
+        r'\b(?:vl|vl\.)\b': 'Vila',
+        r'\b(?:av|av\.)\b': 'Avenida',
+        r'\b(?:ch|ch\.)\b': 'Chácara',
+        r'\b(?:faz|faz\.)\b': 'Fazenda',
+        r'\b(?:lote|lot\.)\b': 'Loteamento',
+    }
+    
+    name = bairro_name.strip()
+    for padrao, substituto in subs.items():
+        name = re.sub(padrao, substituto, name, flags=re.IGNORECASE)
+        
+    # Title Case com exceções (reutilizando a lógica da cidade)
+    exceptions = ['de', 'do', 'da', 'dos', 'das', 'e']
+    words = name.split()
+    formatted_words = []
+    for i, word in enumerate(words):
+        if i > 0 and word.lower() in exceptions:
+            formatted_words.append(word.lower())
+        else:
+            formatted_words.append(word.capitalize())
+            
+    return ' '.join(formatted_words)
+
+def format_city_name(city_name):
+    if not city_name:
+        return ''
+    exceptions = ['de', 'do', 'da', 'dos', 'das', 'e']
+    words = city_name.strip().split()
+    formatted_words = []
+    for i, word in enumerate(words):
+        if i > 0 and word.lower() in exceptions:
+            formatted_words.append(word.lower())
+        else:
+            formatted_words.append(word.capitalize())
+    return ' '.join(formatted_words)
+
+def traduzir_tipo_imovel(tipo_ingles):
+    if not tipo_ingles:
+        return 'Outros'
+    tipo = tipo_ingles.strip().lower()
+    mapa = {
+        'apartment': 'Apartamento',
+        'building': 'Prédio/Edifício',
+        'business': 'Ponto Comercial',
+        'condo': 'Casa de Condomínio',
+        'edificio comercial': 'Prédio Comercial',
+        'edificio residencial': 'Prédio Residencial',
+        'farm ranch': 'Chácara/Fazenda',
+        'flat': 'Flat',
+        'home': 'Casa',
+        'hotel': 'Hotel',
+        'industrial': 'Galpão/Industrial',
+        'land lot': 'Lote/Terreno',
+        'office': 'Sala Comercial',
+        'penthouse': 'Cobertura',
+        'sobrado': 'Sobrado',
+        'studio': 'Studio',
+        'village house': 'Casa de Vila'
+    }
+    return mapa.get(tipo, tipo_ingles.title())
 
 def get_decimal(element, tag, default=None):
     """ Pega um valor decimal, tratando erros. """
@@ -107,11 +181,19 @@ class Command(BaseCommand):
         try:
             tree = ET.parse(xml_file_path)
             root = tree.getroot()
+            listings = root.findall('.//Listing')
+            total_listings = len(listings)
 
             count_processed = 0 # Quantos imóveis nós importámos
             count_skipped = 0   # Quantos imóveis nós pulámos (offset)
+            
+            # Inicializa a barra de progresso no BD
+            ConteudoPagina.objects.update_or_create(
+                chave='status_importacao',
+                defaults={'titulo': 'rodando', 'subtitulo': f'0/{total_listings}'}
+            )
 
-            for listing in root.findall('.//Listing'):
+            for listing in listings:
 
                 # --- LÓGICA DO OFFSET ---
                 if count_skipped < offset:
@@ -166,16 +248,26 @@ class Command(BaseCommand):
                 usage_type = get_text(details, 'UsageType')
                 categoria = 'comercial' if usage_type and 'commercial' in usage_type.lower() else 'residencial'
 
-                # 5. Mapeamento de ForeignKeys (Bairro)
-                bairro_nome = get_text(location, 'Neighborhood')
+                endereco = get_text(location, 'Address')
+                if endereco:
+                    endereco = endereco[:255]
+                bairro_nome_raw = get_text(location, 'Neighborhood')
+                bairro_nome = format_bairro_name(bairro_nome_raw)
                 bairro, _ = Bairro.objects.get_or_create(nome=bairro_nome) if bairro_nome else (None, False)
+                
+                cidade_raw = get_text(location, 'City')
+                cidade = format_city_name(cidade_raw)
+                cidade = cidade[:100] if cidade else ''
+                state_node = location.find('State')
+                estado_raw = state_node.get('abbreviation') if state_node is not None else ''
+                estado = estado_raw.strip().upper()[:2] if estado_raw else ''
 
-                # 6. Mapeamento de 'TipoImovel'
+                # 6. Mapeamento de 'TipoImovel' (Com tradução e agrupamento)
                 property_type_raw = get_text(details, 'PropertyType')
-                tipo_nome = property_type_raw
-                if '/' in property_type_raw:
-                    partes = property_type_raw.split('/')
-                    tipo_nome = partes[-1].strip()
+                if property_type_raw and '/' in property_type_raw:
+                    property_type_raw = property_type_raw.split('/')[-1].strip()
+                
+                tipo_nome = traduzir_tipo_imovel(property_type_raw)
 
                 tipo_imovel, _ = TipoImovel.objects.get_or_create(nome=tipo_nome, defaults={'slug': slugify(tipo_nome)}) if tipo_nome and tipo_nome.strip() else (None, False)
 
@@ -183,6 +275,7 @@ class Command(BaseCommand):
                 imovel, created = Imovel.objects.update_or_create(
                     titulo=titulo, # Assumindo título como chave única para testes
                     defaults={
+                        'titulo': titulo[:255] if titulo else '',
                         'descricao': descricao,
                         'valor': valor,
                         'taxa_condominio': taxa_condominio,
@@ -196,6 +289,9 @@ class Command(BaseCommand):
                         'finalidade': finalidade, # Salva a finalidade (forçada ou não)
                         'categoria': categoria,
                         'bairro': bairro,
+                        'endereco': endereco,
+                        'cidade': cidade,
+                        'estado': estado,
                         'tipo_imovel': tipo_imovel,
                         'em_destaque': em_destaque_default # Salva o destaque
                     }
@@ -213,7 +309,12 @@ class Command(BaseCommand):
 
                 # 8. O "HACK" DAS IMAGENS (Download e Salvamento Local)
                 media = listing.find('Media')
-                if media is not None:
+                
+                # OTIMIZAÇÃO: Só deleta e baixa fotos se o imóvel for NOVO, não tiver foto principal, ou tiver menos de 9 secundárias.
+                # Se for atualização e já tiver 10 fotos totais, pula o download.
+                needs_images = created or not imovel.imagem_principal or imovel.imagens_secundarias.count() < 9
+                
+                if media is not None and needs_images:
                     if not created:
                         ImagemImovel.objects.filter(imovel=imovel).delete()
                         if imovel.imagem_principal:
@@ -233,8 +334,11 @@ class Command(BaseCommand):
                             except Exception as e:
                                 self.stdout.write(self.style.WARNING(f'  > Falha ao descarregar imagem principal: {e}'))
 
-                    # Imagens Secundárias (Galeria)
+                    # Imagens Secundárias (Galeria) - LIMITADO A 9 PARA ACELERAR A IMPORTAÇÃO (Total 10 com a principal)
+                    images_downloaded = 0
                     for item in media.findall('Item[@medium="image"]'):
+                        if images_downloaded >= 9:
+                            break
                         if item.get('primary') == 'true': continue
                         image_url = item.text.strip() if item.text else None
                         if image_url:
@@ -244,11 +348,29 @@ class Command(BaseCommand):
                                     file_name = image_url.split('/')[-1]
                                     img_obj = ImagemImovel(imovel=imovel)
                                     img_obj.imagem.save(file_name, ContentFile(response.content), save=True)
+                                    images_downloaded += 1
                             except Exception as e:
                                 self.stdout.write(self.style.WARNING(f'  > Falha ao descarregar imagem da galeria: {e}'))
 
                 count_processed += 1
                 
+                # Atualiza a barra de progresso no BD a cada imóvel
+                if count_processed % 5 == 0:
+                    ConteudoPagina.objects.update_or_create(
+                        chave='status_importacao',
+                        defaults={'subtitulo': f'{count_processed}/{total_listings}'}
+                    )
+                
+                # OTIMIZAÇÃO: Limpa o histórico de queries a cada 50 imóveis para evitar Memory Leak quando DEBUG=True
+                if count_processed % 50 == 0:
+                    reset_queries()
+                
+            # Finaliza a barra de progresso no BD
+            ConteudoPagina.objects.update_or_create(
+                chave='status_importacao',
+                defaults={'titulo': 'concluido', 'subtitulo': f'{count_processed}/{total_listings}'}
+            )
+            
             self.stdout.write(self.style.SUCCESS(f'\nImportação concluída. {count_processed} imóveis processados. ({count_skipped} imóveis pulados).'))
 
         except ET.ParseError as e:
@@ -256,5 +378,6 @@ class Command(BaseCommand):
         except FileNotFoundError:
             self.stdout.write(self.style.ERROR(f'Erro: Ficheiro não encontrado em "{xml_file_path}". Tem a certeza que ele está no sítio certo (raiz do projeto)?'))
         except Exception as e:
+            ConteudoPagina.objects.update_or_create(chave='status_importacao', defaults={'titulo': 'erro'})
             self.stdout.write(self.style.ERROR(f'Ocorreu um erro inesperado: {e}'))
             logger.exception('Erro inesperado na importação de XML:')

@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Política de Privacidade - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="bg-marinho-escuro text-white pt-24 pb-16 relative overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="{% static 'core/images/hero_premium.png' %}" alt="Background" class="w-full h-full object-cover opacity-20 mix-blend-overlay">
+        <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro via-transparent to-transparent"></div>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-center font-medium mb-6">Política de Privacidade</h1>
+        <p class="text-ouro text-center font-medium text-lg tracking-widest uppercase">Lotus Imobiliária</p>
+    </div>
+</section>
+
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-6 max-w-4xl">
+        <div class="prose prose-lg text-graphite/80 max-w-none">
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">1. Informações que Coletamos</h2>
+            <p class="mb-6">Quando você utiliza nossa plataforma ou faz login utilizando provedores externos (como Google ou Facebook), podemos coletar informações pessoais como seu nome, endereço de e-mail e foto de perfil, fornecidas por essas plataformas, bem como dados que você fornece voluntariamente em nosso portal.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">2. Como Usamos as Informações</h2>
+            <p class="mb-6">As informações coletadas são utilizadas exclusivamente para personalizar a sua experiência, permitir que você salve imóveis favoritos, gerenciar suas configurações de conta e entrar em contato caso haja interesse explícito em nossos imóveis.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">3. Proteção e Segurança</h2>
+            <p class="mb-6">Adotamos medidas de segurança padrão da indústria para proteger as suas informações contra acessos não autorizados. Seus dados de login via redes sociais são autenticados através do protocolo seguro OAuth e não armazenamos as suas senhas de plataformas de terceiros.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">4. Exclusão de Dados</h2>
+            <p class="mb-6">Você tem o direito de solicitar a exclusão da sua conta e de todos os dados associados a qualquer momento. Para exercer este direito, entre em contato através dos canais de suporte indicados no site.</p>
+            
+            <p class="text-sm mt-12 text-marinho-claro font-medium">Última atualização: Junho de 2026.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

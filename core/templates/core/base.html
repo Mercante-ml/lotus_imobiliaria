@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>{% block title %}Lotus Imobiliária{% endblock %}</title>
+    <title>{% block title %}{{ request.tenant.nome|default:"Lotus Imobiliária" }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'core/img/favicon.png' %}">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -18,8 +19,8 @@
             theme: {
                 extend: {
                     colors: {
-                        'marinho': '#142048',
-                        'marinho-claro': '#293769',
+                        'marinho': '{{ request.tenant.cor_primaria|default:"#142048" }}',
+                        'marinho-claro': '{{ request.tenant.cor_primaria|default:"#293769" }}',
                         'marinho-escuro': '#0F1733',
                         'ouro': '#B48C5A',
                         'cinza-fundo': '#F4F6F9',
@@ -58,15 +59,20 @@
 
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            
-            <a href="{% url 'core:index' %}" class="flex-shrink-0">
-                <img src="{% static 'core/images/logo_lotus.png' %}" alt="Lotus Imobiliária Logo" class="h-[60px] w-auto">
+            <a href="{% url 'core:index' %}" class="flex-shrink-0 flex items-center gap-2">
+                {% if request.tenant.logo %}
+                    <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.nome }} Logo" class="h-[60px] w-auto">
+                {% else %}
+                    <div class="font-serif text-2xl font-bold tracking-wider text-marinho">
+                        {{ request.tenant.nome|default:"Lotus" }}
+                    </div>
+                {% endif %}
             </a>
-            
             <div class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'core:lista_imoveis' %}" class="text-marinho hover:text-ouro transition duration-300">Imóveis</a>
                 <a href="{% url 'core:sobre' %}" class="text-marinho hover:text-ouro transition duration-300">Sobre Nós</a>
-                <a href="{% url 'core:lista_corretores' %}" class="text-marinho hover:text-ouro transition duration-300">Equipa</a>
+                <a href="{% url 'core:lista_blog' %}" class="text-marinho hover:text-ouro transition duration-300">Blog</a>
+                <a href="{% url 'core:lista_corretores' %}" class="text-marinho hover:text-ouro transition duration-300">Equipe</a>
                 <a href="{% url 'core:contato' %}" class="text-marinho hover:text-ouro transition duration-300">Contato</a>
             </div>
             
@@ -107,20 +113,104 @@
                 </a>
                 {% endif %}
             </div>
-            <button class="md:hidden text-marinho">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+            <button id="mobile-menu-toggle" class="md:hidden text-marinho relative z-50 p-2">
+                <svg id="icon-menu" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 absolute top-2 left-2 hidden transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </nav>
     </header>
 
+    <!-- MENU MOBILE (FORA DO HEADER) -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-white transform translate-x-full transition-transform duration-300 md:hidden pt-28 overflow-y-auto shadow-2xl">
+        <div class="flex flex-col space-y-6 px-8 py-4">
+            <a href="{% url 'core:lista_imoveis' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Imóveis</a>
+            <a href="{% url 'core:sobre' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Sobre Nós</a>
+            <a href="{% url 'core:lista_corretores' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Equipe</a>
+            <a href="{% url 'core:contato' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Contato</a>
+            
+            <div class="mt-8 pt-6 flex flex-col space-y-5 pb-12">
+                <a href="#" id="link-favoritos-mobile" class="flex items-center text-marinho text-xl font-medium hover:text-ouro transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-4 text-ouro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    Meus Favoritos
+                </a>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'core:minha_conta' %}" class="text-graphite text-xl font-medium hover:text-marinho transition-colors">Minha Conta</a>
+                    <a href="{% url 'account_logout' %}" class="text-red-600 text-xl font-medium mt-4 border-t border-cinza-claro pt-4">Sair da Conta</a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="text-graphite text-xl font-medium hover:text-marinho transition-colors mt-2">Fazer Login</a>
+                    <a href="{% url 'account_signup' %}" class="bg-ouro text-white text-center font-medium px-6 py-4 rounded-xl mt-6 shadow-[0_4px_14px_0_rgba(180,140,90,0.39)] hover:bg-[#cba471] transition-colors">Criar uma Conta</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-marinho-escuro text-cinza-claro/70">
-        <div class="container mx-auto px-6 py-16"> ... </div>
+    <!-- BARRA FLUTUANTE DE COMPARAÇÃO -->
+    <div id="barra-comparacao" class="fixed bottom-0 left-0 w-full bg-marinho-escuro/95 backdrop-blur-md border-t border-ouro/30 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform translate-y-full transition-transform duration-500 z-50">
+        <div class="container mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-white">
+                <span class="font-serif text-xl sm:text-2xl font-bold text-ouro mr-3" id="comparacao-count">0</span>
+                <span class="text-sm uppercase tracking-widest text-white/80">Imóveis Selecionados</span>
+                <p class="text-xs text-white/50 mt-1 hidden sm:block">Selecione até 3 propriedades para analisar lado a lado.</p>
+            </div>
+            <div class="flex gap-3 w-full sm:w-auto">
+                <button onclick="limparListaComparacao()" class="px-4 py-3 text-white/60 text-sm font-medium hover:text-white transition-colors">
+                    Limpar
+                </button>
+                <button onclick="irParaComparacao()" class="flex-1 sm:flex-none bg-ouro text-marinho-escuro font-bold px-8 py-3 rounded-xl shadow-lg hover:bg-[#cba471] hover:shadow-xl transition-all duration-300">
+                    Comparar Agora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-[#0a0f24] text-cinza-claro/70 border-t border-white/10">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="md:col-span-1">
+                    <img src="{% static 'core/images/logo_lotus.png' %}" alt="Lotus Imobiliária Logo" class="h-12 w-auto mb-4 opacity-90">
+                    <p class="text-sm text-cinza-claro/70">Elegância e clareza na busca pelo imóvel extraordinário.</p>
+                </div>
+                <div>
+                    <h3 class="text-white font-serif font-bold text-lg mb-4">Navegação</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'core:index' %}" class="hover:text-ouro transition-colors">Início</a></li>
+                        <li><a href="{% url 'core:lista_imoveis' %}" class="hover:text-ouro transition-colors">Imóveis</a></li>
+                        <li><a href="{% url 'core:lista_blog' %}" class="hover:text-ouro transition-colors">Blog</a></li>
+                        <li><a href="{% url 'core:sobre' %}" class="hover:text-ouro transition-colors">Sobre Nós</a></li>
+                        <li><a href="{% url 'core:contato' %}" class="hover:text-ouro transition-colors">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-serif font-bold text-lg mb-4">Legal</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'core:termos_uso' %}" class="hover:text-ouro transition-colors">Termos de Uso</a></li>
+                        <li><a href="{% url 'core:politica_privacidade' %}" class="hover:text-ouro transition-colors">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-serif font-bold text-lg mb-4">Contato</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li>contato@dsprime.com</li>
+                        <li>(62) 98318-8400</li>
+                        <li>Goiânia - GO</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 mt-12 pt-8 text-center text-sm">
+                <p>&copy; 2026 Lotus Imobiliária. Todos os direitos reservados.</p>
+            </div>
+        </div>
     </footer>
 
     {% block extra_js %}{% endblock %}
@@ -160,6 +250,11 @@
 
         // --- Função Principal de Clique ---
         async function handleFavoriteClick(button) {
+            if (!IS_LOGGED_IN) {
+                window.location.href = "{% url 'account_login' %}?next=" + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+            
             const imovelId = button.dataset.imovelId;
             let favorites = getLocalFavorites();
             const index = favorites.indexOf(imovelId);
@@ -198,6 +293,7 @@
                 }
             }
         }
+        window.handleFavoriteClick = handleFavoriteClick;
 
         // --- Event Listeners ---
         document.body.addEventListener('click', function(e) {
@@ -215,17 +311,28 @@
                 // Se logado, vai para a URL base (a view vai ler do perfil)
                 window.location.href = "{% url 'core:favoritos' %}";
             } else {
-                // Se anônimo, constrói a URL com os IDs (método antigo)
-                const favorites = getLocalFavorites();
-                let url = "{% url 'core:favoritos' %}";
-                if (favorites.length > 0) {
-                    url += `?ids=${favorites.join(',')}`;
-                }
-                window.location.href = url;
+                // Se anônimo, redireciona para login
+                window.location.href = "{% url 'account_login' %}?next={% url 'core:favoritos' %}";
             }
         }
         document.getElementById('link-favoritos-header')?.addEventListener('click', goToFavorites);
         document.getElementById('link-favoritos-dropdown')?.addEventListener('click', goToFavorites);
+        document.getElementById('link-favoritos-mobile')?.addEventListener('click', goToFavorites);
+
+        // --- Toggle Menu Mobile ---
+        const btnToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const iconMenu = document.getElementById('icon-menu');
+        const iconClose = document.getElementById('icon-close');
+
+        if (btnToggle && mobileMenu) {
+            btnToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('translate-x-full');
+                iconMenu.classList.toggle('hidden');
+                iconClose.classList.toggle('hidden');
+                document.body.classList.toggle('overflow-hidden'); // Evita scroll do body quando menu aberto
+            });
+        }
 
         // --- Inicialização ---
         
@@ -252,6 +359,76 @@
                 button.classList.remove('ativo');
             }
         });
+
+        // --- LÓGICA DO COMPARADOR ---
+        const COMPARE_KEY = 'lotus_comparar';
+        const barraComparacao = document.getElementById('barra-comparacao');
+        const comparacaoCount = document.getElementById('comparacao-count');
+        const maxCompare = 3;
+
+        function getCompareList() {
+            return JSON.parse(localStorage.getItem(COMPARE_KEY) || '[]');
+        }
+
+        function saveCompareList(list) {
+            localStorage.setItem(COMPARE_KEY, JSON.stringify(list));
+            updateCompareUI();
+        }
+
+        function updateCompareUI() {
+            const list = getCompareList();
+            
+            // Atualiza botões
+            document.querySelectorAll('.btn-comparar').forEach(button => {
+                const id = button.dataset.imovelId;
+                if (list.includes(id)) {
+                    button.classList.add('ativo', 'bg-ouro', 'text-white', 'border-ouro');
+                    button.classList.remove('bg-white', 'text-marinho', 'border-cinza-claro');
+                    button.innerHTML = '<span class="mr-2">✓</span> Selecionado';
+                } else {
+                    button.classList.remove('ativo', 'bg-ouro', 'text-white', 'border-ouro');
+                    button.classList.add('bg-white', 'text-marinho', 'border-cinza-claro');
+                    button.innerHTML = '+ Comparar';
+                }
+            });
+
+            // Atualiza barra flutuante
+            if (list.length > 0) {
+                if(comparacaoCount) comparacaoCount.textContent = list.length;
+                if(barraComparacao) barraComparacao.classList.remove('translate-y-full');
+            } else {
+                if(barraComparacao) barraComparacao.classList.add('translate-y-full');
+            }
+        }
+
+        window.toggleCompare = function(button) {
+            const id = button.dataset.imovelId;
+            let list = getCompareList();
+            
+            if (list.includes(id)) {
+                list = list.filter(item => item !== id);
+            } else {
+                if (list.length >= maxCompare) {
+                    alert('Você pode selecionar no máximo 3 imóveis para comparar.');
+                    return;
+                }
+                list.push(id);
+            }
+            saveCompareList(list);
+        };
+
+        window.limparListaComparacao = function() {
+            saveCompareList([]);
+        };
+
+        window.irParaComparacao = function() {
+            const list = getCompareList();
+            if (list.length === 0) return;
+            window.location.href = "{% url 'core:comparar' %}?ids=" + list.join(',');
+        };
+
+        // Inicializa UI do comparador ao carregar
+        updateCompareUI();
     });
     </script>
     </body>

@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImobGold SaaS - Plataforma para Imobiliárias de Alto Padrão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0A0F1C',
+                            light: '#F8FAFC',
+                            gold: '#C6A87C',
+                            goldlight: '#E2CDAA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #C6A87C 0%, #E2CDAA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-white antialiased selection:bg-brand-gold selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass border-b border-white/10">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                <span class="font-serif text-2xl font-bold tracking-wider">Imob<span class="text-brand-gold">Gold</span></span>
+            </div>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-white/80">
+                <a href="#recursos" class="hover:text-brand-gold transition">Recursos</a>
+                <a href="#diferencial" class="hover:text-brand-gold transition">Diferencial</a>
+                <a href="#planos" class="hover:text-brand-gold transition">Planos</a>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'account_login' %}" class="px-6 py-2.5 text-white font-medium hover:text-brand-gold transition duration-300">Entrar</a>
+                <a href="{% url 'account_signup' %}" class="px-6 py-2.5 bg-white text-brand-dark font-bold text-sm rounded-full hover:bg-brand-gold transition duration-300">Criar Conta</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-gold/10 rounded-full blur-[100px]"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-900/20 rounded-full blur-[100px]"></div>
+        </div>
+        
+        <div class="container mx-auto px-6 relative z-10 text-center max-w-5xl">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-gold/30 bg-brand-gold/10 mb-8">
+                <span class="w-2 h-2 rounded-full bg-brand-gold animate-pulse"></span>
+                <span class="text-brand-gold text-xs font-bold uppercase tracking-widest">O Fim dos Sites Engessados</span>
+            </div>
+            
+            <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl font-medium leading-tight mb-8">
+                A vitrine digital que faz seus imóveis parecerem <span class="gradient-text italic">ainda mais caros.</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+                Esqueça templates de 2010. Construímos a plataforma PropTech definitiva para imobiliárias de alto padrão, combinando estética de luxo, importação de XML automatizada e captação invisível de leads.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{% url 'account_signup' %}" class="px-8 py-4 bg-brand-gold text-white rounded-full font-bold shadow-[0_0_20px_rgba(198,168,124,0.4)] hover:shadow-[0_0_30px_rgba(198,168,124,0.6)] transition-all transform hover:-translate-y-1">
+                    Comece Grátis
+                </a>
+                <a href="#planos" class="px-8 py-4 bg-transparent border border-white/20 rounded-full font-bold hover:bg-white/5 transition-all">
+                    Ver Planos
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problema vs Solução -->
+    <section id="diferencial" class="py-24 bg-black/30 border-y border-white/5">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="font-serif text-4xl md:text-5xl font-medium mb-4">Por que mudar de plataforma?</h2>
+                <p class="text-white/60 text-lg">Os softwares tradicionais tratam imóveis de R$ 5 milhões como puxadinhos.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Problema -->
+                <div class="glass p-10 rounded-3xl border-red-500/20">
+                    <h3 class="text-red-400 font-bold text-xl mb-6 flex items-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Plataformas Tradicionais
+                    </h3>
+                    <ul class="space-y-4 text-white/70">
+                        <li class="flex items-start gap-3"><span class="text-red-500 mt-1">✗</span> Design quadrado e genérico dos anos 2010.</li>
+                        <li class="flex items-start gap-3"><span class="text-red-500 mt-1">✗</span> Lentos e pesados (prejudica o ranqueamento no Google).</li>
+                        <li class="flex items-start gap-3"><span class="text-red-500 mt-1">✗</span> Cliente não acha o imóvel e fecha o site (Lead perdido).</li>
+                        <li class="flex items-start gap-3"><span class="text-red-500 mt-1">✗</span> Menus confusos para o cliente de alto poder aquisitivo.</li>
+                    </ul>
+                </div>
+                
+                <!-- Solução -->
+                <div class="bg-gradient-to-br from-brand-gold/20 to-transparent p-[1px] rounded-3xl">
+                    <div class="bg-brand-dark p-10 rounded-3xl h-full">
+                        <h3 class="text-brand-gold font-bold text-xl mb-6 flex items-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            ImobGold SaaS
+                        </h3>
+                        <ul class="space-y-4 text-white/90">
+                            <li class="flex items-start gap-3"><span class="text-brand-gold mt-1">✓</span> Estética de grife imobiliária focada em alta conversão.</li>
+                            <li class="flex items-start gap-3"><span class="text-brand-gold mt-1">✓</span> Código ultra rápido (SEO otimizado).</li>
+                            <li class="flex items-start gap-3"><span class="text-brand-gold mt-1">✓</span> "Me avise quando chegar": transforma buscas vazias em leads quentes.</li>
+                            <li class="flex items-start gap-3"><span class="text-brand-gold mt-1">✓</span> Tradução de links complexos para o idioma do cliente.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="recursos" class="py-24">
+        <div class="container mx-auto px-6 max-w-6xl">
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Feature 1 -->
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                        <svg class="w-7 h-7 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3">Sync XML Automático</h4>
+                    <p class="text-white/60 text-sm leading-relaxed">Não digite anúncios duas vezes. Conectamos com InGaia, Vista e outros CRMs via XML. Sincronização diária em background e até 10 fotos HD por imóvel.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                        <svg class="w-7 h-7 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3">Captador de Leads Invisível</h4>
+                    <p class="text-white/60 text-sm leading-relaxed">O cliente não achou o imóvel exato? O sistema capta o contato dele automaticamente e avisa quando um imóvel similar for sincronizado.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass p-8 rounded-3xl hover:-translate-y-2 transition-transform duration-300">
+                    <div class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                        <svg class="w-7 h-7 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3">Experiência "Minha Conta"</h4>
+                    <p class="text-white/60 text-sm leading-relaxed">Seus clientes podem salvar favoritos, criar alertas inteligentes de bairros e comparar até 3 imóveis lado a lado em uma interface luxuosa.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Planos e Preços -->
+    <section id="planos" class="py-24 bg-black/40">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="text-center mb-16">
+                <h2 class="font-serif text-4xl md:text-5xl font-medium mb-4">Invista na sua Vitrine</h2>
+                <p class="text-white/60 text-lg">Modelos de assinatura transparentes para imobiliárias e corretores autônomos.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Plano Boutique -->
+                <div class="glass p-8 md:p-10 rounded-3xl flex flex-col">
+                    <h3 class="text-2xl font-bold mb-2">Boutique</h3>
+                    <p class="text-white/50 text-sm mb-6">Para corretores de luxo autônomos.</p>
+                    <div class="mb-8">
+                        <span class="text-5xl font-serif font-medium">R$ 497</span><span class="text-white/50"> / mês</span>
+                    </div>
+                    <ul class="space-y-4 text-sm text-white/80 flex-1 mb-8">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Site de Alto Padrão (Tema Gold)</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Até 500 Imóveis</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Cadastro Manual de Imóveis</li>
+                        <li class="flex items-center gap-3 text-white/30"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Sincronização XML Automática</li>
+                    </ul>
+                    <a href="#" class="block w-full py-4 text-center rounded-xl border border-white/20 font-bold hover:bg-white/10 transition">Assinar Boutique</a>
+                </div>
+
+                <!-- Plano Premium -->
+                <div class="bg-gradient-to-b from-brand-gold/20 to-transparent p-[1px] rounded-3xl relative transform md:-translate-y-4">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-brand-gold text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 rounded-full z-10">Mais Escolhido</div>
+                    <div class="bg-[#10162A] p-8 md:p-10 rounded-3xl flex flex-col h-full shadow-2xl">
+                        <h3 class="text-2xl font-bold mb-2 gradient-text">Corporate</h3>
+                        <p class="text-white/50 text-sm mb-6">Para imobiliárias que usam CRMs.</p>
+                        <div class="mb-8">
+                            <span class="text-5xl font-serif font-medium">R$ 897</span><span class="text-white/50"> / mês</span>
+                        </div>
+                        <ul class="space-y-4 text-sm text-white/80 flex-1 mb-8">
+                            <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tudo do plano Boutique</li>
+                            <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Imóveis Ilimitados</li>
+                            <li class="flex items-center gap-3 font-bold text-white"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Sincronização XML Diária</li>
+                            <li class="flex items-center gap-3 font-bold text-white"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Motor de Automação de E-mails</li>
+                        </ul>
+                        <a href="#" class="block w-full py-4 text-center rounded-xl bg-brand-gold text-white font-bold hover:bg-[#cba471] hover:shadow-[0_0_20px_rgba(198,168,124,0.4)] transition-all">Assinar Corporate</a>
+                    </div>
+                </div>
+
+            </div>
+            <p class="text-center text-white/40 text-sm mt-8">* Taxa de setup (Onboarding + Customização de Cores e Logo): R$ 1.990 (pagamento único)</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-12 text-center text-white/40 text-sm">
+        <p>&copy; 2026 ImobGold PropTech. Todos os direitos reservados.</p>
+    </footer>
+
+</body>
+</html>

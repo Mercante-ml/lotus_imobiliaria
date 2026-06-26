@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Termos de Uso - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="bg-marinho-escuro text-white pt-24 pb-16 relative overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="{% static 'core/images/hero_premium.png' %}" alt="Background" class="w-full h-full object-cover opacity-20 mix-blend-overlay">
+        <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro via-transparent to-transparent"></div>
+    </div>
+    <div class="container mx-auto px-6 relative z-10">
+        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-center font-medium mb-6">Termos de Uso</h1>
+        <p class="text-ouro text-center font-medium text-lg tracking-widest uppercase">Lotus Imobiliária</p>
+    </div>
+</section>
+
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-6 max-w-4xl">
+        <div class="prose prose-lg text-graphite/80 max-w-none">
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">1. Aceitação dos Termos</h2>
+            <p class="mb-6">Ao acessar ou utilizar a plataforma da Lotus Imobiliária (imob.dsprime.org), bem como ao realizar o cadastro através de redes sociais ou e-mail, você concorda com estes Termos de Uso. Caso não concorde, por favor, não utilize a plataforma.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">2. Uso da Plataforma</h2>
+            <p class="mb-6">A plataforma destina-se a facilitar a pesquisa, visualização e o gerenciamento de imóveis de interesse do usuário. O usuário compromete-se a não utilizar as ferramentas disponíveis para fins ilícitos ou de forma que prejudique a estabilidade do sistema.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">3. Informações dos Imóveis</h2>
+            <p class="mb-6">Fazemos o possível para garantir que todas as informações sobre os imóveis (valores, metragens, características) estejam precisas e atualizadas. No entanto, essas informações estão sujeitas a alterações sem aviso prévio e devem ser confirmadas no momento da negociação.</p>
+            
+            <h2 class="text-2xl font-serif text-marinho-escuro mb-4">4. Propriedade Intelectual</h2>
+            <p class="mb-6">Todo o conteúdo, logotipo, design e imagens presentes neste portal são de propriedade da Lotus Imobiliária ou de terceiros licenciadores, sendo proibida a sua reprodução total ou parcial sem autorização expressa.</p>
+            
+            <p class="text-sm mt-12 text-marinho-claro font-medium">Última atualização: Junho de 2026.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

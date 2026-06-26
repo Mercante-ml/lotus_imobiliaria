@@ -20,171 +20,162 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-12">
 
-            <aside class="lg:col-span-1 bg-white p-6 rounded-lg shadow-xl sticky top-28 h-fit">
-                <form action="{% url 'core:lista_imoveis' %}" method="GET">
+            <!-- SIDEBAR STICKY AVANÇADA -->
+            <aside class="lg:col-span-1 bg-white rounded-3xl shadow-lg border border-cinza-claro/80 lg:sticky lg:top-28 lg:h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
+                
+                <!-- HEADER E MOBILE TOGGLE -->
+                <div class="p-6 lg:p-8 lg:pb-6 flex-none border-b border-cinza-claro/30">
+                    <button type="button" id="btn-toggle-filtros" class="w-full flex items-center justify-between lg:hidden font-serif text-2xl text-marinho-escuro font-bold">
+                        <span class="flex items-center gap-3">
+                            <svg class="w-6 h-6 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            Filtros
+                        </span>
+                        <svg id="icone-toggle-filtros" class="w-6 h-6 text-marinho-claro transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
                     
-                    <h2 class="font-serif text-2xl text-marinho font-bold mb-6">Filtrar Imóveis</h2>
-
-                    <div class="space-y-3 mb-8">
-                        <button type="submit" 
-                                class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
-                            Filtrar Imóveis
-                        </button>
+                    <div class="hidden lg:flex justify-between items-center">
+                        <h2 class="font-serif text-2xl text-marinho-escuro font-bold flex items-center gap-3">
+                            <svg class="w-6 h-6 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            Filtros
+                        </h2>
                         <a href="{% url 'core:lista_imoveis' %}?finalidade={{ filtros_aplicados.finalidade|default:'lancamento' }}" 
-                           class="block text-center w-full text-marinho font-medium px-5 py-2 rounded-lg hover:bg-marinho-claro/20 transition duration-300 text-sm">
-                            Limpar Filtros
+                           class="text-xs font-bold uppercase tracking-[0.1em] text-marinho-claro hover:text-ouro transition-colors">
+                            Limpar
                         </a>
                     </div>
+                </div>
 
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-graphite mb-3">Finalidade</label>
-                        <input type="hidden" name="finalidade" id="id_finalidade" value="{{ filtros_aplicados.finalidade|default:'lancamento' }}">
+                <div id="container-filtros" class="hidden lg:flex flex-col flex-1 overflow-hidden">
+                    <form action="{% url 'core:lista_imoveis' %}" method="GET" class="flex flex-col h-full" id="form-filtros">
+                        <!-- Hidden inputs para manter o estado dos botões -->
+                        {% if filtros_aplicados.quartos %}<input type="hidden" name="quartos" value="{{ filtros_aplicados.quartos }}" id="hidden-quartos">{% endif %}
+                        {% if filtros_aplicados.banheiros %}<input type="hidden" name="banheiros" value="{{ filtros_aplicados.banheiros }}" id="hidden-banheiros">{% endif %}
+                        {% if filtros_aplicados.vagas %}<input type="hidden" name="vagas" value="{{ filtros_aplicados.vagas }}" id="hidden-vagas">{% endif %}
+
+                        <div class="flex-1 overflow-y-auto px-6 lg:px-8 py-6 custom-scrollbar">
+
+                            <!-- Finalidade -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Finalidade</label>
+                                <input type="hidden" name="finalidade" id="hidden-finalidade" value="{{ filtros_aplicados.finalidade|default:'lancamento' }}">
+                                <div class="flex space-x-2 p-1 bg-cinza-fundo rounded-xl" role="tablist">
+                                    <button type="button" name="finalidade" value="lancamento" class="btn-filtro flex-1 text-center px-4 py-3 text-sm font-medium rounded-lg transition-all {% if filtros_aplicados.finalidade == 'lancamento' or not filtros_aplicados.finalidade %}bg-white text-marinho shadow-sm border border-cinza-claro{% else %}text-graphite/60 hover:text-marinho hover:bg-white/50{% endif %}">
+                                        Lançamentos
+                                    </button>
+                                    <button type="button" name="finalidade" value="revenda" class="btn-filtro flex-1 text-center px-4 py-3 text-sm font-medium rounded-lg transition-all {% if filtros_aplicados.finalidade == 'revenda' %}bg-white text-marinho shadow-sm border border-cinza-claro{% else %}text-graphite/60 hover:text-marinho hover:bg-white/50{% endif %}">
+                                        Revenda
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bairro com Busca -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Bairro</label>
+                                <div class="relative mb-3">
+                                    <input type="text" id="bairro-search" placeholder="Buscar bairro..." 
+                                           class="block w-full p-3 pl-10 text-sm text-graphite bg-cinza-fundo border border-cinza-claro rounded-xl focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/20 transition-all">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="w-4 h-4 text-marinho-claro" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {% if bairros_selecionados_objs %}
+                                <div class="mb-4 flex flex-wrap gap-2">
+                                    {% for b_obj in bairros_selecionados_objs %}
+                                        <button type="button" class="btn-remove-bairro flex items-center gap-1 bg-ouro/10 text-ouro px-3 py-1.5 rounded-full text-xs font-medium hover:bg-ouro hover:text-white transition-colors" data-bairro-id="{{ b_obj.id }}">
+                                            {{ b_obj.nome }}
+                                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <div class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar" id="bairro-list">
+                                    {% for b in bairros %}
+                                    <label class="flex items-center text-graphite/80 hover:text-marinho cursor-pointer group bairro-item">
+                                        <div class="relative flex items-center">
+                                            <input type="checkbox" name="bairro" value="{{ b.id }}" 
+                                                   {% if b.id|stringformat:"s" in bairro_selecionados %}checked{% endif %}
+                                                   class="peer w-5 h-5 rounded border-gray-300 text-ouro focus:ring-ouro/50 cursor-pointer">
+                                        </div>
+                                        <span class="ml-3 text-sm group-hover:font-medium transition-all bairro-nome">{{ b.nome }}</span>
+                                    </label>
+                                    {% endfor %}
+                                    <div id="bairro-empty-msg" class="hidden text-sm text-marinho-claro text-center py-4">Nenhum bairro encontrado.</div>
+                                </div>
+                            </div>
+
+                            <!-- Tipo de Imóvel -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Tipo de Imóvel</label>
+                                <div class="space-y-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                    {% for tipo in tipos_imovel %}
+                                    <label class="flex items-center text-graphite/80 hover:text-marinho cursor-pointer group">
+                                        <div class="relative flex items-center">
+                                            <input type="checkbox" name="tipo_imovel" value="{{ tipo.slug }}" 
+                                                   {% if tipo.slug in filtros_aplicados.tipo_imovel %}checked{% endif %}
+                                                   class="peer w-5 h-5 rounded border-gray-300 text-ouro focus:ring-ouro/50 cursor-pointer">
+                                        </div>
+                                        <span class="ml-3 text-sm group-hover:font-medium transition-all">{{ tipo.nome }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Valores -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Preço (R$)</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" name="valor_min" placeholder="Mín." value="{{ filtros_aplicados.valor_min|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-cinza-fundo border border-cinza-claro rounded-xl focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/20">
+                                    <input type="number" name="valor_max" placeholder="Máx." value="{{ filtros_aplicados.valor_max|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-cinza-fundo border border-cinza-claro rounded-xl focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/20">
+                                </div>
+                            </div>
+                            
+                            <!-- Quartos -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Quartos</label>
+                                <div class="flex justify-between space-x-1">
+                                    {% for val in "1234"|make_list %}<button type="button" name="quartos" value="{{ val }}" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.quartos == val %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">{{ val }}</button>{% endfor %}
+                                    <button type="button" name="quartos" value="5+" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.quartos == '5+' %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">5+</button>
+                                </div>
+                            </div>
+
+                            <!-- Banheiros -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Banheiros</label>
+                                <div class="flex justify-between space-x-1">
+                                    {% for val in "1234"|make_list %}<button type="button" name="banheiros" value="{{ val }}" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.banheiros == val %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">{{ val }}</button>{% endfor %}
+                                    <button type="button" name="banheiros" value="5+" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.banheiros == '5+' %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">5+</button>
+                                </div>
+                            </div>
+
+                            <!-- Vagas -->
+                            <div class="mb-8">
+                                <label class="block text-xs font-bold uppercase tracking-[0.15em] text-marinho-claro mb-3">Vagas</label>
+                                <div class="flex justify-between space-x-1">
+                                    {% for val in "123"|make_list %}<button type="button" name="vagas" value="{{ val }}" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.vagas == val %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">{{ val }}</button>{% endfor %}
+                                    <button type="button" name="vagas" value="4+" class="btn-filtro w-10 h-10 rounded-lg border text-sm transition-all {% if filtros_aplicados.vagas == '4+' %}bg-ouro text-white border-ouro font-bold{% else %}border-cinza-claro bg-cinza-fundo text-graphite hover:bg-white{% endif %}">4+</button>
+                                </div>
+                            </div>
+
+                        </div> <!-- Fim da área scrollable -->
                         
-                        <div class="flex space-x-2" role="tablist">
-                            <button type="submit" name="finalidade" value="lancamento" 
-                                    class="flex-1 text-center px-4 py-2 text-sm font-semibold rounded-lg transition-colors
-                                    {% if filtros_aplicados.finalidade == 'lancamento' or not filtros_aplicados.finalidade %}
-                                        bg-ouro text-white shadow
-                                    {% else %}
-                                        bg-marinho-claro/20 text-marinho hover:bg-marinho-claro/40
-                                    {% endif %}">
-                                Lançamentos
+                        <!-- FOOTER STICKY: Botão de Aplicar -->
+                        <div class="p-6 lg:px-8 lg:py-6 flex-none bg-white border-t border-cinza-claro/50">
+                            <button type="submit" 
+                                    class="flex items-center justify-center w-full bg-ouro text-white font-bold px-5 py-4 rounded-xl shadow-[0_4px_14px_0_rgba(180,140,90,0.39)] hover:shadow-[0_6px_20px_rgba(180,140,90,0.23)] hover:bg-[#cba471] transition-all duration-300 transform hover:-translate-y-1">
+                                Aplicar Filtros
                             </button>
-                            <button type="submit" name="finalidade" value="revenda" 
-                                    class="flex-1 text-center px-4 py-2 text-sm font-semibold rounded-lg transition-colors
-                                    {% if filtros_aplicados.finalidade == 'revenda' %}
-                                        bg-ouro text-white shadow
-                                    {% else %}
-                                        bg-marinho-claro/20 text-marinho hover:bg-marinho-claro/40
-                                    {% endif %}">
-                                Revenda
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="bairro" class="block text-sm font-medium text-graphite mb-2">Bairro</label>
-                        <select id="bairro" name="bairro" class="block w-full p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                            <option value="">Todos os Bairros</option>
-                            {% for b in bairros %}
-                                <option value="{{ b.id }}" {% if filtros_aplicados.bairro == b.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ b.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-graphite mb-2">Tipo de Imóvel</label>
-                        <div class="space-y-2">
-                            {% for tipo in tipos_imovel %}
-                            <label class="flex items-center text-graphite/90">
-                                <input type="checkbox" name="tipo_imovel" value="{{ tipo.slug }}" 
-                                       {% if tipo.slug in filtros_aplicados.tipo_imovel %}checked{% endif %}
-                                       class="rounded text-ouro focus:ring-ouro/50">
-                                <span class="ml-2">{{ tipo.nome }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-graphite mb-2">Preço (R$)</label>
-                        <div class="flex space-x-2">
-                            <input type="number" name="valor_min" placeholder="Mín." value="{{ filtros_aplicados.valor_min|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                            <input type="number" name="valor_max" placeholder="Máx." value="{{ filtros_aplicados.valor_max|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-graphite mb-2">Condomínio (R$)</label>
-                        <div class="flex space-x-2">
-                            <input type="number" name="condominio_min" placeholder="Mín." value="{{ filtros_aplicados.condominio_min|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                            <input type="number" name="condominio_max" placeholder="Máx." value="{{ filtros_aplicados.condominio_max|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-graphite mb-2">IPTU (R$)</label>
-                        <div class="flex space-x-2">
-                            <input type="number" name="iptu_min" placeholder="Mín." value="{{ filtros_aplicados.iptu_min|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                            <input type="number" name="iptu_max" placeholder="Máx." value="{{ filtros_aplicados.iptu_max|default:'' }}" class="w-1/2 p-3 text-sm text-graphite bg-white border border-gray-400 rounded-lg focus:outline-none focus:border-ouro focus:ring-2 focus:ring-ouro/50">
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-graphite mb-2">Quartos</label>
-                        <div class="flex justify-between space-x-1">
-                            {% with val="1" %}
-                            <button type="submit" name="quartos" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.quartos == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="2" %}
-                            <button type="submit" name="quartos" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.quartos == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="3" %}
-                            <button type="submit" name="quartos" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.quartos == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="4" %}
-                            <button type="submit" name="quartos" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.quartos == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="5+" %}
-                            <button type="submit" name="quartos" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.quartos == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
                             
-                            <a href="{{ request.path }}?{% for key, value in request.GET.items %}{% if key != 'quartos' %}{{ key }}={{ value }}&{% endif %}{% endfor %}"
-                               class="w-10 h-10 rounded-lg border border-gray-300 text-gray-400 hover:bg-red-50 text-xs flex items-center justify-center" 
-                               title="Limpar filtro de quartos">X</a>
+                            <a href="{% url 'core:lista_imoveis' %}?finalidade={{ filtros_aplicados.finalidade|default:'lancamento' }}" 
+                               class="lg:hidden block text-center w-full text-marinho font-medium mt-3 px-5 py-3 rounded-xl hover:bg-marinho/5 transition duration-300 text-sm">
+                                Limpar Tudo
+                            </a>
                         </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-graphite mb-2">Banheiros</label>
-                        <div class="flex justify-between space-x-1">
-                            {% with val="1" %}
-                            <button type="submit" name="banheiros" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.banheiros == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="2" %}
-                            <button type="submit" name="banheiros" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.banheiros == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="3" %}
-                            <button type="submit" name="banheiros" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.banheiros == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="4" %}
-                            <button type="submit" name="banheiros" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.banheiros == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="5+" %}
-                            <button type="submit" name="banheiros" value="{{ val }}" class="w-10 h-10 rounded-lg border text-sm {% if filtros_aplicados.banheiros == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            
-                            <a href="{{ request.path }}?{% for key, value in request.GET.items %}{% if key != 'banheiros' %}{{ key }}={{ value }}&{% endif %}{% endfor %}"
-                               class="w-10 h-10 rounded-lg border border-gray-300 text-gray-400 hover:bg-red-50 text-xs flex items-center justify-center" 
-                               title="Limpar filtro de banheiros">X</a>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-graphite mb-2">Vagas</label>
-                        <div class="flex justify-between space-x-1">
-                            {% with val="1" %}
-                            <button type="submit" name="vagas" value="{{ val }}" class="flex-1 h-10 rounded-lg border text-sm {% if filtros_aplicados.vagas == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="2" %}
-                            <button type="submit" name="vagas" value="{{ val }}" class="flex-1 h-10 rounded-lg border text-sm {% if filtros_aplicados.vagas == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-                            {% with val="3+" %}
-                            <button type="submit" name="vagas" value="{{ val }}" class="flex-1 h-10 rounded-lg border text-sm {% if filtros_aplicados.vagas == val %}bg-ouro/20 border-ouro text-ouro font-bold{% else %}border-gray-400 text-graphite hover:bg-ouro/10{% endif %}">{{ val }}</button>
-                            {% endwith %}
-
-                            <a href="{{ request.path }}?{% for key, value in request.GET.items %}{% if key != 'vagas' %}{{ key }}={{ value }}&{% endif %}{% endfor %}"
-                               class="w-10 h-10 rounded-lg border border-gray-300 text-gray-400 hover:bg-red-50 text-xs flex items-center justify-center" 
-                               title="Limpar filtro de vagas">X</a>
-                        </div>
-                    </div>
-                    
-                </form>
+                    </form>
+                </div>
             </aside>
 
             <main class="lg:col-span-3">
@@ -200,7 +191,7 @@
                             </a>
                         {% endif %}
 
-                        {% for page_num in page_obj.paginator.get_elided_page_range %}
+                        {% for page_num in elided_page_range %}
                             {% if page_num == page_obj.paginator.ELLIPSIS %}
                                 <span class="px-3 py-2 text-sm text-gray-500">...</span>
                             {% else %}
@@ -225,11 +216,22 @@
                     </div>
                 </nav>
                 {% endif %}
-                <div class="mb-4">
-                    <h2 class="text-xl text-graphite">
+                <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-cinza-claro/50">
+                    <h2 class="text-lg text-graphite">
                         Mostrando <span class="font-bold text-marinho">{{ page_obj.paginator.count }}</span> 
                         {% if filtros_aplicados.finalidade == 'revenda' %}imóveis de revenda{% else %}lançamentos{% endif %}
                     </h2>
+                    
+                    <div class="flex items-center space-x-3">
+                        <label class="text-sm font-medium text-graphite/80 hidden sm:block">Ordenar por:</label>
+                        <select name="ordenacao" form="form-filtros" onchange="document.getElementById('form-filtros').submit()" class="bg-cinza-fundo border border-cinza-claro text-marinho text-sm rounded-lg focus:ring-ouro focus:border-ouro px-4 py-2 shadow-sm font-medium hover:bg-white transition-colors cursor-pointer outline-none">
+                            <option value="relevancia" {% if filtros_aplicados.ordenacao == 'relevancia' or not filtros_aplicados.ordenacao %}selected{% endif %}>Mais Relevantes</option>
+                            <option value="valor_asc" {% if filtros_aplicados.ordenacao == 'valor_asc' %}selected{% endif %}>Menor Preço</option>
+                            <option value="valor_desc" {% if filtros_aplicados.ordenacao == 'valor_desc' %}selected{% endif %}>Maior Preço</option>
+                            <option value="area_desc" {% if filtros_aplicados.ordenacao == 'area_desc' %}selected{% endif %}>Maior Área</option>
+                            <option value="area_asc" {% if filtros_aplicados.ordenacao == 'area_asc' %}selected{% endif %}>Menor Área</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -256,7 +258,7 @@
                             <button class="btn-favorito absolute top-4 right-4 p-2 rounded-full bg-black/30 backdrop-blur-sm"
                                     data-imovel-id="{{ imovel.id }}"
                                     title="Adicionar aos Favoritos">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                             </button>
@@ -270,19 +272,19 @@
                             <div class="flex items-center justify-between mt-4 text-graphite/90 border-b pb-4">
                                 {% if imovel.suites %}
                                 <span class="flex items-center space-x-2 text-sm" title="{{ imovel.suites }} Suítes">
-                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /> </svg>
+                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /> <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /> </svg>
                                     <span>{{ imovel.suites }} Suíte{{ imovel.suites|pluralize }}</span>
                                 </span>
                                 {% endif %}
                                 {% if imovel.vagas %}
                                 <span class="flex items-center space-x-2 text-sm" title="{{ imovel.vagas }} Vagas">
-                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /> </svg>
+                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /> </svg>
                                     <span>{{ imovel.vagas }} Vaga{{ imovel.vagas|pluralize }}</span>
                                 </span>
                                 {% endif %}
                                 {% if imovel.area_util %}
                                 <span class="flex items-center space-x-2 text-sm" title="{{ imovel.area_util }} m²">
-                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5" /> </svg>
+                                    <svg class="h-5 w-5 text-ouro" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 1v4m0 0h-4m4 0l-5-5" /> </svg>
                                     <span>{{ imovel.area_util|intcomma }} m²</span>
                                 </span>
                                 {% endif %}
@@ -298,18 +300,42 @@
                                 </p>
                             {% endif %}
                             
-                            <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="mt-5 block w-full text-center bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
-                                Ver Detalhes
-                            </a>
+                            <div class="mt-5 flex gap-2">
+                                <a href="{% url 'core:detalhe_imovel' imovel.id %}" class="flex-1 text-center bg-ouro text-white font-medium px-4 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300 text-sm md:text-base">
+                                    Ver Detalhes
+                                </a>
+                                <button type="button" class="btn-comparar px-4 py-3 bg-white border border-cinza-claro text-marinho font-medium rounded-lg hover:bg-cinza-fundo transition-colors whitespace-nowrap text-sm" data-imovel-id="{{ imovel.id }}" onclick="event.stopPropagation(); window.toggleCompare(this);">
+                                    + Comparar
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
                     {% empty %}
-                    <p class="text-graphite/80 md:col-span-2 text-center py-10">
-                        Nenhum imóvel encontrado com estes filtros. 
-                        <br>
-                        Tente limpar os filtros para ver mais opções.
-                    </p>
+                    <div class="col-span-1 md:col-span-2 text-center py-16 bg-white rounded-2xl shadow-sm border border-cinza-claro/50">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 text-marinho-claro mb-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <h3 class="text-2xl font-serif font-bold text-marinho mb-2">Nenhum imóvel encontrado</h3>
+                        <p class="text-graphite/80 max-w-md mx-auto mb-8">
+                            Não encontramos imóveis com estes filtros exatos no momento. Clique abaixo para receber um alerta automático no seu e-mail assim que surgir uma novidade!
+                        </p>
+                        
+                        <div class="flex flex-col sm:flex-row justify-center gap-4">
+                            <a href="{% url 'core:lista_imoveis' %}" class="px-6 py-3 rounded-xl border border-cinza-claro text-marinho font-medium hover:bg-cinza-fundo transition-colors">
+                                Limpar Filtros
+                            </a>
+                            {% if request.user.is_authenticated %}
+                            <button type="button" onclick="criarAlertaRapido(this)" class="px-6 py-3 rounded-xl bg-ouro text-white font-bold shadow-lg hover:bg-[#cba471] transition-all">
+                                <span class="btn-text">Me avise quando chegar</span>
+                            </button>
+                            {% else %}
+                            <a href="{% url 'account_login' %}?next={{ request.get_full_path|urlencode }}" class="px-6 py-3 rounded-xl bg-ouro text-white font-bold shadow-lg hover:bg-[#cba471] transition-all">
+                                Me avise quando chegar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
 
                 </div> 
@@ -320,34 +346,50 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filterForm = document.querySelector('aside form');
+    const filterForm = document.getElementById('form-filtros');
     const checkboxes = filterForm.querySelectorAll('input[type="checkbox"]');
-    const submitButtons = filterForm.querySelectorAll('button[type="submit"]');
+    const filterButtonsGroup = filterForm.querySelectorAll('.btn-filtro');
 
-    submitButtons.forEach(button => {
-        if (button.name === 'finalidade' || button.name === 'quartos' || button.name === 'vagas' || button.name === 'banheiros') {
+    filterButtonsGroup.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); 
             
-            button.addEventListener('click', function(e) {
-                e.preventDefault(); 
-                checkboxes.forEach(cb => {
-                    if (cb.checked && cb.name === 'tipo_imovel') {
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'tipo_imovel';
-                        hiddenInput.value = cb.value;
-                        filterForm.appendChild(hiddenInput);
-                    }
+            // Busca ou cria o input hidden para este filtro
+            let hiddenInput = document.getElementById('hidden-' + this.name);
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = this.name;
+                hiddenInput.id = 'hidden-' + this.name;
+                filterForm.appendChild(hiddenInput);
+            }
+            
+            // Se clicar no que já está selecionado, ele desseleciona (limpa)
+            if (hiddenInput.value === this.value && this.name !== 'finalidade') {
+                hiddenInput.remove();
+                this.classList.remove('bg-ouro', 'text-white', 'border-ouro');
+                this.classList.add('bg-white', 'text-graphite', 'border-cinza-claro');
+            } else {
+                hiddenInput.value = this.value;
+                // Atualiza o visual
+                const siblings = filterForm.querySelectorAll(`.btn-filtro[name="${this.name}"]`);
+                siblings.forEach(s => {
+                    s.classList.remove('bg-marinho', 'text-white', 'border-marinho', 'bg-ouro', 'border-ouro');
+                    s.classList.add('bg-white', 'text-graphite', 'border-cinza-claro');
                 });
+                this.classList.remove('bg-white', 'text-graphite', 'border-cinza-claro');
+                if (this.name === 'finalidade') {
+                   this.classList.add('bg-marinho', 'text-white', 'border-marinho');
+                } else {
+                   this.classList.add('bg-ouro', 'text-white', 'border-ouro');
+                }
+            }
 
-                const buttonInput = document.createElement('input');
-                buttonInput.type = 'hidden';
-                buttonInput.name = this.name;
-                buttonInput.value = this.value;
-                filterForm.appendChild(buttonInput);
-
+            // Apenas submete automaticamente no Desktop
+            if (window.innerWidth >= 1024) {
                 filterForm.submit();
-            });
-        }
+            }
+        });
     });
 
     const clearLinks = document.querySelectorAll('a[title^="Limpar filtro"]');
@@ -364,7 +406,129 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = url.toString();
         });
     });
+
+    // Mobile Toggle
+    const btnFiltros = document.getElementById('btn-toggle-filtros');
+    const containerFiltros = document.getElementById('container-filtros');
+    const iconeFiltros = document.getElementById('icone-toggle-filtros');
+    if (btnFiltros && containerFiltros) {
+        btnFiltros.addEventListener('click', function() {
+            containerFiltros.classList.toggle('hidden');
+            containerFiltros.classList.toggle('flex');
+            if (iconeFiltros) {
+                iconeFiltros.classList.toggle('rotate-180');
+            }
+        });
+    }
+
+    // Bairro Search
+    const searchInput = document.getElementById('bairro-search');
+    const bairroItems = document.querySelectorAll('.bairro-item');
+    const emptyMsg = document.getElementById('bairro-empty-msg');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase().trim();
+            let visibleCount = 0;
+            bairroItems.forEach(item => {
+                const nome = item.querySelector('.bairro-nome').textContent.toLowerCase();
+                if (nome.includes(filter)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            if (emptyMsg) {
+                if (visibleCount === 0) {
+                    emptyMsg.classList.remove('hidden');
+                } else {
+                    emptyMsg.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    // Remover Bairro via Tag
+    const btnRemoveBairros = document.querySelectorAll('.btn-remove-bairro');
+    btnRemoveBairros.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bairroId = this.getAttribute('data-bairro-id');
+            const checkbox = document.querySelector(`input[name="bairro"][value="${bairroId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                filterForm.submit();
+            }
+        });
+    });
 });
+</script>
+
+<style>
+/* Custom Scrollbar for Filters */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e5e7eb;
+    border-radius: 20px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+}
+</style>
+
+<script>
+async function criarAlertaRapido(button) {
+    const textSpan = button.querySelector('.btn-text');
+    const originalText = textSpan.textContent;
+    textSpan.textContent = 'Salvando...';
+    button.disabled = true;
+    
+    const data = {
+        query_string: '{{ filtros_aplicados_query|escapejs }}',
+        resumo_busca: "Busca personalizada salva",
+    };
+    
+    try {
+        const response = await fetch('{% url "core:salvar_alerta" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            textSpan.textContent = 'Alerta Salvo!';
+            button.classList.add('bg-green-600');
+            button.classList.remove('bg-marinho-escuro', 'bg-ouro');
+            setTimeout(() => {
+                textSpan.textContent = originalText;
+                button.classList.remove('bg-green-600');
+                if(originalText.includes('avise')){
+                    button.classList.add('bg-ouro');
+                } else {
+                    button.classList.add('bg-marinho-escuro');
+                }
+                button.disabled = false;
+            }, 3000);
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        alert('Erro ao salvar alerta: ' + error.message);
+        textSpan.textContent = originalText;
+        button.disabled = false;
+    }
+}
 </script>
 
 {% endblock %}

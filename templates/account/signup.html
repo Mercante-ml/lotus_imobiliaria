@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta - ImobGold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .auth-bg {
+            background: linear-gradient(135deg, #0A0F1C 0%, #1a2235 100%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Estilizando os inputs gerados pelo django-allauth */
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+            border-color: #C6A87C;
+            box-shadow: 0 0 0 2px rgba(198, 168, 124, 0.2);
+        }
+        label {
+            display: block;
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.5rem;
+        }
+        .helptext {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .errorlist {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            list-style-type: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body class="auth-bg min-h-screen flex items-center justify-center p-6 text-white font-sans selection:bg-[#C6A87C]">
+
+    <div class="glass-panel p-8 md:p-12 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden">
+        <!-- Decorativo -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#C6A87C] rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+        <div class="relative z-10">
+            <div class="text-center mb-10">
+                <a href="/" class="inline-block font-serif text-3xl font-bold tracking-wider mb-2">Imob<span class="text-[#C6A87C]">Gold</span></a>
+                <p class="text-white/60 text-sm">Crie sua plataforma e eleve suas vendas.</p>
+            </div>
+
+            <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                {% csrf_token %}
+                
+                {{ form.as_p }}
+
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                
+                <button type="submit" class="w-full mt-6 bg-[#C6A87C] text-white font-bold py-3.5 rounded-xl hover:bg-[#b5966c] transition duration-300 shadow-[0_0_15px_rgba(198,168,124,0.3)]">
+                    Criar Conta
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-white/10 text-center">
+                <p class="text-sm text-white/50">Já possui uma conta?</p>
+                <a href="{% url 'account_login' %}" class="inline-block mt-2 text-[#C6A87C] font-medium hover:text-white transition">Fazer Login</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

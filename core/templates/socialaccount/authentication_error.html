@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Erro de Autenticação - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="min-h-[70vh] flex items-center justify-center bg-cinza-fundo p-6">
+    <div class="bg-white p-10 md:p-16 rounded-2xl shadow-xl max-w-lg w-full text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+        
+        <svg class="w-20 h-20 mx-auto text-red-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        
+        <h1 class="font-serif text-3xl font-bold text-marinho-escuro mb-4">Erro no Login</h1>
+        <p class="text-graphite/70 mb-10 text-lg">
+            Infelizmente não foi possível completar a sua autenticação com a rede social neste momento. Por favor, tente novamente ou use o seu e-mail.
+        </p>
+        
+        <div class="flex flex-col space-y-4">
+            <a href="{% url 'account_login' %}" class="w-full bg-marinho-escuro text-white font-medium py-4 rounded-xl shadow-lg hover:bg-ouro hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                Voltar para o Login
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

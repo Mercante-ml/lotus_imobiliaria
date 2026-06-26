@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Atualizando Base - Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<section class="min-h-[70vh] flex items-center justify-center bg-cinza-fundo">
+    <div class="container mx-auto px-6 text-center">
+        
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-ouro/10 text-ouro mb-6">
+            <svg class="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+
+        <h1 class="font-serif text-4xl text-marinho font-bold mb-2">
+            Sincronizando Banco de Dados
+        </h1>
+        
+        {% if progresso %}
+        <div class="mb-6 inline-block bg-white px-6 py-2 rounded-full border border-cinza-claro shadow-sm">
+            <span class="text-ouro font-bold tracking-widest text-sm uppercase">Progresso: {{ progresso }}</span>
+        </div>
+        {% endif %}
+        
+        <p class="text-graphite text-lg max-w-xl mx-auto mb-8">
+            Nossa base de imóveis de alto padrão está passando por uma atualização neste momento (Importação de XML). 
+            Por favor, aguarde alguns instantes e recarregue a página.
+        </p>
+
+        <a href="javascript:window.location.reload(true)" class="inline-block px-8 py-4 bg-ouro text-white rounded-xl font-bold shadow-lg hover:bg-[#cba471] transition-all transform hover:-translate-y-1">
+            Atualizar Página
+        </a>
+    </div>
+</section>
+{% endblock %}

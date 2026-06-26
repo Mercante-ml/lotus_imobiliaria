@@ -38,16 +38,19 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-4">
-                    {% if imovel.imagem_principal %}
-                        <img src="{{ imovel.imagem_principal.url }}" alt="Foto principal de {{ imovel.titulo }}" class="w-full h-auto object-cover">
-                    {% else %}
-                        <img src="https://placehold.co/1200x800/142048/FFF?text=Lotus+Imobili%C3%A1ria" alt="Sem foto" class="w-full h-auto object-cover">
-                    {% endif %}
-                </div>
-
-                <h3 class="font-serif text-2xl text-marinho font-bold mt-10 mb-4">Galeria de Imagens</h3>
+                <h3 class="font-serif text-2xl text-marinho font-bold mt-2 mb-4">Galeria de Imagens</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="gallery--getting-started">
+                    {% if imovel.imagem_principal %}
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:scale-105">
+                            <a href="{{ imovel.imagem_principal.url }}"
+                               data-pswp-width="{{ imovel.imagem_principal.width }}"
+                               data-pswp-height="{{ imovel.imagem_principal.height }}">
+                                <img src="{{ imovel.imagem_principal.url }}" alt="Foto principal de {{ imovel.titulo }}" class="w-full h-40 object-cover">
+                            </a>
+                        </div>
+                    {% endif %}
+
+
                     {% for img in imovel.imagens_secundarias.all %}
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:scale-105">
                             <a href="{{ img.imagem.url }}"
@@ -57,7 +60,9 @@
                             </a>
                         </div>
                     {% empty %}
-                        <p class="text-graphite/70 col-span-4">Este imóvel não possui galeria de imagens secundárias.</p>
+                        {% if not imovel.imagem_principal %}
+                            <p class="text-graphite/70 col-span-4">Este imóvel não possui galeria de imagens.</p>
+                        {% endif %}
                     {% endfor %}
                 </div>
 
@@ -91,10 +96,44 @@
                         </p>
                     {% endif %}
                     
-                    <a href="{{ whatsapp_url }}" target="_blank" class="mt-5 flex items-center justify-center w-full text-center bg-green-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-green-600 transition duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.398 1.919 6.191l-.84 3.095 3.147-.817z"/></svg>
-                        Agende uma visita
-                    </a>
+                    {% if imovel.corretor %}
+                        <div class="mt-6 mb-4 p-4 bg-cinza-fundo rounded-lg border border-cinza-claro flex flex-col items-center text-center">
+                            {% if imovel.corretor.foto %}
+                                <img src="{{ imovel.corretor.foto.url }}" alt="{{ imovel.corretor.nome }}" class="w-16 h-16 rounded-full object-cover mb-3 border-2 border-ouro shadow-sm">
+                            {% else %}
+                                <div class="w-16 h-16 rounded-full bg-marinho text-white flex items-center justify-center text-xl font-serif mb-3 border-2 border-ouro shadow-sm">
+                                    {{ imovel.corretor.nome|first }}
+                                </div>
+                            {% endif %}
+                            <p class="text-sm text-graphite/60 uppercase tracking-widest font-bold mb-1">Corretor Responsável</p>
+                            <h4 class="font-serif text-lg text-marinho-escuro font-bold">{{ imovel.corretor.nome }}</h4>
+                            
+                            <div class="flex items-center justify-center space-x-6 mt-4 w-full border-t border-cinza-claro pt-4">
+                                {% if imovel.corretor.email %}
+                                    <a href="mailto:{{ imovel.corretor.email }}" title="Enviar Email" class="flex flex-col items-center text-marinho hover:text-ouro transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        </svg>
+                                        <span class="text-[10px] font-medium uppercase tracking-wider">Email</span>
+                                    </a>
+                                {% endif %}
+                                
+                                {% if imovel.corretor.telefone %}
+                                    <a href="https://wa.me/55{{ imovel.corretor.whatsapp_numero }}?text=Ol%C3%A1%20{{ imovel.corretor.nome }}!%20Tenho%20interesse%20no%20im%C3%B3vel%20{{ imovel.titulo }}" target="_blank" title="Falar no WhatsApp" class="flex flex-col items-center text-green-600 hover:text-green-500 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 21.94L7.31 20.58C8.76 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2ZM12.04 20.13C10.56 20.13 9.11 19.74 7.85 19L7.52 18.8L3.8 19.81L4.83 16.2L4.61 15.86C3.91 14.5 3.5 13.01 3.5 11.41C3.5 7.32 7.36 3.47 11.54 3.47C15.72 3.47 19.57 7.32 19.57 11.41C19.57 15.49 15.72 19.34 11.54 19.34L12.04 20.13ZM17.21 14.76C16.96 14.64 15.82 14.08 15.59 14C15.36 13.92 15.2 13.88 15.04 14.12C14.88 14.37 14.37 14.93 14.21 15.1C14.06 15.27 13.9 15.31 13.66 15.19C13.41 15.07 12.61 14.82 11.66 13.97C10.91 13.3 10.39 12.44 10.24 12.19C10.08 11.95 10.2 11.83 10.32 11.71C10.43 11.6 10.57 11.42 10.73 11.26C10.89 11.1 10.95 11.01 11.07 10.76C11.19 10.52 11.13 10.32 11.05 10.2C10.97 10.08 10.5 9 10.31 8.53C10.12 8.08 9.93 8.16 9.79 8.15C9.65 8.14 9.5 8.14 9.34 8.14C9.18 8.14 8.91 8.2 8.68 8.44C8.45 8.68 7.9 9.17 7.9 10.2C7.9 11.23 8.7 12.21 8.82 12.37C8.94 12.53 10.26 14.71 12.38 15.5C14.28 16.2 14.52 16.1 14.89 16.06C15.3 16 16.18 15.52 16.38 15.05C16.58 14.58 16.58 14.19 16.5 14.08C16.42 13.96 16.26 13.92 16.02 13.8C15.77 13.68 17.45 14.88 17.21 14.76Z" />
+                                        </svg>
+                                        <span class="text-[10px] font-medium uppercase tracking-wider">WhatsApp</span>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ whatsapp_url }}" target="_blank" class="mt-5 flex items-center justify-center w-full text-center bg-green-500 text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-green-600 transition duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.398 1.919 6.191l-.84 3.095 3.147-.817z"/></svg>
+                            Falar com um Consultor
+                        </a>
+                    {% endif %}
 
                     <h3 class="font-serif text-xl text-marinho font-bold mt-6 mb-4 border-t pt-4">Especificações</h3>
                     <div class="space-y-3 text-graphite">

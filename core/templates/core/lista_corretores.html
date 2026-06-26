@@ -1,73 +1,94 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{{ conteudo.titulo|default:'Nossa Equipa' }}{% endblock %}
+{% block title %}{{ conteudo.titulo|default:'Nossa Equipe' }}{% endblock %}
 
 {% block content %}
 
-<section class="bg-marinho-escuro text-white">
-    <div class="container mx-auto px-6 py-20 md:py-28 text-center">
-        <h1 class="font-serif text-5xl md:text-7xl font-bold">
-            {{ conteudo.titulo|default:'A Nossa Equipa' }}
+<!-- HERO DA EQUIPE -->
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 bg-marinho-escuro overflow-hidden">
+    <!-- Efeitos Visuais -->
+    <div class="absolute inset-0 bg-marinho-escuro opacity-90"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[50rem] h-[50rem] bg-ouro/5 rounded-full blur-[100px]"></div>
+
+    <div class="container mx-auto px-6 relative z-10 text-center">
+        <span class="text-ouro uppercase tracking-[0.3em] text-xs md:text-sm font-bold mb-4 block">Curadoria Humana</span>
+        <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl font-medium text-white mb-6">
+            {{ conteudo.titulo|default:'A Nossa Equipe' }}
         </h1>
-        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-cinza-claro/80">
-            {{ conteudo.subtitulo|default:'Especialistas dedicados a encontrar o imóvel que reflete a sua essência.' }}
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-white/70 font-light leading-relaxed">
+            {{ conteudo.subtitulo|default:'Consultores imobiliários dedicados a compreender as suas necessidades e encontrar o imóvel que reflete a sua essência.' }}
         </p>
     </div>
 </section>
 
-<section class="py-20 md:py-28 bg-cinza-fundo">
-    <div class="container mx-auto px-6">
+<!-- LISTA DE CORRETORES -->
+<section class="py-24 md:py-32 bg-cinza-fundo">
+    <div class="container mx-auto px-6 max-w-7xl">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             
             {% for corretor in corretores %}
-            <div class="bg-white rounded-lg shadow-xl overflow-hidden text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 flex flex-col">
-                <div class="h-80 bg-cinza-claro">
+            <div class="bg-white rounded-2xl shadow-sm border border-cinza-claro/60 overflow-hidden text-center transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex flex-col group h-full">
+                <div class="relative h-[26rem] bg-cinza-claro overflow-hidden">
                     {% if corretor.foto %}
-                        <img src="{{ corretor.foto.url }}" alt="Foto de {{ corretor.nome }}" class="w-full h-full object-cover">
+                        <img src="{{ corretor.foto.url }}" alt="Foto de {{ corretor.nome }}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700">
                     {% else %}
-                        <div class="w-full h-full flex items-center justify-center bg-marinho text-white">
-                             <span class="font-serif text-8xl">{{ corretor.nome|first }}</span>
+                        <div class="w-full h-full flex items-center justify-center bg-marinho-claro text-white">
+                             <span class="font-serif text-9xl font-light opacity-50">{{ corretor.nome|first }}</span>
                         </div>
                     {% endif %}
+                    
+                    <!-- Overlay sutil com WhatsApp -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-8">
+                         {% if corretor.telefone %}
+                             <a href="https://wa.me/55{{ corretor.whatsapp_numero }}" target="_blank" class="bg-ouro text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-white hover:text-marinho-escuro transition-colors shadow-lg flex items-center">
+                                 <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 21.94L7.31 20.58C8.76 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2ZM12.04 20.13C10.56 20.13 9.11 19.74 7.85 19L7.52 18.8L3.8 19.81L4.83 16.2L4.61 15.86C3.91 14.5 3.5 13.01 3.5 11.41C3.5 7.32 7.36 3.47 11.54 3.47C15.72 3.47 19.57 7.32 19.57 11.41C19.57 15.49 15.72 19.34 11.54 19.34L12.04 20.13ZM17.21 14.76C16.96 14.64 15.82 14.08 15.59 14C15.36 13.92 15.2 13.88 15.04 14.12C14.88 14.37 14.37 14.93 14.21 15.1C14.06 15.27 13.9 15.31 13.66 15.19C13.41 15.07 12.61 14.82 11.66 13.97C10.91 13.3 10.39 12.44 10.24 12.19C10.08 11.95 10.2 11.83 10.32 11.71C10.43 11.6 10.57 11.42 10.73 11.26C10.89 11.1 10.95 11.01 11.07 10.76C11.19 10.52 11.13 10.32 11.05 10.2C10.97 10.08 10.5 9 10.31 8.53C10.12 8.08 9.93 8.16 9.79 8.15C9.65 8.14 9.5 8.14 9.34 8.14C9.18 8.14 8.91 8.2 8.68 8.44C8.45 8.68 7.9 9.17 7.9 10.2C7.9 11.23 8.7 12.21 8.82 12.37C8.94 12.53 10.26 14.71 12.38 15.5C14.28 16.2 14.52 16.1 14.89 16.06C15.3 16 16.18 15.52 16.38 15.05C16.58 14.58 16.58 14.19 16.5 14.08C16.42 13.96 16.26 13.92 16.02 13.8C15.77 13.68 17.45 14.88 17.21 14.76Z" /></svg>
+                                 Falar pelo WhatsApp
+                             </a>
+                         {% endif %}
+                    </div>
                 </div>
                 
-                <div class="p-6 flex flex-col flex-grow">
-                    <h3 class="font-serif text-2xl font-bold text-marinho">
+                <div class="p-8 flex flex-col flex-grow items-center relative bg-white">
+                    <div class="w-12 h-1 bg-ouro mb-6"></div>
+                    <h3 class="font-serif text-3xl font-bold text-marinho-escuro mb-1 group-hover:text-ouro transition-colors">
                         {{ corretor.nome }}
                     </h3>
-                    <p class="text-ouro font-medium mt-1">
+                    <p class="text-graphite/50 text-xs font-bold tracking-[0.2em] uppercase mb-6">
                         CRECI: {{ corretor.creci }}
                     </p>
-                    <p class="text-graphite/80 text-sm mt-4 min-h-[80px] flex-grow">
-                        {{ corretor.bio|default:"Corretor especialista em imóveis de alto padrão."}}
+                    <p class="text-graphite/80 text-base font-light leading-relaxed italic mb-6">
+                        "{{ corretor.bio|default:'Especialista em criar conexões perfeitas entre os clientes e os imóveis de alto padrão mais exclusivos do mercado.' }}"
                     </p>
                     
-                    <div class="mt-6 border-t pt-5">
-                        {% if corretor.telefone %}
-                            <a href="https://wa.me/55{{ corretor.telefone|slugify }}" 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               class="flex items-center justify-center w-full bg-ouro text-white font-medium px-5 py-3 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
-                                <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 21.94L7.31 20.58C8.76 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2ZM12.04 20.13C10.56 20.13 9.11 19.74 7.85 19L7.52 18.8L3.8 19.81L4.83 16.2L4.61 15.86C3.91 14.5 3.5 13.01 3.5 11.41C3.5 7.32 7.36 3.47 11.54 3.47C15.72 3.47 19.57 7.32 19.57 11.41C19.57 15.49 15.72 19.34 11.54 19.34L12.04 20.13ZM17.21 14.76C16.96 14.64 15.82 14.08 15.59 14C15.36 13.92 15.2 13.88 15.04 14.12C14.88 14.37 14.37 14.93 14.21 15.1C14.06 15.27 13.9 15.31 13.66 15.19C13.41 15.07 12.61 14.82 11.66 13.97C10.91 13.3 10.39 12.44 10.24 12.19C10.08 11.95 10.2 11.83 10.32 11.71C10.43 11.6 10.57 11.42 10.73 11.26C10.89 11.1 10.95 11.01 11.07 10.76C11.19 10.52 11.13 10.32 11.05 10.2C10.97 10.08 10.5 9 10.31 8.53C10.12 8.08 9.93 8.16 9.79 8.15C9.65 8.14 9.5 8.14 9.34 8.14C9.18 8.14 8.91 8.2 8.68 8.44C8.45 8.68 7.9 9.17 7.9 10.2C7.9 11.23 8.7 12.21 8.82 12.37C8.94 12.53 10.26 14.71 12.38 15.5C14.28 16.2 14.52 16.1 14.89 16.06C15.3 16 16.18 15.52 16.38 15.05C16.58 14.58 16.58 14.19 16.5 14.08C16.42 13.96 16.26 13.92 16.02 13.8C15.77 13.68 17.45 14.88 17.21 14.76Z" />
+                    <div class="mt-auto pt-6 border-t border-cinza-claro w-full flex items-center justify-center space-x-6">
+                        {% if corretor.email %}
+                            <a href="mailto:{{ corretor.email }}" title="Enviar Email" class="flex flex-col items-center text-marinho hover:text-ouro transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                Falar pelo WhatsApp
+                                <span class="text-xs font-medium uppercase tracking-wider">Email</span>
                             </a>
                         {% endif %}
-                        {% if corretor.email %}
-                            <a href="mailto:{{ corretor.email }}" class="mt-2 block text-center text-marinho-claro hover:text-ouro transition-colors text-sm">
-                                {{ corretor.email }}
+                        
+                        {% if corretor.telefone %}
+                            <a href="https://wa.me/55{{ corretor.whatsapp_numero }}" target="_blank" title="Falar no WhatsApp" class="flex flex-col items-center text-green-600 hover:text-green-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.06 21.94L7.31 20.58C8.76 21.39 10.38 21.82 12.04 21.82C17.5 21.82 21.95 17.37 21.95 11.91C21.95 6.45 17.5 2 12.04 2ZM12.04 20.13C10.56 20.13 9.11 19.74 7.85 19L7.52 18.8L3.8 19.81L4.83 16.2L4.61 15.86C3.91 14.5 3.5 13.01 3.5 11.41C3.5 7.32 7.36 3.47 11.54 3.47C15.72 3.47 19.57 7.32 19.57 11.41C19.57 15.49 15.72 19.34 11.54 19.34L12.04 20.13ZM17.21 14.76C16.96 14.64 15.82 14.08 15.59 14C15.36 13.92 15.2 13.88 15.04 14.12C14.88 14.37 14.37 14.93 14.21 15.1C14.06 15.27 13.9 15.31 13.66 15.19C13.41 15.07 12.61 14.82 11.66 13.97C10.91 13.3 10.39 12.44 10.24 12.19C10.08 11.95 10.2 11.83 10.32 11.71C10.43 11.6 10.57 11.42 10.73 11.26C10.89 11.1 10.95 11.01 11.07 10.76C11.19 10.52 11.13 10.32 11.05 10.2C10.97 10.08 10.5 9 10.31 8.53C10.12 8.08 9.93 8.16 9.79 8.15C9.65 8.14 9.5 8.14 9.34 8.14C9.18 8.14 8.91 8.2 8.68 8.44C8.45 8.68 7.9 9.17 7.9 10.2C7.9 11.23 8.7 12.21 8.82 12.37C8.94 12.53 10.26 14.71 12.38 15.5C14.28 16.2 14.52 16.1 14.89 16.06C15.3 16 16.18 15.52 16.38 15.05C16.58 14.58 16.58 14.19 16.5 14.08C16.42 13.96 16.26 13.92 16.02 13.8C15.77 13.68 17.45 14.88 17.21 14.76Z" />
+                                </svg>
+                                <span class="text-xs font-medium uppercase tracking-wider">WhatsApp</span>
                             </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% empty %}
-            <p class="col-span-1 md:col-span-3 text-center text-graphite/80 text-lg">
-                Nenhum corretor cadastrado no momento.
-            </p>
+            <div class="col-span-1 md:col-span-3 text-center bg-white p-16 rounded-2xl shadow-sm border border-cinza-claro">
+                <svg class="w-16 h-16 mx-auto text-graphite/20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                <p class="text-2xl text-marinho-escuro font-serif">Nossa equipe está sendo formada.</p>
+                <p class="text-graphite/60 mt-2">Estamos em busca dos melhores especialistas do mercado imobiliário.</p>
+            </div>
             {% endfor %}
 
         </div>

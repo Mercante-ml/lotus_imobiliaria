@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 from .models import (
     Imovel, ImagemImovel, Corretor, Bairro, Lead, 
     ConteudoPagina, TipoImovel, Caracteristica,
-    Profile  # <-- Importar o novo modelo Profile
+    Profile,  # <-- Importar o novo modelo Profile
+    PostBlog, AlertaBusca
 )
 
 # --- Registos Simples (Evoluído) ---
@@ -16,6 +17,18 @@ admin.site.register(Lead)
 admin.site.register(ConteudoPagina)
 admin.site.register(TipoImovel)
 admin.site.register(Caracteristica)
+
+@admin.register(PostBlog)
+class PostBlogAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'tipo_conteudo', 'data_publicacao')
+    list_filter = ('tipo_conteudo', 'data_publicacao')
+    search_fields = ('titulo', 'resumo')
+
+@admin.register(AlertaBusca)
+class AlertaBuscaAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'email', 'resumo_busca', 'data_criacao', 'ativo')
+    list_filter = ('ativo', 'data_criacao')
+    search_fields = ('nome', 'email', 'resumo_busca')
 
 
 @admin.register(Corretor)

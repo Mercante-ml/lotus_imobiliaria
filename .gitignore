@@ -1,8 +1,9 @@
-env/
-*.pyc
+venv/
 __pycache__/
-db.sqlite3
+*.pyc
 .env
-/static/
+staticfiles/
+db.sqlite3
+mediafiles/
 media/
-requirements.txt
+tenant_logos/

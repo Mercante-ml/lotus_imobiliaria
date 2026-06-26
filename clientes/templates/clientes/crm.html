@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel CRM - ImobGold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gray-900 text-white flex flex-col hidden md:flex">
+            <div class="p-6 border-b border-gray-800">
+                <span class="font-serif text-2xl font-bold">Imob<span class="text-yellow-500">Gold</span></span>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 bg-gray-800 text-white border-l-4 border-yellow-500">Dashboard</a>
+                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-800 hover:text-white text-gray-400">Imóveis</a>
+                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-800 hover:text-white text-gray-400">Leads & Contatos</a>
+                <a href="#" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-gray-800 hover:text-white text-gray-400">Configurações</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+            <!-- Header -->
+            <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">Visão Geral</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-500">Olá, Administrador</span>
+                    <a href="{% url 'account_logout' %}" class="text-sm text-red-500 hover:underline">Sair</a>
+                </div>
+            </header>
+
+            <!-- Dashboard Mock -->
+            <div class="p-6">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded shadow-sm flex items-center justify-between">
+                    <div>
+                        <h3 class="text-blue-800 font-bold">Configuração Concluída!</h3>
+                        <p class="text-blue-600 text-sm">Seu site e banco de dados isolado foram criados com sucesso.</p>
+                    </div>
+                    {% if tenant_domain %}
+                        <a href="https://{{ tenant_domain }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Acessar Meu Site</a>
+                    {% else %}
+                        <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Ver Meu Site</a>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="text-gray-500 text-sm mb-1">Imóveis Ativos</div>
+                        <div class="text-3xl font-bold text-gray-800">0</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="text-gray-500 text-sm mb-1">Novos Leads</div>
+                        <div class="text-3xl font-bold text-gray-800">0</div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="text-gray-500 text-sm mb-1">Visitas no Site</div>
+                        <div class="text-3xl font-bold text-gray-800">0</div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 h-64 flex items-center justify-center">
+                    <p class="text-gray-400 text-center">
+                        (Gráficos e Listagem do CRM real virão aqui no futuro)
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
