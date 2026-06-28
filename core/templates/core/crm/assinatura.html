@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    :root {
+        --bg-main: #F4F6F9;
+        --bg-glass: #ffffff;
+        --text-primary: #142048;
+        --text-muted: #475569;
+        --border-glass: #E2E8F0;
+        --gold-primary: #B48C5A;
+        --gold-hover: #9c7748;
+    }
+</style>
+<div style="background: var(--bg-main); min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 800px; margin: 0 auto; background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); backdrop-filter: blur(10px);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-glass); padding-bottom: 20px;">
+            <h1 style="color: var(--text-primary); font-size: 1.8rem; margin: 0;"><i class="fa-solid fa-credit-card mr-2" style="color: var(--gold-primary);"></i> Gestão de Assinatura</h1>
+            <a href="{% url 'core:crm_kanban' %}" style="color: var(--text-muted); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar ao CRM</a>
+        </div>
+
+        <!-- Plano Atual -->
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: var(--text-primary); font-size: 1.2rem; margin-bottom: 15px;">Seu Plano Atual</h2>
+            
+            {% if tenant.status_assinatura != 'active' %}
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 20px; text-align: center;">
+                    <h3 style="color: #ef4444; margin: 0 0 10px 0;"><i class="fa-solid fa-clock-rotate-left"></i> Período de Teste</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Você está utilizando a versão de teste. Escolha um dos planos abaixo para ativar a sua conta definitivamente e não perder seus dados.</p>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <a href="{% url 'core:stripe_checkout' %}?price_id={{ prices.boutique }}" style="padding: 10px 20px; border-radius: 6px; text-decoration: none; border: 1px solid var(--text-muted); color: var(--text-primary); transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">Ativar Plano Boutique (5GB)</a>
+                        <a href="{% url 'core:stripe_checkout' %}?price_id={{ prices.corporate }}" style="padding: 10px 20px; border-radius: 6px; text-decoration: none; background: var(--gold-primary); color: #000; font-weight: bold; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Ativar Plano Corporate (10GB)</a>
+                    </div>
+                </div>
+            {% else %}
+                <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <div>
+                        <h3 style="color: var(--gold-primary); margin: 0 0 5px 0; font-size: 1.4rem;">Plano {{ tenant.plano_ativo|title }}</h3>
+                        <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Status da Assinatura: <strong style="color: #10b981;">Ativa</strong></p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-direction: column; align-items: flex-end;">
+                        {% if tenant.plano_ativo == 'boutique' %}
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                            <a href="{% url 'core:stripe_portal' %}" style="padding: 10px 20px; border-radius: 6px; text-decoration: none; background: var(--gold-primary); color: #fff; font-weight: bold; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><i class="fa-solid fa-right-left"></i> Alterar Plano</a>
+                        </div>
+                        {% else %}
+                        <span style="color: var(--gold-primary); font-weight: bold; font-size: 0.9rem; border: 1px solid var(--gold-primary); padding: 5px 10px; border-radius: 20px; margin-bottom: 5px;"><i class="fa-solid fa-crown"></i> Plano Máximo</span>
+                        <div style="display: flex; gap: 10px;">
+                            <a href="{% url 'core:stripe_portal' %}" style="padding: 8px 15px; border-radius: 6px; text-decoration: none; background: #e2e8f0; color: #475569; font-size: 0.9rem; font-weight: bold; transition: opacity 0.2s;"><i class="fa-solid fa-right-left"></i> Alterar Plano</a>
+                        </div>
+                        {% endif %}
+                        <a href="{% url 'core:stripe_portal' %}" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; border-bottom: 1px solid var(--text-muted);">Gerenciar Pagamento / Cancelar</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Uso de Armazenamento -->
+        <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+            <h2 style="color: var(--text-primary); font-size: 1.2rem; margin-top: 0; margin-bottom: 15px;">Uso de Armazenamento</h2>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="color: var(--text-muted);">Capacidade Utilizada</span>
+                <span style="color: var(--text-primary); font-weight: bold;">{{ gb_used }} GB / {{ gb_limit }} GB ({{ gb_perc }}%)</span>
+            </div>
+            
+            <div style="width: 100%; height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; margin-bottom: 15px;">
+                <div style="height: 100%; width: {{ gb_perc }}%; background: {% if gb_perc >= 90 %}#ef4444{% elif gb_perc >= 80 %}#f59e0b{% else %}var(--gold-primary){% endif %}; transition: width 0.5s;"></div>
+            </div>
+
+            {% if gb_perc >= 90 %}
+            <p style="color: #ef4444; font-size: 0.9rem; margin: 0;"><i class="fa-solid fa-triangle-exclamation"></i> Você está muito perto do limite! Recomendamos adquirir mais espaço para evitar o bloqueio de novas importações de imóveis.</p>
+            {% elif gb_perc >= 80 %}
+            <p style="color: #f59e0b; font-size: 0.9rem; margin: 0;"><i class="fa-solid fa-circle-exclamation"></i> Seu espaço está acabando. Considere um upgrade em breve.</p>
+            {% else %}
+            <p style="color: #10b981; font-size: 0.9rem; margin: 0;"><i class="fa-solid fa-circle-check"></i> Você tem bastante espaço disponível para novas importações.</p>
+            {% endif %}
+        </div>
+
+        <h2 style="color: var(--text-primary); font-size: 1.2rem; margin-bottom: 15px;">Aumentar Espaço (Add-ons)</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            
+            <!-- Add-on 10GB -->
+            <div style="border: 1px solid var(--border-glass); border-radius: 8px; padding: 20px; text-align: center; background: var(--bg-glass); box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <i class="fa-solid fa-hard-drive" style="font-size: 2rem; color: var(--gold-primary); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--text-primary); margin: 0 0 10px 0;">+10 GB Extras</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Ideal para aumentar seu portfólio gradualmente.</p>
+                <div style="color: var(--text-primary); font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">R$ 147<span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/mês</span></div>
+                
+                <a href="{% url 'core:stripe_checkout' %}?price_id={{ prices.10gb }}" style="display: block; width: 100%; padding: 10px; background: rgba(198, 168, 124, 0.1); border: 1px solid var(--gold-primary); color: var(--gold-primary); text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.2s;" onmouseover="this.style.background='var(--gold-primary)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(198, 168, 124, 0.1)'; this.style.color='var(--gold-primary)';">
+                    Adicionar ao Plano
+                </a>
+            </div>
+            
+            <!-- Add-on 50GB -->
+            <div style="border: 1px solid var(--gold-primary); border-radius: 8px; padding: 20px; text-align: center; background: var(--bg-glass); position: relative; box-shadow: 0 10px 15px rgba(180, 140, 90, 0.1);">
+                <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--gold-primary); color: #fff; font-size: 0.7rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;">Mais Popular</div>
+                <i class="fa-solid fa-server" style="font-size: 2rem; color: var(--gold-primary); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--text-primary); margin: 0 0 10px 0;">+50 GB Extras</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px;">Para imobiliárias com vasto estoque de imóveis.</p>
+                <div style="color: var(--text-primary); font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;">R$ 497<span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/mês</span></div>
+                
+                <a href="{% url 'core:stripe_checkout' %}?price_id={{ prices.50gb }}" style="display: block; width: 100%; padding: 10px; background: var(--gold-primary); border: 1px solid var(--gold-primary); color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    Adicionar ao Plano
+                </a>
+            </div>
+            
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo à Nova Era Imobiliária!</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #0f1115;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #1a1d24;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a2e39;
+        }
+        .header {
+            background: linear-gradient(135deg, #1f232b 0%, #15181e 100%);
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 2px solid #D4AF37;
+        }
+        .header h1 {
+            color: #D4AF37;
+            font-size: 28px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .content {
+            padding: 40px 30px;
+            color: #cbd5e1;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .content h2 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .btn-container {
+            text-align: center;
+            margin: 35px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #D4AF37 0%, #aa8c2c 100%);
+            color: #000000 !important;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .fallback-link {
+            font-size: 13px;
+            color: #64748b;
+            word-break: break-all;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .fallback-link a {
+            color: #D4AF37;
+            text-decoration: underline;
+        }
+        .footer {
+            background-color: #15181e;
+            padding: 25px 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            border-top: 1px solid #2a2e39;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>ImobGold</h1>
+        </div>
+        <div class="content">
+            <h2>Bem-vindo à Nova Era Imobiliária!</h2>
+            
+            <p>Olá, futuro parceiro!</p>
+            <p>Recebemos o seu pedido de cadastro com sucesso. Para continuar com a configuração do seu novo site imobiliário de alta conversão, precisamos apenas que você confirme o seu e-mail.</p>
+            
+            <div class="btn-container">
+                <a href="{{ activate_url }}" class="btn">Confirmar Meu E-mail</a>
+            </div>
+            
+            <div class="fallback-link">
+                Se o botão acima não funcionar, copie e cole o link abaixo no seu navegador:<br>
+                <a href="{{ activate_url }}">{{ activate_url }}</a>
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 14px; color: #94a3b8;">
+                Se você não solicitou a criação desta conta, pode ignorar este e-mail com segurança. Nenhuma ação adicional é necessária.
+            </p>
+        </div>
+        <div class="footer">
+            <p>Atenciosamente,</p>
+            <p><strong style="color: #cbd5e1;">Equipe ImobGold</strong></p>
+            <p style="margin-top: 15px; font-size: 11px;">&copy; 2026 ImobGold - Todos os direitos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

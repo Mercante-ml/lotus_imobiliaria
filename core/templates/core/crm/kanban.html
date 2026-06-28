@@ -1,0 +1,1779 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Kanban | Helena High-Ticket</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png?v=2">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Helena CRM">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/static/favicon.png">
+    <link rel="manifest" href="#">
+    
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            /* Padrão Lotus Imobiliária - Light Theme */
+            --bg-dark: #F4F6F9; /* Fundo Cinza Claro */
+            --bg-glass: #ffffff; /* Fundo dos Cards Branco */
+            --bg-glass-hover: #F8FAFC;
+            --text-primary: #142048; /* Marinho Escuro */
+            --text-muted: #475569; /* Slate 600 */
+            --border-glass: #E2E8F0; /* Slate 200 */
+            --column-bg: #F1F5F9; /* Slate 100 */
+            
+            --gold-primary: #B48C5A; /* Ouro */
+            --gold-hover: #9c7748;
+
+            
+            --status-novo: #3b82f6; /* Blue */
+            --status-atendimento: #f59e0b; /* Orange */
+            --status-visita: #8b5cf6; /* Purple */
+            --status-fechado: #10b981; /* Green */
+            --status-standby: #64748b; /* Slate/Gray */
+            --status-arquivado: #3f3f46; /* Dark Zinc */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 40px;
+            background-image: radial-gradient(circle at 50% 0%, var(--column-bg) 0%, var(--bg-dark) 80%);
+            overflow-x: hidden;
+        }
+
+        /* Scrollbar styles */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-glass); }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .brand h1 { font-weight: 300; font-size: 2rem; }
+        .brand p { font-size: 0.8rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 4px; }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover { background: var(--bg-glass-hover); border-color: var(--border-glass); }
+        .action-btn.primary { color: var(--gold-primary); border-color: rgba(212, 175, 55, 0.3); }
+        .action-btn.primary:hover { border-color: var(--gold-primary); }
+        .action-btn.danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+        .action-btn.danger:hover { border-color: #ef4444; }
+
+        /* Kanban Layout */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 160px);
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .kanban-column {
+            flex: 1;
+            min-width: 320px;
+            max-width: 400px;
+            background: var(--column-bg);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .column-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .column-header .badge {
+            background: var(--border-glass);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .column-body {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Lead Card */
+        .lead-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-left: 3px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .lead-card[data-status="novo"] { border-left-color: var(--status-novo); }
+        .lead-card[data-status="atendimento"] { border-left-color: var(--status-atendimento); }
+        .lead-card[data-status="visita"] { border-left-color: var(--status-visita); }
+        .lead-card[data-status="fechado"] { border-left-color: var(--status-fechado); }
+
+        .lead-card:active { cursor: grabbing; transform: scale(0.98); }
+        .lead-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-right-color: var(--border-glass); border-top-color: var(--border-glass); border-bottom-color: var(--border-glass); }
+        .lead-card.dragging { opacity: 0.5; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .card-name { font-weight: 500; font-size: 1.1rem; color: var(--gold-primary); }
+        .card-time { font-size: 0.7rem; color: var(--text-muted); }
+
+        .card-contact { margin-bottom: 12px; font-size: 0.85rem; color: var(--text-primary); }
+        .card-contact p { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .card-contact i { color: var(--text-muted); width: 14px; text-align: center; }
+
+        .card-property {
+            background: var(--column-bg);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            border: 1px solid var(--column-bg);
+        }
+        
+        .card-property strong { color: var(--text-primary); font-weight: 400; display: block; margin-top: 2px;}
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-whatsapp { background: rgba(37, 211, 102, 0.1); color: #25D366; border-color: rgba(37, 211, 102, 0.2); }
+        .btn-whatsapp:hover { background: rgba(37, 211, 102, 0.2); }
+        
+        .btn-dossie { background: rgba(212, 175, 55, 0.1); color: var(--gold-primary); border-color: rgba(212, 175, 55, 0.2); }
+        .btn-dossie:hover { background: rgba(212, 175, 55, 0.2); }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulseNew {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .new-lead-pulse { animation: pulseNew 2s infinite; }
+
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--gold-primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .sync-status { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; }
+        
+        /* Empty States */
+        .empty-column {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border: 1px dashed var(--border-glass);
+            border-radius: 8px;
+            margin: auto 0;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px 15px;
+                overflow-y: auto;
+            }
+            .header {
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .header-actions {
+                display: none; /* Escondido por padrão no mobile */
+                flex-direction: column;
+                width: 100%;
+                margin-top: 15px;
+            }
+            .header-actions.active {
+                display: flex; /* Classe que ativa o menu */
+            }
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 0.9rem;
+                padding: 8px 10px;
+            }
+            .kanban-board {
+                flex-direction: column;
+                height: auto;
+                overflow-y: visible;
+                gap: 15px;
+            }
+            .kanban-column {
+                width: 100%;
+                max-width: 100%;
+                min-width: 100%;
+                height: auto;
+                max-height: none;
+            }
+            .column-body {
+                max-height: 400px; /* Evita que uma coluna ocupe a tela toda se tiver muitos cards */
+                overflow-y: auto;
+            }
+            .stats-container {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+            .stat-card {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body data-tenant="{{ request.tenant.schema_name }}">
+
+    <div class="header">
+        <div class="brand" style="display: flex; align-items: center; gap: 15px;">
+            {% if request.tenant.logo %}
+                <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.nome }}" style="height: 40px; border-radius: 4px; object-fit: contain;">
+            {% else %}
+                <div style="width: 40px; height: 40px; background: var(--gold-primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; font-size: 1.2rem;">
+                    {{ request.tenant.nome|make_list|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h1 style="margin: 0; font-size: 1.2rem; font-weight: 600;">{{ request.tenant.nome }}</h1>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Helena AI CRM</p>
+            </div>
+        </div>
+        
+        <button class="menu-toggle" onclick="document.querySelector('.header-actions').classList.toggle('active')">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        
+        <div class="header-actions">
+            <button id="btnPush" onclick="subscribePush()" class="action-btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; font-weight: bold;">
+                <i class="fa-solid fa-bell"></i> Ligar Alertas
+            </button>
+            <div id="syncStatus" class="sync-status text-slate-400 text-sm hidden">
+                <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                Sincronizando...
+            </div>
+            
+            {% if is_owner or is_gerente %}
+                <a href="#" class="action-btn" style="background: rgba(245, 158, 11, 0.1); border-color: #f59e0b; color: #f59e0b;"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+                
+                {% if is_diamond or request.user.is_superuser %}
+                <a href="#" class="action-btn"><i class="fa-solid fa-users"></i> Equipe</a>
+                {% if is_owner %}
+                <a href="#" class="action-btn"><i class="fa-solid fa-percent"></i> Comissões</a>
+                {% endif %}
+                {% else %}
+                <a href="#" onclick="alert('A Gestão de Equipe (Multi-Corretores) é exclusiva do Plano Diamond. Faça o upgrade na aba Assinatura para liberar este recurso!'); return false;" class="action-btn" style="opacity: 0.7;"><i class="fa-solid fa-lock"></i> Equipe</a>
+                {% endif %}
+            {% endif %}
+            
+            {% if is_owner %}
+            <a href="#" class="action-btn"><i class="fa-solid fa-box-archive"></i> Arquivo Morto</a>
+            <a href="{% url 'core:imovel_criar' %}" class="action-btn"><i class="fa-solid fa-plus"></i> Novo Imóvel</a>
+            <a href="{% url 'core:importar_xml' %}" class="action-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Importar XML</a>
+            <a href="{% url 'core:assinatura' %}" class="action-btn"><i class="fa-solid fa-credit-card"></i> Assinatura</a>
+            <a href="#" class="action-btn"><i class="fa-solid fa-palette"></i> Identidade Visual</a>
+            <a href="#" class="action-btn"><i class="fa-solid fa-file-invoice-dollar"></i> Faturamento</a>
+            {% else %}
+            <a href="#" class="action-btn"><i class="fa-solid fa-box-archive"></i> Arquivo Morto</a>
+            {% endif %}
+            
+            <a href="{% url 'core:crm_marketing' %}" class="action-btn"><i class="fa-solid fa-qrcode"></i> Marketing / QR Code</a>
+            <a href="{% url 'account_change_password' %}" class="action-btn"><i class="fa-solid fa-key"></i> Senha</a>
+            <button id="btnInstallApp" class="action-btn" style="display: none; background: #2563eb; border-color: #3b82f6;"><i class="fa-solid fa-mobile-screen"></i> Instalar Aplicativo</button>
+            <form method="post" action="{% url 'account_logout' %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit" class="action-btn danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .trial-banner {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .trial-banner p { margin: 0; font-size: 0.95rem; }
+        .trial-banner strong { color: var(--gold-primary); }
+        .trial-btn {
+            background: var(--gold-primary);
+            color: #000;
+            padding: 6px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+        .trial-btn:hover { opacity: 0.9; }
+        .trial-banner.expired {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .trial-banner.expired strong { color: #ef4444; }
+        .trial-banner.expired .trial-btn { background: #ef4444; color: var(--text-primary); }
+    </style>
+    
+    <!-- Storage Warnings -->
+    {% if gb_perc >= 90 %}
+    <div class="trial-banner" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+        <p><strong>Atenção!</strong> Você usou {{ gb_perc }}% do seu armazenamento ({{ gb_used }} GB de {{ gb_limit }} GB).</p>
+        <a href="{% url 'core:assinatura' %}" class="trial-btn" style="background: #ef4444; color: white;">Aumentar Limite</a>
+    </div>
+    {% elif gb_perc >= 80 %}
+    <div class="trial-banner">
+        <p><strong>Aviso:</strong> Seu espaço está quase cheio ({{ gb_perc }}%). Evite falhas na próxima importação.</p>
+        <a href="{% url 'core:assinatura' %}" class="trial-btn">Comprar +Espaço</a>
+    </div>
+    {% endif %}
+    <!-- Import Status Toast (Floating) -->
+    <div id="import-status-card" class="hidden" style="position: fixed; bottom: 20px; right: 20px; width: 350px; background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 9999; backdrop-filter: blur(10px);">
+        <div>
+            <p style="color: #3b82f6; font-weight: 600; font-size: 0.95rem; margin-bottom: 10px;"><i class="fa-solid fa-cloud-arrow-down fa-bounce mr-2"></i> Importando estoque <span id="import-progress-text" style="font-size: 0.8rem; float: right; color: var(--text-muted);"></span></p>
+            <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                <div id="import-progress-bar" style="height: 100%; width: 0%; background: #3b82f6; transition: width 0.3s ease;"></div>
+            </div>
+            
+            <!-- Statistics Card (Hidden by default, shows on success) -->
+            <div id="import-stats" class="hidden mt-4 pt-4 border-t border-[var(--border-glass)]">
+                <h4 style="color: #10b981; font-weight: bold; font-size: 0.9rem; margin-bottom: 15px;"><i class="fa-solid fa-check-circle mr-1"></i> Importação Concluída</h4>
+                <div style="display: flex; justify-content: space-between; text-align: center; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <i class="fa-solid fa-house" style="color: var(--gold-primary); font-size: 1.2rem; margin-bottom: 5px;"></i><br>
+                        <span style="font-weight: bold; color: var(--text-primary); font-size: 1.1rem;" id="stat-imoveis">0</span><br>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Imóveis</span>
+                    </div>
+                    <div style="flex: 1; border-left: 1px solid var(--border-glass);">
+                        <i class="fa-solid fa-hard-drive" style="color: var(--gold-primary); font-size: 1.2rem; margin-bottom: 5px;"></i><br>
+                        <span style="font-weight: bold; color: var(--text-primary); font-size: 1.1rem;"><span id="stat-gb">0</span><span style="font-size: 0.8rem;">GB</span></span><br>
+                        <span style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Armazenamento</span>
+                    </div>
+                </div>
+                <button onclick="limparStatusEReload()" style="width: 100%; padding: 10px; background: #10b981; color: white; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                    OK, Atualizar CRM
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if request.tenant.status_assinatura != 'active' and dias_restantes >= 0 %}
+        {% if dias_restantes > 0 %}
+        <div class="trial-banner">
+            <p>Você está no período de teste gratuito. Restam <strong>{{ dias_restantes }} dias</strong> para o encerramento.</p>
+            <a href="{% url 'core:saas_landing' %}" class="trial-btn">Ativar Conta Definitiva</a>
+        </div>
+        {% else %}
+        <div class="trial-banner expired">
+            <p><strong>Seu período de teste expirou!</strong> A IA não enviará novos leads até que a conta seja ativada.</p>
+            <a href="#" class="trial-btn">Ativar Conta Agora</a>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {% if imoveis_sem_vetor > 0 %}
+    <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 12px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i class="fa-solid fa-robot fa-fade" style="color: #8b5cf6; font-size: 1.5rem;"></i>
+            <div>
+                <p style="margin: 0; font-size: 0.95rem;"><strong>A IA está trabalhando:</strong> Estamos gerando os Vetores de Busca (Embeddings) para <strong>{{ imoveis_sem_vetor }} imóveis</strong> novos.</p>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);">Isso acontece em segundo plano. Não feche sua conta, pode continuar trabalhando normalmente!</p>
+            </div>
+        </div>
+        <div>
+            <button onclick="window.location.reload();" style="background: var(--column-bg); color: var(--text-primary); padding: 6px 12px; border: 1px solid var(--border-glass); border-radius: 6px; cursor: pointer; font-size: 0.85rem;"><i class="fa-solid fa-rotate-right"></i> Atualizar Status</button>
+        </div>
+    </div>
+    </div>
+    {% endif %}
+
+    {% if radar_matches %}
+    <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 15px 20px; margin-bottom: 25px;">
+        <h3 style="color: var(--gold-primary); font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-radar fa-beat-fade"></i> Radar Smart-Match: Dinheiro na Mesa!
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for match in radar_matches %}
+            <div style="background: rgba(0,0,0,0.3); border-radius: 6px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;" id="match-{{ match.id }}">
+                <div>
+                    <strong style="color: var(--text-primary); font-size: 0.95rem;">Match {{ match.score }}%:</strong> 
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Lead <strong>{{ match.lead.name }}</strong> (arquivado) acabou de dar match com: <strong>{{ match.imovel.title }}</strong>.</span>
+                    <div style="font-size: 0.8rem; color: #a1a1aa; margin-top: 4px; font-style: italic;">"{{ match.motivo }}"</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="openLeadModal(event, {{ match.lead.id }})" class="action-btn primary" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-brands fa-whatsapp"></i> Acordar Lead</button>
+                    <button onclick="dismissMatch({{ match.id }})" class="action-btn" style="padding: 6px 12px; font-size: 0.8rem; border-color: var(--border-glass);"><i class="fa-solid fa-times"></i> Ocultar</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <script>
+        function dismissMatch(matchId) {
+            fetch(`/crm/api/matches/${matchId}/dismiss/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(r => {
+                if (r.ok) {
+                    const el = document.getElementById('match-' + matchId);
+                    if (el) el.remove();
+                }
+            });
+        }
+    </script>
+    {% endif %}
+
+    <!-- Mini Dashboard -->
+    <div class="stats-container" style="display: flex; gap: 20px; margin-bottom: 25px; padding-bottom: 10px; flex-wrap: wrap;">
+        <div class="stat-card" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 25px; min-width: 300px; flex: 1; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="width: 100px; height: 100px; position: relative; flex-shrink: 0;">
+                <canvas id="leadsChart"></canvas>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 5px; color: var(--gold-primary); font-weight: 500;">Pipeline</h3>
+                <div style="font-size: 0.85rem; color: var(--text-muted);" id="chartLegend">
+                    Aguardando dados...
+                </div>
+            </div>
+        </div>
+
+        <!-- Estoque & Armazenamento Integrado -->
+        <div class="stat-card" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 20px; flex: 1; min-width: 320px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 5px; color: var(--gold-primary); font-weight: 500;"><i class="fa-solid fa-boxes-stacked mr-2"></i> Seu Estoque</h3>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-primary);">{{ total_imoveis }} <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">imóveis</span></div>
+                </div>
+                <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 6px;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-key" style="color: var(--gold-primary);"></i> {{ imoveis_revenda }} Revenda</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-rocket" style="color: #3b82f6;"></i> {{ imoveis_lancamento }} Lanç.</div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-hard-drive mr-1"></i> {{ gb_used }} GB de {{ gb_limit }} GB</span>
+                    <span style="font-size: 0.8rem; font-weight: bold; color: {% if gb_perc >= 90 %}#ef4444{% elif gb_perc >= 80 %}#f59e0b{% else %}var(--text-primary){% endif %};">{{ gb_perc }}%</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="height: 100%; width: {{ gb_perc }}%; background: {% if gb_perc >= 90 %}#ef4444{% elif gb_perc >= 80 %}#f59e0b{% else %}var(--gold-primary){% endif %}; transition: width 0.3s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    {% if data_ultima_carga %}
+                    <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-clock-rotate-left"></i> Atualizado: {{ data_ultima_carga|date:"d/m/y H:i" }}</span>
+                    {% else %}
+                    <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-clock-rotate-left"></i> Sem carga</span>
+                    {% endif %}
+                    
+                    {% if gb_perc >= 80 %}
+                        <a href="{% url 'core:assinatura' %}" style="color: {% if gb_perc >= 90 %}#ef4444{% else %}#f59e0b{% endif %}; font-size: 0.75rem; text-decoration: none; font-weight: bold;"><i class="fa-solid fa-arrow-up"></i> + Espaço</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card finance-card" style="background: linear-gradient(145deg, rgba(212, 175, 55, 0.05), rgba(212, 175, 55, 0.01)); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 12px; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden;">
+            <i class="fa-solid fa-chart-line" style="position: absolute; right: -20px; bottom: -20px; font-size: 8rem; color: rgba(212, 175, 55, 0.05);"></i>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <h3 style="font-size: 1.1rem; margin: 0; color: var(--gold-primary); font-weight: 500;"><i class="fa-solid fa-sack-dollar mr-2"></i> Performance Financeira</h3>
+                <select id="mesFiltro" onchange="window.location.href='?mes=' + this.value" style="background: var(--bg-glass); border: 1px solid var(--gold-primary); color: var(--text-primary); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; outline: none; cursor: pointer; z-index: 10;">
+                    {% for op in meses_opcoes %}
+                    <option value="{{ op }}" {% if op == mes_filtro %}selected{% endif %}>{{ op }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 120px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">VGV (Vendido)</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">R$ {{ total_vendido|floatformat:"2g"|default:"0,00" }}</div>
+                </div>
+                {% if is_owner and is_diamond %}
+                <div style="flex: 1; min-width: 120px; border-left: 1px solid var(--border-glass); padding-left: 20px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Receita da Casa</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #10b981;">R$ {{ minha_comissao|floatformat:"2g"|default:"0,00" }}</div>
+                </div>
+                <div style="flex: 1; min-width: 120px; border-left: 1px solid var(--border-glass); padding-left: 20px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Comissões Pagas</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #ef4444; margin-bottom: 5px;">R$ {{ comissao_distribuida|floatformat:"2g"|default:"0,00" }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 3px;">
+                        <span><i class="fa-solid fa-user-tie" style="width: 15px;"></i> Corretor: R$ {{ c_gerada|floatformat:"2g"|default:"0,00" }}</span>
+                        <span><i class="fa-solid fa-user-group" style="width: 15px;"></i> Gerente: R$ {{ c_gerente|floatformat:"2g"|default:"0,00" }}</span>
+                        <span><i class="fa-solid fa-building-user" style="width: 15px;"></i> Diretor: R$ {{ c_diretor|floatformat:"2g"|default:"0,00" }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div style="flex: 1; min-width: 120px; border-left: 1px solid var(--border-glass); padding-left: 20px;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Sua Comissão</div>
+                    <div style="font-size: 1.5rem; font-weight: 600; color: #10b981;">R$ {{ minha_comissao|floatformat:"2g"|default:"0,00" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="stat-card" style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: var(--text-primary); font-weight: 500;">Sua Vitrine Digital</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Copie o link do seu portfólio de imóveis e envie para seus clientes começarem a pesquisar agora mesmo.</p>
+            <div style="display: flex; gap: 10px; margin-top: auto;">
+                <button onclick="copiarLinkSite()" id="btnCopyLink" style="flex: 1; padding: 12px; border-radius: 8px; background: linear-gradient(to right, #d4af37, #b69121); color: #000; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; box-shadow: 0 0 15px rgba(212,175,55,0.2); transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    <i class="fa-solid fa-link"></i> Copiar Link
+                </button>
+                <a href="/imoveis/" target="_blank" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; font-weight: bold; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 0.9rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <i class="fa-solid fa-globe"></i> Abrir Site
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+            <script>
+                function copiarLinkSite() {
+                    const link = window.location.origin + "/imoveis/";
+                    navigator.clipboard.writeText(link).then(() => {
+                        const btn = document.getElementById('btnCopyLink');
+                        const originalHtml = btn.innerHTML;
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copiado!';
+                        btn.style.borderColor = '#10b981';
+                        btn.style.color = '#10b981';
+                        setTimeout(() => {
+                            btn.innerHTML = originalHtml;
+                            btn.style.borderColor = '';
+                            btn.style.color = '';
+                        }, 2000);
+                    });
+                }
+            </script>
+        </div>
+    </div>
+
+    <!-- Filtros e Controles de Visualização -->
+    <div style="background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; flex: 1;">
+            <input type="text" id="filterCliente" placeholder="Buscar Cliente ou Telefone" onkeyup="applyFilters()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; outline: none; min-width: 200px;">
+            
+            <select id="filterCorretor" onchange="applyFilters()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; outline: none;">
+                <option value="">Todos os Corretores</option>
+                {% for corretor in corretores %}
+                <option value="{{ corretor.nome }}" data-gerente="{{ corretor.gerente_responsavel.nome|default:'' }}">
+                    {{ corretor.nome }} 
+                    {% if corretor.role == 'gerente' %}(Gerente){% elif corretor.role == 'diretor' %}(Diretor){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            
+            {% if is_owner %}
+            <select id="filterGerente" onchange="onGerenteChange()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; outline: none;">
+                <option value="">Todos os Gerentes</option>
+                {% for corretor in corretores %}
+                    {% if corretor.role == 'gerente' %}
+                    <option value="{{ corretor.nome }}">{{ corretor.nome }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            {% endif %}
+            
+            <select id="filterMes" onchange="applyFilters()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; outline: none;">
+                <option value="">Desde o Início</option>
+                {% for op in meses_opcoes %}
+                <option value="{{ op }}">{{ op }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 10px; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 8px; border: 1px solid var(--border-glass);">
+            <button onclick="toggleView('kanban')" id="btnViewKanban" style="background: var(--gold-primary); color: black; border: none; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;"><i class="fa-solid fa-table-columns"></i> Kanban</button>
+            <button onclick="toggleView('list')" id="btnViewList" style="background: transparent; color: var(--text-muted); border: none; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem;"><i class="fa-solid fa-list"></i> Lista</button>
+        </div>
+    </div>
+
+    <!-- Modo Lista -->
+    <div id="list-view" style="display: none; background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-glass); background: rgba(0,0,0,0.3);">
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Cliente</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Contato</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Imóvel</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Corretor</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Entrada / Tempo</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Status</th>
+                    <th style="padding: 15px; font-weight: 500; color: var(--gold-primary);">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="list-body">
+                <!-- Preenchido via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="kanban-board" id="kanban-view">
+        <!-- Coluna: Novos -->
+        <div class="kanban-column" data-status="novo">
+            <div class="column-header" style="border-bottom-color: var(--status-novo);">
+                <span style="color: var(--status-novo);">Novos Capturados</span>
+                <span class="badge" id="count-novo">0</span>
+            </div>
+            <div class="column-body" id="col-novo">
+                <div class="empty-column">Nenhum lead novo</div>
+            </div>
+        </div>
+
+        <!-- Coluna: Em Atendimento -->
+        <div class="kanban-column" data-status="atendimento">
+            <div class="column-header" style="border-bottom-color: var(--status-atendimento);">
+                <span style="color: var(--status-atendimento);">Em Atendimento</span>
+                <span class="badge" id="count-atendimento">0</span>
+            </div>
+            <div class="column-body" id="col-atendimento">
+                <div class="empty-column">Arraste leads para cá</div>
+            </div>
+        </div>
+
+        <!-- Coluna: Visita Agendada -->
+        <div class="kanban-column" data-status="visita">
+            <div class="column-header" style="border-bottom-color: var(--status-visita);">
+                <span style="color: var(--status-visita);">Visita Agendada</span>
+                <span class="badge" id="count-visita">0</span>
+            </div>
+            <div class="column-body" id="col-visita">
+                <div class="empty-column">Arraste leads para cá</div>
+            </div>
+        </div>
+
+        <!-- Coluna: Proposta / Negociação -->
+        <div class="kanban-column" data-status="proposta">
+            <div class="column-header" style="border-bottom-color: var(--status-standby);">
+                <span style="color: var(--status-standby);">Proposta / Negociação</span>
+                <span class="badge" id="count-proposta">0</span>
+            </div>
+            <div class="column-body" id="col-proposta">
+                <div class="empty-column">Arraste leads para cá</div>
+            </div>
+        </div>
+
+        <!-- Coluna: Fechado -->
+        <div class="kanban-column" data-status="fechado">
+            <div class="column-header" style="border-bottom-color: var(--status-fechado);">
+                <span style="color: var(--status-fechado);">Fechamento</span>
+                <span class="badge" id="count-fechado">0</span>
+            </div>
+            <div class="column-body" id="col-fechado">
+                <div class="empty-column">Arraste leads para cá</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Fechamento / Venda -->
+    <div id="fechamentoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div style="background: linear-gradient(145deg, var(--bg-dark), #1a1a24); border: 1px solid var(--gold-primary); border-radius: 16px; width: 90%; max-width: 450px; padding: 35px; box-shadow: 0 10px 50px rgba(212, 175, 55, 0.2); text-align: center; position: relative;">
+            
+            <div style="margin-bottom: 20px;">
+                <i class="fa-solid fa-trophy" style="font-size: 3rem; color: var(--gold-primary); text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);"></i>
+            </div>
+            
+            <h2 style="font-size: 1.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;">Parabéns pela Venda!</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">O lead <strong id="fechamentoLeadName" style="color: var(--text-primary);">Nome do Lead</strong> fechou negócio. Informe o valor final para calcularmos sua comissão.</p>
+            
+            <input type="hidden" id="fechamentoLeadId">
+            <input type="hidden" id="fechamentoOldCol">
+            
+            <div style="margin-bottom: 25px; text-align: left;">
+                <label style="display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">Valor Final Fechado (R$)</label>
+                <input type="number" id="fechamentoValor" placeholder="Ex: 1500000" style="width: 100%; padding: 15px; background: rgba(0,0,0,0.4); border: 1px solid var(--gold-primary); color: var(--text-primary); border-radius: 8px; outline: none; font-size: 1.2rem; font-weight: 500;">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="cancelarFechamento()" style="flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border-glass); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                    Cancelar
+                </button>
+                <button onclick="confirmarFechamento()" style="flex: 2; padding: 12px; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--gold-primary); color: var(--gold-primary); border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s;">
+                    <i class="fa-solid fa-check mr-2"></i> Registrar Venda
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal do Lead -->
+    <div id="leadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: var(--bg-dark); border: 1px solid var(--border-glass); border-radius: 16px; width: 90%; max-width: 500px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-glass); padding-bottom: 15px;">
+                <h2 id="modalLeadName" style="font-size: 1.5rem; font-weight: 500;">Nome do Lead</h2>
+                <button onclick="closeLeadModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <input type="hidden" id="modalLeadId">
+            
+            <div id="alertFechado" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #ef4444; margin: 0 0 5px 0; font-size: 0.95rem;"><i class="fa-solid fa-lock"></i> Venda Fechada</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px;">As comissões deste lead já foram lançadas no painel financeiro.</p>
+                <div style="display: flex; gap: 10px;">
+                    {% if is_owner or is_gerente %}
+                    <button type="button" onclick="estornarComissao()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; border-radius: 4px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-rotate-left"></i> Estornar Comissão e Reabrir</button>
+                    <button type="button" onclick="document.getElementById('modalLeadStatus').value='arquivado'; saveLeadDetails();" style="background: var(--gold-primary); border: none; color: black; border-radius: 4px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; font-weight: bold;"><i class="fa-solid fa-check-double"></i> Concluir e Arquivar</button>
+                    {% else %}
+                    <span style="color: #ef4444; font-size: 0.8rem;"><i class="fa-solid fa-shield-halved"></i> Apenas gestores podem arquivar ou estornar vendas.</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">Status no Funil</label>
+                <select id="modalLeadStatus" style="width: 100%; padding: 12px; background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: 8px; outline: none;">
+                    <optgroup label="Funil Ativo">
+                        <option value="novo">Novo</option>
+                        <option value="atendimento">Em Atendimento</option>
+                        <option value="visita">Visita Agendada</option>
+                        <option value="proposta">Proposta / Negociação</option>
+                        <option value="fechado" disabled>Fechamento (Restrito)</option>
+                    </optgroup>
+                    <optgroup label="Gaveta">
+                        <option value="standby">Standby / Follow-up</option>
+                        {% if is_owner or is_gerente %}
+                        <option value="arquivado">Arquivado (Sucesso)</option>
+                        <option value="lixeira">Lixeira / Perdido</option>
+                        {% endif %}
+                    </optgroup>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">
+                    Histórico de Conversas
+                    <button type="button" onclick="gerarSugestaoIA()" id="btnGerarSugestao" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 4px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; transition: 0.2s;"><i class="fa-solid fa-wand-magic-sparkles"></i> Sugerir Follow-up (IA)</button>
+                </label>
+                
+                <div id="modalLeadHistory" style="width: 100%; height: 150px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #ccc; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; white-space: pre-wrap;">
+                </div>
+                
+                <textarea id="modalLeadNotes" rows="3" placeholder="Adicionar nova anotação à timeline..." style="width: 100%; padding: 12px; background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: 8px; outline: none; resize: vertical;"></textarea>
+                
+                <div id="iaSuggestionArea" style="display: none; margin-top: 10px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-left: 3px solid #8b5cf6; border-radius: 4px; font-size: 0.85rem; color: #e2e8f0;">
+                    <strong style="color: #c4b5fd; display: block; margin-bottom: 5px;"><i class="fa-solid fa-robot"></i> Sugestão da Helena:</strong>
+                    <span id="iaSuggestionText"></span>
+                    <br>
+                    <button type="button" onclick="copiarSugestao()" style="margin-top: 10px; background: #25D366; color: var(--text-primary); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold;"><i class="fa-brands fa-whatsapp"></i> Copiar e Abrir WhatsApp</button>
+                </div>
+            </div>
+
+            <button onclick="saveLeadDetails()" style="width: 100%; padding: 15px; background: var(--gold-primary); color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s;">
+                Salvar Alterações
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const tenantSlug = document.body.getAttribute('data-tenant');
+        const syncStatus = document.getElementById('syncStatus');
+        let currentLeads = {}; // Store known leads to animate only new ones
+        let draggedCard = null;
+        let chartInstance = null;
+
+        // Initialize Audio for new lead notification
+        // Using a subtle bloop sound
+        const notificationSound = new Audio('https://actions.google.com/sounds/v1/water/water_drop.ogg');
+        notificationSound.volume = 0.5;
+
+        async function pollImportStatus() {
+            try {
+                const res = await fetch(`/crm/api/import-status/?t=${Date.now()}`);
+                const data = await res.json();
+                const card = document.getElementById('import-status-card');
+                const bar = document.getElementById('import-progress-bar');
+                const text = document.getElementById('import-progress-text');
+                const stats = document.getElementById('import-stats');
+                
+                if (data.status && data.status !== 'idle' && data.status !== 'error') {
+                    card.classList.remove('hidden');
+                    
+                    if (data.status === 'reading_file') {
+                        text.innerText = '(Lendo arquivo...)';
+                        bar.style.width = '10%';
+                    } else if (data.status === 'processing') {
+                        let percent = 10;
+                        if (data.total > 0) {
+                            percent = Math.max(10, Math.round((data.current / data.total) * 100));
+                        }
+                        text.innerText = `(${data.current} de ${data.total} importados)`;
+                        bar.style.width = percent + '%';
+                    } else if (data.status === 'done') {
+                        text.innerText = '(Concluído com Sucesso!)';
+                        bar.style.width = '100%';
+                        bar.style.background = '#10b981';
+                        
+                        // Show statistics card
+                        if (data.stats) {
+                            stats.classList.remove('hidden');
+                            document.getElementById('stat-imoveis').innerText = data.stats.total_imoveis;
+                            document.getElementById('stat-gb').innerText = data.stats.gb_used;
+                        }
+                        
+                        // Toca o som!
+                        notificationSound.play().catch(e => console.log('Audio play prevented', e));
+                        return; // Para o polling
+                    }
+                } else if (data.status === 'error') {
+                    card.classList.remove('hidden');
+                    card.style.background = 'rgba(239, 68, 68, 0.1)';
+                    card.style.borderColor = '#ef4444';
+                    text.style.color = '#ef4444';
+                    text.innerText = `Erro: ${data.error}`;
+                    bar.style.width = '100%';
+                    bar.style.background = '#ef4444';
+                    return; // Para o polling
+                } else {
+                    card.classList.add('hidden');
+                }
+            } catch(e) {}
+            
+            setTimeout(pollImportStatus, 2000);
+        }
+        
+        async function limparStatusEReload() {
+            try {
+                await fetch('/crm/api/import-clear/');
+            } catch(e) {}
+            window.location.reload();
+        }
+
+        // Inicia o polling assim que a página carrega
+        pollImportStatus();
+
+        async function fetchLeads() {
+            try {
+                syncStatus.innerHTML = '<div class="loader"></div> Atualizando...';
+                
+                const response = await fetch(`/${tenantSlug}/crm/api/leads/`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                renderBoard(data.leads);
+                
+                const now = new Date();
+                syncStatus.innerHTML = `<i class="fa-solid fa-check-double" style="color: var(--status-fechado); margin-right: 5px;"></i> Atualizado às ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            } catch (error) {
+                console.error('Error fetching leads:', error);
+                syncStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-right: 5px;"></i> Erro de Conexão';
+            }
+        }
+
+        const isOwner = {% if is_owner %}true{% else %}false{% endif %};
+        const corretoresList = [
+            {% for corretor in corretores %}
+            { id: {{ corretor.id }}, nome: '{{ corretor.nome }} {% if corretor.role == "gerente" %}(Gerente){% elif corretor.role == "diretor" %}(Diretor){% endif %}' },
+            {% endfor %}
+        ];
+
+        function createCardHTML(lead, isNew) {
+            const pulseClass = (isNew && lead.status === 'novo') ? 'new-lead-pulse' : '';
+            
+            let corretorHtml = '';
+            if (isOwner) {
+                let options = `<option value="">Lead da Casa</option>`;
+                corretoresList.forEach(c => {
+                    const selected = lead.corretor_id === c.id ? 'selected' : '';
+                    options += `<option value="${c.id}" ${selected}>${c.nome}</option>`;
+                });
+                
+                corretorHtml = `
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-glass); padding-top: 10px;">
+                        <select onchange="updateLeadCorretor(${lead.id}, this.value)" style="width: 100%; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border-glass); border-radius: 4px; padding: 4px; font-size: 0.8rem; cursor: pointer;">
+                            ${options}
+                        </select>
+                    </div>
+                `;
+            } else {
+                corretorHtml = `
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-glass); padding-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-user"></i> ${lead.corretor_name}
+                    </div>
+                `;
+            }
+
+        const tempEmojis = { 'quente': '🔥', 'morno': '⛅', 'frio': '❄️' };
+        const tempEmoji = tempEmojis[lead.temperatura] || '⛅';
+        
+        const isFechado = lead.status === 'fechado';
+        const draggableAttr = isFechado ? 'draggable="false"' : 'draggable="true"';
+
+        return `
+            <div class="lead-card ${pulseClass}" ${draggableAttr} data-id="${lead.id}" data-status="${lead.status}" onclick="openLeadModal(event, ${lead.id})">
+                <div class="card-header">
+                    <div class="card-name" style="display: flex; align-items: center; gap: 5px;">
+                        <span title="Temperatura: ${lead.temperatura}">${tempEmoji}</span> ${lead.name}
+                    </div>
+                    <div class="card-time">
+                        ${(lead.idle_days > 3 && lead.status !== 'fechado' && lead.status !== 'arquivado') 
+                            ? `<span style="color: #ef4444; font-weight: bold; margin-right: 5px;" title="Lead parado há ${lead.idle_days} dias"><i class="fa-solid fa-triangle-exclamation"></i> ${lead.idle_days}d</span>` 
+                            : ''}
+                        ${lead.timestamp}
+                    </div>
+                </div>
+                    <div class="card-contact">
+                        <p><i class="fa-solid fa-phone"></i> ${lead.phone}</p>
+                        <p><i class="fa-solid fa-envelope"></i> ${lead.email || 'Não informado'}</p>
+                    </div>
+                    <div class="card-property">
+                        Imóvel de Interesse
+                        <strong>${lead.property_title}</strong>
+                    </div>
+                    ${lead.observacoes ? `
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--gold-primary); border-radius: 4px; font-size: 0.8rem; color: var(--text-muted); font-style: italic; max-height: 50px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        <i class="fa-regular fa-comment-dots" style="margin-right: 4px;"></i>${lead.observacoes}
+                    </div>` : ''}
+                    <div class="card-actions">
+                        <a href="https://wa.me/55${lead.phone.replace(/\D/g, '')}" target="_blank" class="btn-small btn-whatsapp">
+                            <i class="fa-brands fa-whatsapp"></i> Atender
+                        </a>
+                        <a href="${lead.dossie_url}" target="_blank" class="btn-small btn-dossie">
+                            <i class="fa-solid fa-file-pdf"></i> Dossiê
+                        </a>
+                    </div>
+                    ${corretorHtml}
+                </div>
+            `;
+        }
+        
+        async function updateLeadCorretor(leadId, corretorId) {
+            try {
+                syncStatus.innerHTML = '<div class="loader"></div> Atribuindo...';
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const response = await fetch(`/${tenantSlug}/crm/api/leads/update_corretor/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({ lead_id: leadId, corretor_id: corretorId || null })
+                });
+                
+                if (!response.ok) throw new Error('Falha ao atualizar corretor');
+                
+                // Refetch leads to apply changes correctly visually
+                await fetchLeads();
+                
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao atribuir corretor.");
+                syncStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; margin-right: 5px;"></i> Erro';
+            }
+        }
+
+        function renderBoard(leads) {
+            const columns = {
+                novo: document.getElementById('col-novo'),
+                atendimento: document.getElementById('col-atendimento'),
+                visita: document.getElementById('col-visita'),
+                proposta: document.getElementById('col-proposta'),
+                fechado: document.getElementById('col-fechado')
+            };
+
+            // Reset columns content if we are redrawing completely, but to prevent flicker, 
+            // we will build temporary containers and replace innerHTML
+            const newContent = { novo: '', atendimento: '', visita: '', proposta: '', fechado: '' };
+            const counts = { novo: 0, atendimento: 0, visita: 0, proposta: 0, fechado: 0 };
+            
+            let hasNewLead = false;
+
+            leads.forEach(lead => {
+                const isNew = !currentLeads[lead.id];
+                if (isNew && lead.status === 'novo' && Object.keys(currentLeads).length > 0) {
+                    hasNewLead = true; // Only play sound if app was already loaded
+                }
+                
+                currentLeads[lead.id] = lead;
+                
+                const status = lead.status || 'novo';
+                if(newContent[status] !== undefined) {
+                    newContent[status] += createCardHTML(lead, isNew);
+                    counts[status]++;
+                }
+            });
+
+            // Update DOM
+            Object.keys(columns).forEach(status => {
+                const col = columns[status];
+                if(col) {
+                    if (counts[status] === 0) {
+                        col.innerHTML = '<div class="empty-column">Nenhum lead nesta etapa</div>';
+                    } else {
+                        col.innerHTML = newContent[status];
+                    }
+                    document.getElementById(`count-${status}`).innerText = counts[status];
+                }
+            });
+
+            updateChart(counts);
+
+            if (hasNewLead) {
+                notificationSound.play().catch(e => console.log('Audio autoplay blocked'));
+            }
+
+            attachDragEvents();
+        }
+
+        // --- Chart Logic ---
+        function updateChart(counts) {
+            const ctx = document.getElementById('leadsChart').getContext('2d');
+            const dataValues = [counts.novo, counts.atendimento, counts.visita, counts.proposta, counts.fechado];
+            const total = dataValues.reduce((a, b) => a + b, 0);
+            
+            // Legend
+            const legendHTML = `
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Novo</span> <strong>${counts.novo}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Atend.</span> <strong>${counts.atendimento}</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Visita</span> <strong>${counts.visita}</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: var(--status-standby);"><span>Proposta</span> <strong>${counts.proposta}</strong></div>
+                    <div style="display: flex; justify-content: space-between; color: var(--status-fechado);"><span>Fechado</span> <strong>${counts.fechado}</strong></div>
+                </div>
+            `;
+            document.getElementById('chartLegend').innerHTML = total > 0 ? legendHTML : 'Nenhum lead no funil.';
+
+            if (chartInstance) {
+                chartInstance.data.datasets[0].data = dataValues;
+                chartInstance.update();
+            } else {
+                Chart.defaults.color = '#8a8a93';
+                chartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Novo', 'Atendimento', 'Visita', 'Proposta', 'Fechamento'],
+                        datasets: [{
+                            data: dataValues,
+                            backgroundColor: [
+                                '#3b82f6', // Novo
+                                '#f59e0b', // Atendimento
+                                '#8b5cf6', // Visita
+                                '#64748b', // Proposta
+                                '#10b981'  // Fechado
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) label += ': ';
+                                        const val = context.parsed;
+                                        const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                                        label += `${val} (${pct}%)`;
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // --- Drag and Drop Logic ---
+        function attachDragEvents() {
+            const cards = document.querySelectorAll('.lead-card');
+            const columnsBody = document.querySelectorAll('.column-body');
+
+            cards.forEach(card => {
+                card.addEventListener('dragstart', () => {
+                    draggedCard = card;
+                    setTimeout(() => card.classList.add('dragging'), 0);
+                });
+                
+                card.addEventListener('dragend', () => {
+                    draggedCard.classList.remove('dragging');
+                    draggedCard = null;
+                });
+            });
+
+            columnsBody.forEach(col => {
+                col.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    col.style.background = 'var(--column-bg)';
+                });
+                
+                col.addEventListener('dragleave', () => {
+                    col.style.background = 'transparent';
+                });
+
+                col.addEventListener('drop', async e => {
+                    e.preventDefault();
+                    col.style.background = 'transparent';
+                    
+                    if (!draggedCard) return;
+                    
+                    const newStatus = col.parentElement.getAttribute('data-status');
+                    const leadId = draggedCard.getAttribute('data-id');
+                    const oldStatus = draggedCard.getAttribute('data-status');
+                    
+                    if (newStatus !== oldStatus) {
+                        if (newStatus === 'fechado') {
+                            // Revert DOM change temporarily
+                            
+                            // Ask for sales value
+                            document.getElementById('fechamentoLeadId').value = leadId;
+                            document.getElementById('fechamentoOldCol').value = oldStatus;
+                            document.getElementById('fechamentoLeadName').innerText = currentLeads[leadId].name;
+                            document.getElementById('fechamentoValor').value = '';
+                            document.getElementById('fechamentoModal').style.display = 'flex';
+                            return;
+                        }
+                        
+                        // Optimistic UI Update
+                        draggedCard.setAttribute('data-status', newStatus);
+                        // Clean empty state if present
+                        const emptyState = col.querySelector('.empty-column');
+                        if (emptyState) emptyState.remove();
+                        col.appendChild(draggedCard);
+                        
+                        // Update counts
+                        document.getElementById(`count-${oldStatus}`).innerText = parseInt(document.getElementById(`count-${oldStatus}`).innerText) - 1;
+                        document.getElementById(`count-${newStatus}`).innerText = parseInt(document.getElementById(`count-${newStatus}`).innerText) + 1;
+                        
+                        // Update server
+                        await updateLeadStatus(leadId, newStatus);
+                    }
+                });
+            });
+        }
+
+        async function updateLeadStatus(leadId, status, valorVenda = 0) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            try {
+                const res = await fetch(`/${tenantSlug}/crm/api/leads/update/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({ lead_id: leadId, status: status, valor_venda: valorVenda })
+                });
+                if(!res.ok) throw new Error('Failed to update status');
+                currentLeads[leadId].status = status;
+                
+                // If it was a sale, we might want to refresh the page to update the dashboard values
+                if (status === 'fechado') {
+                    window.location.reload();
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao atualizar status do lead.");
+                fetchLeads(); // Reload state
+            }
+        }
+
+        // --- Fechamento Logic ---
+        function cancelarFechamento() {
+            document.getElementById('fechamentoModal').style.display = 'none';
+        }
+        
+        async function confirmarFechamento() {
+            const leadId = document.getElementById('fechamentoLeadId').value;
+            const valorInput = document.getElementById('fechamentoValor').value;
+            const oldStatus = document.getElementById('fechamentoOldCol').value;
+            
+            if (!valorInput || isNaN(valorInput)) {
+                alert("Por favor, insira o valor da venda (somente números).");
+                return;
+            }
+            
+            document.getElementById('fechamentoModal').style.display = 'none';
+            
+            // Move UI
+            const card = document.querySelector(`.lead-card[data-id="${leadId}"]`);
+            const colFechado = document.getElementById('col-fechado');
+            if (card && colFechado) {
+                card.setAttribute('data-status', 'fechado');
+                const emptyState = colFechado.querySelector('.empty-column');
+                if (emptyState) emptyState.remove();
+                colFechado.appendChild(card);
+                
+                document.getElementById(`count-${oldStatus}`).innerText = parseInt(document.getElementById(`count-${oldStatus}`).innerText) - 1;
+                document.getElementById('count-fechado').innerText = parseInt(document.getElementById('count-fechado').innerText) + 1;
+            }
+            
+            // Send to server
+            await updateLeadStatus(leadId, 'fechado', parseFloat(valorInput));
+        }
+
+        // --- Modal Logic ---
+        function openLeadModal(event, leadId) {
+            // Prevent opening if clicking on buttons or select inside the card
+            if (event.target.closest('a') || event.target.closest('select') || event.target.closest('button')) {
+                return;
+            }
+            
+            const lead = currentLeads[leadId];
+            if (!lead) return;
+
+            document.getElementById('modalLeadId').value = lead.id;
+            document.getElementById('modalLeadName').innerText = lead.name;
+            
+            const statusSelect = document.getElementById('modalLeadStatus');
+            const alertFechado = document.getElementById('alertFechado');
+            
+            if (lead.status === 'fechado') {
+                statusSelect.value = 'fechado';
+                statusSelect.disabled = true;
+                if(alertFechado) alertFechado.style.display = 'block';
+            } else {
+                statusSelect.value = lead.status;
+                statusSelect.disabled = false;
+                if(alertFechado) alertFechado.style.display = 'none';
+            }
+            
+            const historyDiv = document.getElementById('modalLeadHistory');
+            if (lead.observacoes) {
+                historyDiv.innerHTML = lead.observacoes.replace(/\n/g, '<br><br>');
+            } else {
+                historyDiv.innerHTML = '<span style="color: var(--text-muted); font-style: italic;">Nenhum histórico registrado.</span>';
+            }
+            // scroll to bottom of history
+            setTimeout(() => { historyDiv.scrollTop = historyDiv.scrollHeight; }, 10);
+            
+            document.getElementById('modalLeadNotes').value = '';
+            
+            document.getElementById('leadModal').style.display = 'flex';
+        }
+
+        function closeLeadModal() {
+            document.getElementById('leadModal').style.display = 'none';
+            document.getElementById('iaSuggestionArea').style.display = 'none';
+            document.getElementById('btnGerarSugestao').innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Sugerir Follow-up (IA)';
+            document.getElementById('btnGerarSugestao').disabled = false;
+        }
+
+        async function gerarSugestaoIA() {
+            const btn = document.getElementById('btnGerarSugestao');
+            const area = document.getElementById('iaSuggestionArea');
+            const textSpan = document.getElementById('iaSuggestionText');
+            const leadId = document.getElementById('modalLeadId').value;
+            
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(`/${tenantSlug}/crm/api/leads/gerar_followup/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lead_id: leadId })
+                });
+                
+                const data = await response.json();
+                if (response.ok && data.sugestao) {
+                    textSpan.innerText = data.sugestao;
+                    area.style.display = 'block';
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Sugestão Pronta';
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao gerar sugestão da IA.");
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Sugerir Follow-up (IA)';
+                btn.disabled = false;
+            }
+        }
+        
+        function copiarSugestao() {
+            const texto = document.getElementById('iaSuggestionText').innerText;
+            navigator.clipboard.writeText(texto);
+            
+            const leadId = document.getElementById('modalLeadId').value;
+            const lead = currentLeads[leadId];
+            if (lead && lead.phone) {
+                const foneNum = lead.phone.replace(/\D/g, '');
+                const textEncoded = encodeURIComponent(texto);
+                window.open(`https://wa.me/55${foneNum}?text=${textEncoded}`, '_blank');
+            } else {
+                alert('Telefone não encontrado. Texto copiado!');
+            }
+        }
+
+        async function estornarComissao() {
+            if(!confirm("Tem certeza que deseja reabrir a negociação? Isso vai estornar as comissões deste lead nos dashboards de todos os envolvidos.")) {
+                return;
+            }
+            
+            const leadId = document.getElementById('modalLeadId').value;
+            try {
+                // Update via API. In our current update endpoint, if we change status to something else from fechado,
+                // we should make sure the backend handles the commission reset.
+                // For now, setting valor_venda to 0 along with status change handles it.
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const res = await fetch(`/${tenantSlug}/crm/api/leads/update/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({ lead_id: leadId, status: 'proposta', valor_venda: 0 })
+                });
+                if(!res.ok) throw new Error('Falha ao estornar');
+                
+                alert("Comissão estornada e negociação reaberta com sucesso!");
+                window.location.reload();
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao estornar comissão.");
+            }
+        }
+
+        async function saveLeadDetails() {
+            const leadId = document.getElementById('modalLeadId').value;
+            const status = document.getElementById('modalLeadStatus').value;
+            const notes = document.getElementById('modalLeadNotes').value;
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const saveBtn = document.querySelector('#leadModal button[onclick="saveLeadDetails()"]');
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = 'Salvando...';
+            saveBtn.disabled = true;
+
+            try {
+                const res = await fetch(`/${tenantSlug}/crm/api/leads/update/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({ lead_id: leadId, status: status, observacoes: notes })
+                });
+                if(!res.ok) throw new Error('Falha ao atualizar detalhes');
+                
+                // Atualiza o cache local
+                if (currentLeads[leadId]) {
+                    currentLeads[leadId].status = status;
+                    if (notes && notes.trim() !== '') {
+                        const now = new Date();
+                        const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR').substring(0, 5);
+                        const entry = `[${dateStr} - Você]: ${notes}`;
+                        if (currentLeads[leadId].observacoes) {
+                            currentLeads[leadId].observacoes += '\n' + entry;
+                        } else {
+                            currentLeads[leadId].observacoes = entry;
+                        }
+                    }
+                }
+                
+                closeLeadModal();
+                fetchLeads(); // Recarrega o quadro
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao salvar alterações.");
+            } finally {
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('leadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLeadModal();
+            }
+        });
+
+        // --- FILTROS E VIEW DE LISTA ---
+        let currentView = 'kanban';
+        let allLeadsCache = [];
+
+        function toggleView(viewType) {
+            currentView = viewType;
+            if (viewType === 'kanban') {
+                document.getElementById('kanban-view').style.display = 'flex';
+                document.getElementById('list-view').style.display = 'none';
+                document.getElementById('btnViewKanban').style.background = 'var(--gold-primary)';
+                document.getElementById('btnViewKanban').style.color = 'black';
+                document.getElementById('btnViewList').style.background = 'transparent';
+                document.getElementById('btnViewList').style.color = 'var(--text-muted)';
+            } else {
+                document.getElementById('kanban-view').style.display = 'none';
+                document.getElementById('list-view').style.display = 'block';
+                document.getElementById('btnViewList').style.background = 'var(--gold-primary)';
+                document.getElementById('btnViewList').style.color = 'black';
+                document.getElementById('btnViewKanban').style.background = 'transparent';
+                document.getElementById('btnViewKanban').style.color = 'var(--text-muted)';
+            }
+            applyFilters();
+        }
+
+        function onGerenteChange() {
+            const gerenteSelect = document.getElementById('filterGerente');
+            const corretorSelect = document.getElementById('filterCorretor');
+            if (!gerenteSelect || !corretorSelect) return;
+            
+            const selectedGerente = gerenteSelect.value;
+            
+            // Iterate over options, skipping the first one (Todos)
+            for (let i = 1; i < corretorSelect.options.length; i++) {
+                const opt = corretorSelect.options[i];
+                const optGerente = opt.getAttribute('data-gerente');
+                
+                if (!selectedGerente) {
+                    opt.style.display = ''; // Show all if no gerente selected
+                } else {
+                    if (optGerente === selectedGerente || opt.value === selectedGerente) {
+                        // Show if the corretor belongs to this gerente, OR if the corretor IS the gerente himself
+                        opt.style.display = '';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                }
+            }
+            
+            // If the currently selected corretor is now hidden, reset the corretor select
+            const currentSelected = corretorSelect.options[corretorSelect.selectedIndex];
+            if (currentSelected && currentSelected.style.display === 'none') {
+                corretorSelect.value = '';
+            }
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const strSearch = document.getElementById('filterCliente').value.toLowerCase();
+            const valCorretor = document.getElementById('filterCorretor').value;
+            const filterGerenteElement = document.getElementById('filterGerente');
+            const valGerente = filterGerenteElement ? filterGerenteElement.value : '';
+            const valMes = document.getElementById('filterMes').value; // Format: YYYY-MM
+            
+            const filteredLeads = allLeadsCache.filter(lead => {
+                let match = true;
+                if (strSearch && !lead.name.toLowerCase().includes(strSearch) && !lead.phone.includes(strSearch)) match = false;
+                if (valCorretor && lead.corretor_name !== valCorretor) match = false;
+                if (valGerente && lead.gerente_name !== valGerente) match = false;
+                if (valMes) {
+                    // lead.timestamp is like "18 Jun 2026, 15:30" or we can use string match.
+                    // Actually, it's easier to check if the timestamp string has the month.
+                    // But we don't have iso date. Let's do a simple check.
+                    // Or we just accept that the text might not match easily unless we parse.
+                    // Wait, we can pass iso-date from backend. Let's do simple include for now if possible, 
+                    // or just not filter by month strictly in JS if complex, but we need it.
+                    // I will add a simple logic: "Jun 2026"
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    const monthNamesPt = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+                    
+                    const [anoStr, mesStr] = valMes.split('-');
+                    const monthIndex = parseInt(mesStr, 10) - 1;
+                    const mesEn = monthNames[monthIndex];
+                    const mesPt = monthNamesPt[monthIndex];
+                    
+                    if (!lead.timestamp.includes(anoStr) || (!lead.timestamp.includes(mesEn) && !lead.timestamp.includes(mesPt))) {
+                        match = false;
+                    }
+                }
+                return match;
+            });
+            
+            if (currentView === 'kanban') {
+                renderBoard(filteredLeads);
+            } else {
+                renderListView(filteredLeads);
+            }
+        }
+
+        function renderListView(leads) {
+            const tbody = document.getElementById('list-body');
+            let html = '';
+            
+            if (leads.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Nenhum lead encontrado com estes filtros.</td></tr>';
+                return;
+            }
+            
+            leads.forEach(lead => {
+                let statusColor = '#94a3b8';
+                let statusLabel = lead.status.toUpperCase();
+                if(lead.status === 'novo') statusColor = 'var(--status-novo)';
+                if(lead.status === 'atendimento') statusColor = 'var(--status-atendimento)';
+                if(lead.status === 'visita') statusColor = 'var(--status-visita)';
+                if(lead.status === 'proposta') statusColor = 'var(--status-proposta)';
+                if(lead.status === 'fechado') statusColor = 'var(--status-fechado)';
+                
+                html += `
+                <tr style="border-bottom: 1px solid var(--border-glass); transition: 0.2s;" onmouseover="this.style.background='var(--column-bg)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 15px;">
+                        <strong style="color: var(--text-primary);">${lead.name}</strong>
+                    </td>
+                    <td style="padding: 15px; color: var(--text-muted); font-size: 0.9rem;">
+                        <i class="fa-solid fa-phone" style="margin-right: 5px;"></i> ${lead.phone}
+                    </td>
+                    <td style="padding: 15px; color: var(--text-muted); font-size: 0.9rem;">
+                        ${lead.property_title}
+                    </td>
+                    <td style="padding: 15px; color: var(--text-primary); font-size: 0.9rem;">
+                        <i class="fa-solid fa-user-tie" style="margin-right: 5px; color: var(--gold-primary);"></i> ${lead.corretor_name}
+                    </td>
+                    <td style="padding: 15px; color: var(--text-muted); font-size: 0.9rem;">
+                        <div>${lead.timestamp}</div>
+                        <div style="font-size: 0.8rem; color: var(--gold-primary); margin-top: 4px;">${lead.total_days} dias no sistema</div>
+                    </td>
+                    <td style="padding: 15px;">
+                        <span style="background: ${statusColor}20; color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid ${statusColor}40;">
+                            ${statusLabel}
+                        </span>
+                    </td>
+                    <td style="padding: 15px;">
+                        <button onclick="openLeadModal(event, ${lead.id})" style="background: var(--border-glass); border: 1px solid var(--border-glass); color: var(--text-primary); border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; transition: 0.2s;" onmouseover="this.style.background='var(--gold-primary)'; this.style.color='black'" onmouseout="this.style.background='var(--border-glass)'; this.style.color='var(--text-primary)'">
+                            Abrir Ficha
+                        </button>
+                    </td>
+                </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // Modifica a função fetchLeads para alimentar o allLeadsCache
+        const originalFetchLeads = fetchLeads;
+        fetchLeads = async function() {
+            try {
+                const response = await fetch(`/${tenantSlug}/crm/api/leads/`);
+                const data = await response.json();
+                allLeadsCache = data.leads;
+                applyFilters();
+            } catch (error) {
+                console.error("Erro ao carregar leads:", error);
+            }
+        };
+
+        // Initial fetch
+        fetchLeads();
+        setInterval(fetchLeads, 5000);
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // PWA Install Prompt Logic
+        let deferredPrompt;
+        const btnInstallApp = document.getElementById('btnInstallApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later.
+            deferredPrompt = e;
+            // Update UI to show the install button
+            if (btnInstallApp) {
+                btnInstallApp.style.display = 'inline-block';
+            }
+        });
+
+        if (btnInstallApp) {
+            btnInstallApp.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    // Show the install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    const { outcome } = await deferredPrompt.userChoice;
+                    console.log(`User response to the install prompt: ${outcome}`);
+                    // We've used the prompt, and can't use it again, throw it away
+                    deferredPrompt = null;
+                    // Hide the button
+                    btnInstallApp.style.display = 'none';
+                } else {
+                    alert("Para instalar no iPhone (Safari): Clique no botão Compartilhar (quadrado com seta para cima) e depois em 'Adicionar à Tela de Início'.");
+                }
+            });
+            
+            // Show button anyway on iOS to provide the instructions
+            const isIos = () => {
+                const userAgent = window.navigator.userAgent.toLowerCase();
+                return /iphone|ipad|ipod/.test(userAgent);
+            };
+            const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+            
+            if (isIos() && !isInStandaloneMode()) {
+                btnInstallApp.style.display = 'inline-block';
+            }
+        }
+
+        async function subscribePush() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert("Push notifications não são suportadas neste navegador.");
+                return;
+            }
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    alert("Você negou a permissão. Não poderemos te notificar de leads quentes.");
+                    return;
+                }
+                
+                const registration = await navigator.serviceWorker.ready;
+                // VAPID Public Key
+                const applicationServerKey = urlB64ToUint8Array('BMSNk0NrVmq4GJRYPXsNlRY7TDllIkJxZQuEIKZCGEiCnib11P97CTin5XME8U5kuL-qtXI9Cb8NmFLjgsAZI2Y');
+                
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+                
+                // Enviar subscription pro backend
+                const response = await fetch(`/${tenantSlug}/crm/api/push/subscribe/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subscription: subscription.toJSON() })
+                });
+                
+                if (response.ok) {
+                    alert("🔔 Sucesso! Alertas ativados. Seu celular vai vibrar quando chegar um lead quente.");
+                    document.getElementById('btnPush').style.display = 'none';
+                } else {
+                    alert("Erro ao salvar inscrição no servidor.");
+                }
+            } catch (error) {
+                console.error("Erro no Push:", error);
+                alert("Erro ao ativar notificações: " + error.message);
+            }
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function urlB64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+        
+        // Inicializa o Kanban e o Polling
+        fetchLeads();
+        pollImportStatus();
+    </script>
+</body>
+</html>

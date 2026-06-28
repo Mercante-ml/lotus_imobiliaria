@@ -15,6 +15,26 @@
     </div>
 </section>
 
+<!-- Banner Público de Importação (Visível apenas se estiver ocorrendo) -->
+<div id="public-import-banner" class="hidden bg-ouro text-white py-3 shadow-md relative overflow-hidden">
+    <div class="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between">
+        <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="font-bold text-sm md:text-base">Novos imóveis chegando em breve!</span>
+            <span class="hidden md:inline text-sm opacity-90">- Estamos recebendo uma nova carga de estoque (XML) agora mesmo.</span>
+        </div>
+        <div class="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-48">
+            <div class="w-full h-2 bg-white/30 rounded-full overflow-hidden">
+                <div id="public-import-progress" class="h-full bg-white transition-all duration-300 w-0"></div>
+            </div>
+            <span id="public-import-percent" class="text-xs font-bold w-8 text-right">0%</span>
+        </div>
+    </div>
+</div>
+
 <section class="py-20 bg-cinza-fundo">
     <div class="container mx-auto px-6">
         
@@ -529,6 +549,43 @@ async function criarAlertaRapido(button) {
         button.disabled = false;
     }
 }
+
+// Polling do Status da Importação para a Área Pública
+async function pollPublicImportStatus() {
+    try {
+        const res = await fetch('/crm/api/import-status/');
+        const data = await res.json();
+        
+        const banner = document.getElementById('public-import-banner');
+        
+        if (data.status === 'processing' || data.status === 'reading_file') {
+            banner.classList.remove('hidden');
+            let percentage = 0;
+            if (data.status === 'processing' && data.total > 0) {
+                percentage = Math.round((data.current / data.total) * 100);
+            }
+            document.getElementById('public-import-progress').style.width = percentage + '%';
+            document.getElementById('public-import-percent').innerText = percentage + '%';
+            
+            setTimeout(pollPublicImportStatus, 3000); // Polling mais lento na área pública
+        } else if (data.status === 'done') {
+            // Quando finaliza, a gente pode dar um refreshzinho ou só ocultar
+            banner.classList.add('hidden');
+            // Como é lista pública, um recarregamento ajuda a mostrar os novos
+            if (!banner.classList.contains('hidden-done')) {
+                banner.classList.add('hidden-done');
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        } else {
+            banner.classList.add('hidden');
+        }
+    } catch (e) {
+        // Ignora erro silenciosamente
+    }
+}
+// Inicia o polling (com leve atraso para não pesar o carregamento inicial)
+setTimeout(pollPublicImportStatus, 1500);
+
 </script>
 
 {% endblock %}

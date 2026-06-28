@@ -11,6 +11,7 @@ from django.conf.urls.static import static
 
 # --- 1. IMPORTAR A NOVA VIEW ---
 from core.views import custom_password_change_done
+from clientes import views as saas_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,16 +20,17 @@ urlpatterns = [
     # Nossa URL de "sucesso" personalizada vem ANTES.
     # Ela "rouba" a rota 'accounts/password/change/done/' do allauth.
     path(
-        'accounts/password/change/done/', 
+        'contas/password/change/done/', 
         custom_password_change_done, 
         name='account_password_change_done' # O 'name' TEM que ser este
     ),
 
     # O resto das URLs do allauth vem DEPOIS.
-    path('accounts/', include('allauth.urls')),
+    path('contas/', include('allauth.urls')),
     # --- FIM DA MUDANÇA ---
 
     # Nossas URLs do app 'core'
+    path('login-redirect/', saas_views.login_redirect_view, name='login_redirect'),
     path('', include('core.urls')), 
 ]
 

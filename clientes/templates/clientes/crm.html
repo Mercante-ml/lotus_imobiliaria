@@ -63,14 +63,28 @@
                     </div>
                 </div>
 
+                {% if tenant_domain %}
+                <!-- Preview do Site -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
+                    <div class="bg-gray-800 text-white px-4 py-2 flex items-center gap-2 text-sm">
+                        <div class="flex gap-1.5">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-gray-400 ml-4">https://{{ tenant_domain }}</span>
+                    </div>
+                    <iframe src="https://{{ tenant_domain }}" class="w-full h-[600px] border-none" title="Preview do Site"></iframe>
+                </div>
+                {% endif %}
+
                 <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 h-64 flex items-center justify-center">
                     <p class="text-gray-400 text-center">
-                        (Gráficos e Listagem do CRM real virão aqui no futuro)
+                        (Módulos do CRM real virão aqui no futuro)
                     </p>
                 </div>
             </div>
         </main>
     </div>
-
 </body>
 </html>

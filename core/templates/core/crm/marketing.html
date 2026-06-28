@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing & QR Code - CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- HTML to Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --gold-primary: #B48C5A;
+            --surface-color: #ffffff;
+            --border-color: #E2E8F0;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+        
+        /* Hide scrollbar for clean UI but keep functionality if needed */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[var(--bg-dark)] font-sans text-[#142048] p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10 pb-6 border-b border-[var(--border-color)]">
+            <div class="flex items-center gap-5">
+                <a href="{% url 'core:crm_kanban' %}" class="w-12 h-12 rounded-xl bg-white border border-[var(--border-color)] flex items-center justify-center hover:bg-gray-50 transition text-[#142048] shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <!-- Usando text-white para garantir leitura independente da cor primária do cliente -->
+                    <h1 class="text-3xl font-serif text-[#142048] tracking-wide">Marketing & Materiais</h1>
+                    <p class="text-[#475569] text-sm mt-1 font-medium">Baixe sua arte e adesivos prontos para impressão na gráfica.</p>
+                </div>
+            </div>
+            <!-- Botão com texto branco para garantir contraste -->
+            <a href="{{ public_url }}" target="_blank" class="px-6 py-3 bg-[var(--gold-primary)] border border-white/20 text-white font-bold rounded-xl hover:opacity-80 transition text-sm flex items-center gap-2 shadow-lg">
+                <i class="fa-solid fa-up-right-from-square"></i> Abrir Site Público
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+            
+            <!-- Sessão Cartão de Visita (AGORA EM DESTAQUE) -->
+            <div class="bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm relative overflow-hidden flex flex-col group">
+                <div class="absolute -top-32 -left-32 w-64 h-64 bg-[var(--gold-primary)] opacity-5 blur-[100px] rounded-full pointer-events-none transition duration-1000 group-hover:opacity-10"></div>
+                
+                <div class="flex items-center gap-4 mb-8 relative z-10">
+                    <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] shadow-sm">
+                        <i class="fa-solid fa-id-card text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-serif text-[#142048]">Cartão de Visitas</h2>
+                        <p class="text-xs text-[#475569] mt-1">Padrão Gráfica (90x50mm)</p>
+                    </div>
+                </div>
+
+                <!-- Preview Responsivo do Cartão para a UI (SÓ VISUAL) -->
+                <div class="flex-1 flex items-center justify-center relative z-10 mb-8 bg-[#F4F6F9] rounded-2xl p-4 md:p-8 border border-[var(--border-color)] shadow-inner">
+                    <div class="w-full max-w-[450px] aspect-[1.79/1] bg-[#0a0a0c] rounded-xl border border-[#d4af37]/40 shadow-[0_0_40px_rgba(212,175,55,0.15)] relative overflow-hidden flex flex-col justify-center p-6 md:p-8">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-[#d4af37] opacity-10 blur-2xl rounded-full pointer-events-none"></div>
+                        <div class="absolute bottom-0 left-0 w-16 h-1 bg-[#d4af37] pointer-events-none"></div>
+
+                        <div class="flex items-center gap-6 z-10 h-full">
+                            <div class="flex flex-col items-center justify-center shrink-0 w-24">
+                                {% if request.tenant.logo %}
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white flex items-center justify-center p-2 shadow-lg border-2 border-[#d4af37]">
+                                    <img src="{{ request.tenant.logo.url }}" alt="Logo" class="max-w-full max-h-full object-contain">
+                                </div>
+                                {% else %}
+                                <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-tr from-[#d4af37] to-[#f9d770] flex items-center justify-center shadow-lg">
+                                    <span class="text-4xl text-black font-serif font-bold">{{ request.tenant.nome|make_list|first }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="flex flex-col justify-center flex-1">
+                                <h3 class="text-xl md:text-2xl font-serif text-white font-bold truncate">{{ request.tenant.nome }}</h3>
+                                <div class="w-10 h-[2px] bg-[#d4af37] mt-2 mb-2"></div>
+                                <p class="text-[10px] md:text-xs text-[#d4af37] tracking-[0.15em] uppercase font-bold mb-4">Imóveis de Alto Padrão</p>
+
+                                <div class="space-y-3 text-xs md:text-sm">
+                                    <div class="flex items-center gap-3 text-white">
+                                        <i class="fa-solid fa-globe text-[#d4af37]"></i>
+                                        <span class="truncate">{{ request.tenant.domains.first.domain|default:'imob.dsprime.org' }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-white">
+                                        <i class="fa-brands fa-whatsapp text-[#d4af37]"></i>
+                                        <span>{{ request.tenant.telefone|default:'(00) 00000-0000' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 mt-8">
+                    <button onclick="downloadCard()" class="flex-1 py-4 bg-[var(--gold-primary)] text-white font-bold rounded-xl hover:opacity-90 transition shadow-sm text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Baixar P/ Gráfica
+                    </button>
+                    <button class="flex-1 py-4 bg-white border border-[var(--border-color)] text-[#142048] font-bold rounded-xl hover:bg-gray-50 transition shadow-sm text-sm flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp"></i> Enviar Digital
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sessão QR Code -->
+            <div class="bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm relative overflow-hidden flex flex-col group">
+                
+                <div class="flex items-center gap-4 mb-6 relative z-10">
+                    <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] shadow-sm">
+                        <i class="fa-solid fa-qrcode text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-serif text-[#142048]">QR Code (Adesivo)</h2>
+                        <p class="text-[#475569] text-sm mt-1">Para Placas e Plantões</p>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-[#475569] mb-8 relative z-10 leading-relaxed">
+                    Adesive suas placas de <strong class="text-[#142048]">"Vende-se"</strong> com este código. 
+                    O cliente aponta a câmera da rua e cai direto no seu portfólio digital, gerando leads na hora.
+                </p>
+
+                <div class="flex-1 flex flex-col items-center justify-center relative z-10 mb-8">
+                    <div class="bg-white p-4 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform transition hover:scale-105 duration-500">
+                        <div id="qrcode-container" class="border-4 border-dashed border-gray-200 p-2 rounded-2xl"></div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 justify-center relative z-10 mt-auto">
+                    <button onclick="downloadQRCode()" class="w-full py-4 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition shadow-[0_0_20px_rgba(255,255,255,0.1)] text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Baixar Adesivo QR
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NÓ OCULTO PARA O HTML2CANVAS GERAR EM ALTA RESOLUÇÃO EXATA (600x335) -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+        <div id="hidden-card-node" class="w-[600px] h-[335px] bg-[#0a0a0c] rounded-none border border-[#d4af37]/30 p-10 relative flex flex-col justify-center" style="background-color: #0a0a0c;">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-[#d4af37] opacity-10 blur-3xl rounded-full"></div>
+            <div class="absolute bottom-0 left-0 w-32 h-1 bg-[#d4af37]"></div>
+            <div class="flex items-center gap-8 z-10 h-full">
+                <div class="flex flex-col items-center justify-center shrink-0">
+                    {% if request.tenant.logo %}
+                    <div class="w-32 h-32 rounded-full bg-white flex items-center justify-center p-2 border-2 border-[#d4af37]">
+                        <img src="{{ request.tenant.logo.url }}" alt="Logo" class="max-w-full max-h-full object-contain">
+                    </div>
+                    {% else %}
+                    <div class="w-32 h-32 rounded-full bg-[#f9d770] flex items-center justify-center" style="background: linear-gradient(to top right, #d4af37, #f9d770);">
+                        <span class="text-6xl text-black font-serif font-bold" style="font-family: 'Playfair Display', serif;">{{ request.tenant.nome|make_list|first }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="flex flex-col justify-center">
+                    <h3 class="text-3xl text-white font-bold tracking-wide" style="color: #ffffff; font-family: 'Playfair Display', serif;">{{ request.tenant.nome }}</h3>
+                    <div class="w-16 h-[2px] bg-[#d4af37] mt-3 mb-3"></div>
+                    <p class="text-sm tracking-[0.2em] uppercase font-bold mb-6" style="color: #d4af37;">Imóveis de Alto Padrão</p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center border border-[#d4af37]/30" style="background-color: rgba(212,175,55,0.2);">
+                                <i class="fa-solid fa-globe" style="color: #d4af37;"></i>
+                            </div>
+                            <span class="text-base font-medium tracking-wide" style="color: #ffffff;">{{ request.tenant.domains.first.domain|default:'imob.dsprime.org' }}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center border border-[#d4af37]/30" style="background-color: rgba(212,175,55,0.2);">
+                                <i class="fa-brands fa-whatsapp" style="color: #d4af37;"></i>
+                            </div>
+                            <span class="text-base font-medium tracking-wide" style="color: #ffffff;">{{ request.tenant.telefone|default:'(00) 00000-0000' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const publicUrl = "{{ public_url }}";
+        const qrcodeContainer = document.getElementById("qrcode-container");
+        
+        const qrcode = new QRCode(qrcodeContainer, {
+            text: publicUrl,
+            width: 220,
+            height: 220,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        function downloadQRCode() {
+            setTimeout(() => {
+                const img = qrcodeContainer.querySelector("img");
+                if (img && img.src) {
+                    const link = document.createElement('a');
+                    link.href = img.src;
+                    link.download = 'qrcode_adesivo_{{ request.tenant.schema_name }}.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('Erro ao gerar o QR Code.');
+                }
+            }, 500); 
+        }
+
+        function downloadCard() {
+            // Captura o nó oculto que está engessado no formato e cores corretas para não bugar
+            const cardNode = document.getElementById('hidden-card-node');
+            
+            html2canvas(cardNode, {
+                scale: 3, 
+                backgroundColor: "#0a0a0c", 
+                useCORS: true 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'cartao_visita_{{ request.tenant.schema_name }}.png';
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        }
+    </script>
+</body>
+</html>

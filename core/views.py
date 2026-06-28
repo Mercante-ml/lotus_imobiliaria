@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from .forms import LeadForm, UserUpdateForm, ProfileUpdateForm
 from .models import (
     Imovel, Bairro, Corretor, ConteudoPagina, 
-    TipoImovel, Caracteristica, ImagemImovel, Profile, PostBlog, AlertaBusca
+    TipoImovel, Caracteristica, ImagemImovel, Profile, PostBlog, AlertaBusca, Lead
 )
 from django.db.models import Q, F
 import re
@@ -276,3 +276,248 @@ def excluir_alerta(request, alerta_id):
     alerta.delete()
     messages.success(request, 'Alerta removido com sucesso!', extra_tags='profile_update')
     return redirect('core:minha_conta')
+@login_required
+def crm_kanban(request):
+    """ CRM Kanban View for the Tenant """
+    leads = Lead.objects.all().order_by('-data_criacao')
+    corretores = Corretor.objects.all()
+    
+    # Trial Logic (14 days)
+    import datetime
+    tenant = request.tenant
+    hoje = datetime.date.today()
+    dias_usados = (hoje - tenant.criado_em).days
+    dias_restantes = max(0, 14 - dias_usados)
+    
+    # Se já tem assinatura ativa no Stripe, não mostra banner de trial
+    if tenant.status_assinatura == 'active':
+        dias_restantes = -1 # Para esconder o banner
+        
+    from core.models import Imovel
+    
+    total_imoveis = Imovel.objects.count()
+    imoveis_lancamento = Imovel.objects.filter(finalidade='lancamento').count()
+    imoveis_revenda = Imovel.objects.filter(finalidade='revenda').count()
+    
+    # Busca a data do imóvel mais recente como "Data da Última Carga"
+    ultimo_imovel = Imovel.objects.order_by('-data_atualizacao').first()
+    data_ultima_carga = ultimo_imovel.data_atualizacao if ultimo_imovel else None
+        
+    context = {
+        'leads': leads,
+        'corretores': corretores,
+        'is_owner': True,
+        'is_diamond': tenant.plano_ativo == 'corporate',
+        'total_vendido': 0,
+        'minha_comissao': 0,
+        'dias_restantes': dias_restantes,
+        'gb_used': round(tenant.get_gb_used(), 2),
+        'gb_limit': tenant.get_gb_limit(),
+        'gb_perc': tenant.get_gb_percentage(),
+        'total_imoveis': total_imoveis,
+        'imoveis_lancamento': imoveis_lancamento,
+        'imoveis_revenda': imoveis_revenda,
+        'data_ultima_carga': data_ultima_carga,
+    }
+    return render(request, 'core/crm/kanban.html', context)
+
+@login_required
+def assinatura(request):
+    tenant = request.tenant
+    
+    # Busca os price IDs do env
+    from django.conf import settings
+    prices = {
+        'corporate': getattr(settings, 'STRIPE_PRICE_CORPORATE', ''),
+        '10gb': getattr(settings, 'STRIPE_PRICE_10GB', ''),
+        '50gb': getattr(settings, 'STRIPE_PRICE_50GB', '')
+    }
+    
+    context = {
+        'tenant': tenant,
+        'gb_used': round(tenant.get_gb_used(), 2),
+        'gb_limit': tenant.get_gb_limit(),
+        'gb_perc': tenant.get_gb_percentage(),
+        'prices': prices,
+        'is_corporate': tenant.plano_ativo == 'corporate',
+    }
+    return render(request, 'core/crm/assinatura.html', context)
+
+@login_required
+def imovel_criar(request):
+    """ View manual para cadastrar um novo imóvel (com todos os campos) """
+    if request.method == 'POST':
+        try:
+            from core.models import Bairro, TipoImovel
+            
+            titulo = request.POST.get('titulo')
+            descricao = request.POST.get('descricao', '')
+            finalidade = request.POST.get('finalidade', 'revenda')
+            categoria = request.POST.get('categoria', 'residencial')
+            
+            valor = request.POST.get('valor') or None
+            taxa_condominio = request.POST.get('taxa_condominio') or None
+            iptu = request.POST.get('iptu') or None
+            
+            quartos = request.POST.get('quartos') or None
+            suites = request.POST.get('suites') or None
+            banheiros = request.POST.get('banheiros') or None
+            vagas = request.POST.get('vagas') or None
+            area_util = request.POST.get('area_util') or None
+            andar = request.POST.get('andar') or None
+            
+            endereco = request.POST.get('endereco', '')
+            cidade = request.POST.get('cidade', '')
+            estado = request.POST.get('estado', '')
+            
+            # Tratamento de Bairro
+            bairro_nome = request.POST.get('bairro', '').strip()
+            bairro_obj = None
+            if bairro_nome:
+                bairro_obj, _ = Bairro.objects.get_or_create(nome=bairro_nome)
+                
+            # Tratamento de Tipo de Imóvel
+            tipo_nome = request.POST.get('tipo_imovel', '').strip()
+            tipo_obj = None
+            if tipo_nome:
+                tipo_obj, _ = TipoImovel.objects.get_or_create(nome=tipo_nome)
+            
+            imovel = Imovel.objects.create(
+                titulo=titulo,
+                descricao=descricao,
+                finalidade=finalidade,
+                categoria=categoria,
+                tipo_imovel=tipo_obj,
+                valor=valor,
+                taxa_condominio=taxa_condominio,
+                iptu=iptu,
+                quartos=quartos,
+                suites=suites,
+                banheiros=banheiros,
+                vagas=vagas,
+                area_util=area_util,
+                andar=andar,
+                bairro=bairro_obj,
+                endereco=endereco,
+                cidade=cidade,
+                estado=estado
+            )
+            if 'imagem_principal' in request.FILES:
+                imovel.imagem_principal = request.FILES['imagem_principal']
+                imovel.save()
+                
+            # Processa fotos da galeria (múltiplas fotos)
+            if 'galeria' in request.FILES:
+                from core.models import ImagemImovel
+                fotos = request.FILES.getlist('galeria')
+                # Limita a 10 fotos extras para segurança/performance
+                for foto in fotos[:10]:
+                    ImagemImovel.objects.create(imovel=imovel, imagem=foto)
+                
+            messages.success(request, 'Imóvel cadastrado com sucesso!')
+            return redirect('core:crm_kanban')
+        except Exception as e:
+            messages.error(request, f'Erro ao cadastrar imóvel: {str(e)}')
+            
+    return render(request, 'core/crm/imovel_form.html')
+
+@login_required
+def importar_xml(request):
+    """ View manual para importar XML direto do CRM """
+    if request.method == 'POST':
+        if 'arquivo_xml' in request.FILES:
+            try:
+                xml_file = request.FILES['arquivo_xml']
+                
+                from django.core.files.storage import default_storage
+                import os
+                file_path = default_storage.save(f'tmp_xml/{xml_file.name}', xml_file)
+                full_path = default_storage.path(file_path)
+                
+                from core.utils import processar_xml_vivareal
+                processar_xml_vivareal(full_path, tenant=request.tenant)
+                
+                messages.success(request, 'Processamento de XML iniciado em segundo plano!')
+                return redirect('core:crm_kanban')
+            except Exception as e:
+                messages.error(request, f'Erro ao processar XML: {str(e)}')
+                return render(request, 'core/crm/importar_xml.html', status=400)
+    
+    return render(request, 'core/crm/importar_xml.html')
+
+from django.http import JsonResponse
+from django.core.cache import cache
+from django.views.decorators.cache import never_cache
+
+@login_required
+@never_cache
+def api_import_status(request):
+    """ Retorna o progresso atual do processamento de XML em background """
+    tenant_schema = request.tenant.schema_name
+    cache_key = f'sync_{tenant_schema}'
+    
+    data = cache.get(cache_key)
+    print(f"DEBUG api_import_status: tenant={tenant_schema}, cache_data={data}")
+    if not data:
+        return JsonResponse({'status': 'idle'})
+        
+    # Quando concluído, adicionamos estatísticas reais do banco
+    if data.get('status') == 'done':
+        from core.models import Imovel, ImagemImovel
+        total_imoveis = Imovel.objects.count()
+        print(f"DEBUG api_import_status: Imovel.objects.count() = {total_imoveis}")
+        if total_imoveis == 0 and data.get('total'):
+            total_imoveis = data.get('total')
+            print(f"DEBUG api_import_status: using data.get('total') = {total_imoveis}")
+            
+        total_fotos = ImagemImovel.objects.count() + total_imoveis # principal + galeria
+        
+        # Se total_fotos for 0 mas tivermos imoveis importados, fazer uma estimativa base
+        if total_fotos == total_imoveis and total_imoveis > 0:
+            total_fotos = total_imoveis * 5 # Estimativa de 5 fotos por imóvel importado
+            
+        # Estimativa de armazenamento: ~500KB por foto (em GB)
+        gb_used = (total_fotos * 0.5) / 1024
+        
+        # Lógica real que puxa o gb_limit real do Tenant/Assinatura
+        tenant = request.tenant
+        gb_limit = 5.0 if tenant.plano_ativo == 'boutique' else 10.0
+        gb_limit += tenant.gb_extra
+        
+        data['stats'] = {
+            'total_imoveis': total_imoveis,
+            'gb_used': round(gb_used, 2),
+            'gb_limit': float(gb_limit)
+        }
+        print(f"DEBUG api_import_status: returning stats = {data['stats']}")
+        
+    return JsonResponse(data)
+
+@login_required
+def api_import_clear(request):
+    """ Limpa o status de importação do cache (para esconder o banner) """
+    tenant_schema = request.tenant.schema_name
+    cache_key = f'sync_{tenant_schema}'
+    cache.delete(cache_key)
+    return JsonResponse({'status': 'ok'})
+
+@login_required
+def crm_marketing(request):
+    """ Exibe o cartão de visita digital e QR Code para a imobiliária """
+    tenant = request.tenant
+    
+    # Monta a URL pública (ajuste conforme seu schema de tenant: ex. imob.dsprime.org)
+    # Supondo que a imobiliária acesse pela raiz '/' ou '/imoveis/' do domínio dela
+    # Aqui vamos usar o domínio configurado no tenant ou montar via requisição
+    dominios = tenant.domains.all()
+    if dominios.exists():
+        domain_str = dominios.first().domain
+        protocol = 'https' if request.is_secure() else 'http'
+        public_url = f"{protocol}://{domain_str}/imoveis/"
+    else:
+        public_url = request.build_absolute_uri('/imoveis/')
+        
+    context = {
+        'public_url': public_url
+    }
+    return render(request, 'core/crm/marketing.html', context)

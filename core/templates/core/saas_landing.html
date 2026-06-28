@@ -36,6 +36,7 @@
         .gradient-text {
             background: linear-gradient(135deg, #C6A87C 0%, #E2CDAA 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
     </style>
@@ -191,6 +192,7 @@
                     <ul class="space-y-4 text-sm text-white/80 flex-1 mb-8">
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Site de Alto Padrão (Tema Gold)</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Até 500 Imóveis</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 5 GB de Armazenamento</li>
                         <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Cadastro Manual de Imóveis</li>
                         <li class="flex items-center gap-3 text-white/30"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Sincronização XML Automática</li>
                     </ul>
@@ -208,7 +210,8 @@
                         </div>
                         <ul class="space-y-4 text-sm text-white/80 flex-1 mb-8">
                             <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Tudo do plano Boutique</li>
-                            <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Imóveis Ilimitados</li>
+                            <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Imóveis Ilimitados*</li>
+                            <li class="flex items-center gap-3 font-bold text-white"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 10 GB de Armazenamento</li>
                             <li class="flex items-center gap-3 font-bold text-white"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Sincronização XML Diária</li>
                             <li class="flex items-center gap-3 font-bold text-white"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Motor de Automação de E-mails</li>
                         </ul>
@@ -217,7 +220,16 @@
                 </div>
 
             </div>
-            <p class="text-center text-white/40 text-sm mt-8">* Taxa de setup (Onboarding + Customização de Cores e Logo): R$ 1.990 (pagamento único)</p>
+            
+            <!-- Upsell Blocks -->
+            <div class="mt-12 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-2 flex items-center gap-2"><svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg> Expansão de Armazenamento</h4>
+                    <p class="text-white/60 text-sm">* Precisa de mais espaço para fotos em alta resolução ou mais imóveis no plano Corporate? Adicione pacotes de 10 GB (R$ 149/mês) ou 50 GB (R$ 497/mês) sob demanda, diretamente pelo seu painel.</p>
+                </div>
+            </div>
+            
+            <p class="text-center text-white/40 text-sm mt-8">Taxa de setup (Onboarding + Customização de Cores e Logo): R$ 1.990 (pagamento único)</p>
         </div>
     </section>
 

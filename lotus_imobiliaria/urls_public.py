@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from core import views as core_views
+from core import stripe_views
 from clientes import views as saas_views
 
 urlpatterns = [
@@ -17,4 +18,7 @@ urlpatterns = [
     
     # Landing Page
     path('', core_views.saas_landing, name='saas_landing'),
+    
+    # Webhooks Globais (Stripe)
+    path('webhooks/stripe/', stripe_views.stripe_webhook, name='stripe_webhook'),
 ]

@@ -12,9 +12,16 @@ def login_redirect_view(request):
     se ele tem acesso a um Client específico), redirecionamos para o CRM.
     Se não tem, redirecionamos para o Setup.
     """
-    # Verificação super simples para o protótipo: se ele já passou pelo step4 no passado
+    # Se estivermos no schema de um tenant (imobiliária), joga pro CRM!
+    if connection.schema_name != 'public':
+        return redirect('crm_kanban')
+        
+    # Se estivermos no public, checamos a sessão para o onboarding
     if request.session.get('onboarding_completo', False):
-        return redirect('saas_crm')
+        domain_name = request.session.get('tenant_domain')
+        if domain_name:
+            return redirect(f'https://{domain_name}/crm/')
+    
     return redirect('saas_setup')
 
 @login_required
@@ -56,12 +63,24 @@ def setup_onboarding(request, step=1):
                 return redirect('saas_setup', step=4)
                 
         elif step == 4:
-            form = OnboardingStep4Form(request.POST)
+            form = OnboardingStep4Form(request.POST, request.FILES)
+            if form.is_valid():
+                # Save the uploaded file to media if it exists
+                if 'arquivo_xml' in request.FILES:
+                    from django.core.files.storage import default_storage
+                    xml_file = request.FILES['arquivo_xml']
+                    file_path = default_storage.save(f'tmp_xml/{xml_file.name}', xml_file)
+                    request.session['onboarding_data']['xml_file_path'] = file_path
+                request.session.modified = True
+                return redirect('saas_setup', step=5)
+                
+        elif step == 5:
+            form = OnboardingStep5Form(request.POST)
             if form.is_valid():
                 plano = form.cleaned_data['plano_escolhido']
                 data = request.session['onboarding_data']
                 
-                # FASE 4: O BIG BANG (Criar o Tenant e o Banco de Dados)
+                # FASE 5: O BIG BANG (Criar o Tenant e o Banco de Dados)
                 try:
                     # Garantimos que estamos no schema public
                     with connection.cursor() as cursor:
@@ -88,26 +107,42 @@ def setup_onboarding(request, step=1):
                         texto_quem_somos=data.get('texto_quem_somos', ''),
                         portfolio_lancamento=data.get('portfolio_lancamento', True),
                         portfolio_revenda=data.get('portfolio_revenda', True),
-                        portfolio_aluguel=data.get('portfolio_aluguel', False),
-                        auto_create_schema=True
+                        portfolio_aluguel=data.get('portfolio_aluguel', False)
                     )
                     novo_tenant.save() # Isso demora uns 5 segundos pois roda o migrate_schemas interno!
                     
-                    # Cria o domínio
-                    domain_name = f"{data['subdominio']}.imob.dsprime.org"
+                    # Cria o domínio (usamos hífen em vez de ponto para evitar problema de SSL no Cloudflare Free)
+                    domain_name = f"{data['subdominio']}-imob.dsprime.org"
                     domain = Domain(domain=domain_name, tenant=novo_tenant, is_primary=True)
                     domain.save()
+                    
+                    # PROCESSO DE IMPORTAÇÃO DE XML APÓS A CRIAÇÃO DO BANCO
+                    xml_file_path = data.get('xml_file_path')
+                    if xml_file_path:
+                        try:
+                            # Parse XML no novo schema (aqui chamaríamos a task celery no futuro)
+                            # Para MVP, fazemos síncrono.
+                            from core.utils import processar_xml_vivareal
+                            from django.core.files.storage import default_storage
+                            import os
+                            
+                            full_path = default_storage.path(xml_file_path)
+                            
+                            processar_xml_vivareal(full_path, tenant=novo_tenant)
+                        except Exception as e:
+                            print(f"Erro ao processar XML: {e}")
                     
                     request.session['onboarding_completo'] = True
                     request.session['tenant_domain'] = domain_name
                     del request.session['onboarding_data'] # Limpa a sessão
                     
-                    messages.success(request, f"Plataforma criada com sucesso! Seu domínio é {domain_name}")
-                    return redirect('saas_crm')
+                    messages.success(request, f"Plataforma criada com sucesso! Redirecionando para o seu CRM...")
+                    return redirect(f'https://{domain_name}/crm/')
+                    
                     
                 except Exception as e:
                     messages.error(request, f"Erro ao criar plataforma: {str(e)}")
-                    return redirect('saas_setup', step=4)
+                    return redirect('saas_setup', step=5)
 
     else:
         # GET
@@ -119,7 +154,9 @@ def setup_onboarding(request, step=1):
         elif step == 3:
             form = OnboardingStep3Form(initial=data)
         elif step == 4:
-            form = OnboardingStep4Form()
+            form = OnboardingStep4Form(initial=data)
+        elif step == 5:
+            form = OnboardingStep5Form(initial=data)
 
     return render(request, template_name, {'form': form, 'step': step})
 

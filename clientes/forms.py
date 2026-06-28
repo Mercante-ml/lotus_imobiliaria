@@ -37,5 +37,13 @@ class OnboardingStep3Form(forms.Form):
     )
 
 class OnboardingStep4Form(forms.Form):
+    # XML VivaReal/Zap upload
+    arquivo_xml = forms.FileField(
+        label='Importar Estoque (XML VivaReal/Zap)',
+        required=False,
+        help_text='Faça upload do seu XML padrão Grupo ZAP para importar seus imóveis automaticamente.'
+    )
+
+class OnboardingStep5Form(forms.Form):
     # Formulário vazio apenas para submissão do plano escolhido
     plano_escolhido = forms.CharField(widget=forms.HiddenInput(), initial='boutique')

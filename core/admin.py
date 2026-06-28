@@ -66,20 +66,4 @@ class ImovelAdmin(admin.ModelAdmin):
         ('Datas (Automático)', {'classes': ('collapse',), 'fields': ('data_cadastro', 'data_atualizacao')}),
     )
 
-# --- 3. MOSTRAR 'PROFILE' DENTRO DO 'USER' NO ADMIN ---
-
-# Define um "inline" para o Profile
-class ProfileInline(admin.StackedInline):
-    model = Profile
-    can_delete = False
-    verbose_name_plural = 'Perfil do Cliente'
-    fields = ('telefone',) # Mostra apenas o campo de telefone
-
-# Define um novo User admin
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
-
-# Des-registra o User admin padrão
-admin.site.unregister(User)
-# Re-registra o User com o nosso Profile inline
-admin.site.register(User, UserAdmin)
+# --- REMOVIDO: O ProfileInline causava erro no Admin Público, pois a tabela Profile só existe nos tenants. ---

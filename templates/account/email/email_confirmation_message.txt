@@ -1,0 +1,12 @@
+Bem-vindo à Nova Era Imobiliária!
+
+Olá, futuro parceiro! Recebemos o seu pedido de cadastro.
+
+Para continuar com a configuração do seu novo site imobiliário de alta conversão, precisamos apenas que você confirme o seu e-mail acessando o link abaixo:
+
+{{ activate_url }}
+
+Se você não criou essa conta, pode ignorar este e-mail com segurança.
+
+Atenciosamente,
+Equipe ImobGold

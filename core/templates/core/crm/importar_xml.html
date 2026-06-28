@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar XML - {{ request.tenant.nome }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --gold-primary: #B48C5A;
+            --surface-color: #ffffff;
+            --surface-hover: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-primary: #142048;
+            --text-secondary: #475569;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body class="font-sans min-h-screen flex items-center justify-center p-8">
+
+<div class="w-full max-w-3xl">
+    
+    <div class="bg-[var(--surface-color)] rounded-2xl p-8 border border-[var(--border-color)] shadow-xl relative overflow-hidden backdrop-blur-sm">
+        <!-- Decorativo -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-[var(--gold-primary)] opacity-10 blur-3xl rounded-full"></div>
+        
+        <div class="flex items-center gap-4 mb-8">
+            <div class="w-12 h-12 rounded-xl bg-[var(--gold-primary)]/10 flex items-center justify-center border border-[var(--gold-primary)]/20">
+                <i class="fa-solid fa-cloud-arrow-up text-[var(--gold-primary)] text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-serif text-[var(--gold-primary)]">Importação em Massa (XML)</h1>
+                <p class="text-[var(--text-secondary)] text-sm mt-1">Carregue milhares de imóveis de uma vez utilizando o padrão VivaReal/ZAP.</p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-500/10 text-red-400 border border-red-500/20{% else %}bg-green-500/10 text-green-400 border border-green-500/20{% endif %} flex items-center gap-3">
+                <i class="fa-solid {% if message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-check{% endif %}"></i>
+                <span class="text-sm font-medium">{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'core:importar_xml' %}" enctype="multipart/form-data" id="xml-form">
+            {% csrf_token %}
+            
+            <div class="border-2 border-dashed border-[var(--border-color)] rounded-xl p-10 text-center hover:border-[var(--gold-primary)] transition cursor-pointer relative bg-black/20 group">
+                <div class="w-16 h-16 mx-auto bg-[var(--surface-hover)] rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i class="fa-solid fa-file-xml text-2xl text-[var(--text-secondary)] group-hover:text-[var(--gold-primary)] transition-colors"></i>
+                </div>
+                
+                <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2 cursor-pointer">
+                    <span id="file-name" class="text-[var(--gold-primary)] font-semibold text-base block mb-2">Clique aqui para selecionar</span> 
+                    ou arraste o arquivo imoveis.xml
+                    <input type="file" id="file-input" name="arquivo_xml" accept=".xml" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                           onchange="document.getElementById('file-name').textContent = this.files[0].name; document.getElementById('file-name').classList.add('text-[var(--gold-primary)]');">
+                </label>
+                <p class="text-xs text-[var(--text-secondary)] opacity-70 mt-4">Somente arquivos .xml são aceitos</p>
+            </div>
+            
+            <div class="mt-8 flex gap-4 justify-end">
+                <a href="{% url 'core:crm_kanban' %}" class="px-6 py-2.5 rounded-lg text-[var(--text-primary)] hover:bg-[var(--surface-hover)] border border-transparent hover:border-[var(--border-color)] transition text-sm font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar para o Kanban
+                </a>
+                <button type="submit" id="btn-submit" class="px-8 py-2.5 bg-gradient-to-r from-[var(--gold-primary)] to-[#b69121] text-black font-bold rounded-lg hover:opacity-90 transition shadow-lg shadow-[var(--gold-primary)]/20 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-upload"></i>
+                    <span id="btn-text">Iniciar Importação Automática</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Loading / Progress Overlay -->
+        <div id="upload-progress" class="hidden mt-6 bg-[var(--surface-hover)] border border-[var(--border-color)] rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-[var(--gold-primary)]" id="progress-status"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Enviando arquivo para o servidor...</span>
+                <span class="text-xs text-[var(--text-secondary)]" id="progress-percent">0%</span>
+            </div>
+            <div class="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-[var(--gold-primary)] transition-all duration-300 w-0"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('xml-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var form = this;
+        var fileInput = document.getElementById('file-input');
+        if (!fileInput.files.length) return;
+
+        var btn = document.getElementById('btn-submit');
+        var btnText = document.getElementById('btn-text');
+        var progressContainer = document.getElementById('upload-progress');
+        var progressBar = document.getElementById('progress-bar');
+        var progressPercent = document.getElementById('progress-percent');
+        var progressStatus = document.getElementById('progress-status');
+
+        btnText.innerText = "Aguarde...";
+        btn.disabled = true;
+        progressContainer.classList.remove('hidden');
+
+        var formData = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        
+        xhr.open('POST', form.action, true);
+        
+        xhr.upload.onprogress = function(e) {
+            if (e.lengthComputable) {
+                var percentComplete = Math.round((e.loaded / e.total) * 100);
+                progressBar.style.width = percentComplete + '%';
+                progressPercent.innerText = percentComplete + '%';
+                
+                if (percentComplete === 100) {
+                    progressStatus.innerHTML = '<i class="fa-solid fa-check text-green-400 mr-2"></i> Arquivo recebido. Redirecionando para o Kanban...';
+                    progressBar.classList.add('bg-green-400');
+                    progressBar.classList.remove('bg-[var(--gold-primary)]');
+                }
+            }
+        };
+        
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 400) {
+                // Redireciona de volta ao kanban onde a importacao vai acontecer em background
+                window.location.href = "{% url 'core:crm_kanban' %}";
+            } else {
+                document.open();
+                document.write(xhr.responseText);
+                document.close();
+            }
+        };
+        
+        xhr.onerror = function() {
+            alert("Erro na conexão com o servidor ao fazer upload.");
+            btn.disabled = false;
+            btnText.innerText = "Iniciar Importação Automática";
+            progressContainer.classList.add('hidden');
+        };
+        
+        xhr.send(formData);
+    });
+</script>
+</body>
+</html>

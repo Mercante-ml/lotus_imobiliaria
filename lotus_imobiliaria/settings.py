@@ -43,10 +43,7 @@ SHARED_APPS = [
 
 TENANT_APPS = [
     # Apps específicos de cada imobiliária
-    'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
@@ -135,6 +132,23 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Celery Configuration
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+# Redis Cache for Tracking Progress
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL", "redis://localhost:6379/2"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'mediafiles'
 
@@ -153,7 +167,7 @@ EMAIL_USE_SSL = False
 
 
 # --- ALLAUTH CONFIG ---
-SITE_ID = 1
+# SITE_ID = 1
 
 # Login apenas com email + senha
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
@@ -176,3 +190,16 @@ LOGIN_REDIRECT_URL = '/login-redirect/'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Lotus Imobiliária] '
 SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# Compartilhar Sessão de Login entre todos os subdomínios (SSO)
+SESSION_COOKIE_DOMAIN = '.dsprime.org'
+CSRF_COOKIE_DOMAIN = '.dsprime.org'
+
+# --- STRIPE CONFIG ---
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
+STRIPE_PRICE_BOUTIQUE = env('STRIPE_PRICE_BOUTIQUE', default='')
+STRIPE_PRICE_CORPORATE = env('STRIPE_PRICE_CORPORATE', default='')
+STRIPE_PRICE_10GB = env('STRIPE_PRICE_10GB', default='')
+STRIPE_PRICE_50GB = env('STRIPE_PRICE_50GB', default='')

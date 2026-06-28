@@ -151,14 +151,31 @@ class ImagemImovel(models.Model):
     get_imagem_preview.short_description = "Prévia"
 
 class Lead(models.Model):
+    STATUS_CHOICES = [
+        ('novo', 'Novo'),
+        ('atendimento', 'Em Atendimento'),
+        ('visita', 'Visita Agendada'),
+        ('proposta', 'Proposta / Negociação'),
+        ('fechado', 'Fechamento'),
+        ('standby', 'Standby'),
+        ('arquivado', 'Arquivado'),
+        ('lixeira', 'Lixeira'),
+    ]
+    
     nome = models.CharField(max_length=80)
-    email = models.EmailField()
+    email = models.EmailField(blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True)
-    mensagem = models.TextField()
-    data = models.DateTimeField(auto_now_add=True)
+    mensagem = models.TextField(blank=True, null=True)
+    
+    # Novos campos para o Kanban CRM
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='novo')
+    imovel = models.ForeignKey(Imovel, on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
+    corretor = models.ForeignKey(Corretor, on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
+    
+    data_criacao = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Lead de {self.nome} em {self.data.strftime('%d/%m/%Y')}"
+        return f"Lead de {self.nome} em {self.data_criacao.strftime('%d/%m/%Y')}"
 
 
 # --- Modelo de Perfil de Usuário (ATUALIZADO) ---
