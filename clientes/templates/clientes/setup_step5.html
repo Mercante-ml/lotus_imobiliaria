@@ -3,96 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passo 5 - Assinatura - ImobGold</title>
+    <title>Passo 5 - Nossa Equipe - Setup</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #C6A87C;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans min-h-screen flex items-center justify-center py-12">
     
-    <div class="max-w-4xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <!-- Progress Bar -->
+    <div class="w-full max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+        
         <div class="flex items-center justify-between mb-8 relative">
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#C6A87C] -z-10"></div>
-            
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">5</div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#C6A87C] -z-10 transition-all duration-500" style="width: 57.142857142857146%;"></div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">1</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">2</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">3</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">4</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white ring-4 ring-[#C6A87C]/30 flex items-center justify-center font-bold text-sm shrink-0">5</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">6</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">7</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">8</div>
         </div>
+    
 
-        <div class="text-center mb-10">
-            <h1 class="text-3xl font-serif text-gray-900 mb-2">Quase lá! Escolha seu Plano</h1>
-            <p class="text-gray-500">Selecione o plano ideal para a sua imobiliária e vamos construir sua plataforma.</p>
-        </div>
+        <h1 class="text-4xl font-serif text-gray-900 mb-2">Nossa Equipe</h1>
+        <p class="text-gray-500 mb-10 text-lg">Apresente seus corretores para gerar mais confiança.</p>
 
-        <form method="POST" action="{% url 'saas_setup' 5 %}" id="checkout-form">
+        <form method="POST" action="{% url 'saas_setup' 5 %}" >
             {% csrf_token %}
-            <input type="hidden" name="plano_escolhido" id="plano_escolhido" value="boutique">
             
-            <div class="grid md:grid-cols-2 gap-8 mb-10">
-                <!-- Plano Boutique -->
-                <div class="border-2 border-[#C6A87C] rounded-2xl p-6 relative bg-[#C6A87C]/5 cursor-pointer" onclick="document.getElementById('plano_escolhido').value='boutique'">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#C6A87C] text-white text-xs font-bold px-3 py-1 rounded-full">
-                        MAIS POPULAR
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Boutique</h3>
-                    <div class="text-4xl font-bold text-gray-900 mb-4">R$ 397<span class="text-sm text-gray-500 font-normal">/mês</span></div>
-                    <ul class="space-y-3 text-sm text-gray-600">
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Imóveis Ilimitados</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Captação de Leads</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Banco de Dados Isolado</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Suporte Email</li>
-                    </ul>
+            <div class="space-y-6">
+                
+    <div class="space-y-6">
+        <div class="flex items-center gap-4 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" name="exibir_equipe" id="toggle_equipe" onchange="toggleContent()" {% if form.exibir_equipe.value or form.exibir_equipe.value is None %}checked{% endif %} class="sr-only peer">
+                <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#C6A87C]"></div>
+            </label>
+            <div>
+                <h4 class="font-bold text-gray-900 text-lg">Exibir seção "Nossa Equipe" no Site</h4>
+                <p class="text-sm text-gray-500">Mostre seus corretores na página inicial para gerar proximidade. Você poderá cadastrar a equipe posteriormente no painel do CRM.</p>
+            </div>
+        </div>
+        
+        <div id="equipe_content" class="space-y-8 transition-all duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Título da Seção</label>
+                    <input type="text" name="titulo_equipe" value="{{ form.titulo_equipe.value|default:'Nossa Equipe' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
                 </div>
-
-                <!-- Plano Corporate -->
-                <div class="border border-gray-200 rounded-2xl p-6 hover:border-gray-300 transition cursor-pointer" onclick="document.getElementById('plano_escolhido').value='corporate'">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Corporate</h3>
-                    <div class="text-4xl font-bold text-gray-900 mb-4">R$ 897<span class="text-sm text-gray-500 font-normal">/mês</span></div>
-                    <ul class="space-y-3 text-sm text-gray-600">
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Tudo do Boutique</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Automação com WhatsApp</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Multi-corretores</li>
-                        <li class="flex items-center gap-2"><span class="text-[#C6A87C]">✓</span> Suporte Prioritário 24/7</li>
-                    </ul>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Subtítulo Descritivo</label>
+                    <input type="text" name="subtitulo_equipe" value="{{ form.subtitulo_equipe.value|default:'Especialistas dedicados a encontrar o imóvel ideal para você.' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
                 </div>
             </div>
+            <input type="hidden" name="acao_equipe" value="pular">
+        </div>
+    </div>
 
-            <div class="flex items-center justify-between border-t border-gray-100 pt-8">
-                <a href="{% url 'saas_setup' 4 %}" class="text-gray-500 px-6 py-3 hover:text-gray-900 transition">Voltar</a>
-                
-                <button type="submit" id="btn-submit" class="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition flex items-center gap-3 shadow-lg">
-                    <span>Criar Minha Plataforma (Mock)</span>
-                    <div class="loader hidden" id="loader"></div>
+            </div>
+
+            <div class="mt-12 flex justify-between items-center pt-6 border-t border-gray-100">
+                <a href="{% url 'saas_setup' 4 %}" class="text-gray-500 hover:text-gray-900 font-medium px-4 py-2 transition">&larr; Voltar</a>
+                <button type="submit" id="btnSubmit" class="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-[#C6A87C] transition shadow-lg flex items-center gap-2" >
+                    Próximo Passo <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
         </form>
     </div>
 
-    <script>
-        document.getElementById('checkout-form').addEventListener('submit', function() {
-            var btn = document.getElementById('btn-submit');
-            var loader = document.getElementById('loader');
-            var text = btn.querySelector('span');
-            
-            text.innerText = "Provisionando Banco de Dados...";
-            loader.classList.remove('hidden');
-            btn.classList.add('opacity-80', 'cursor-not-allowed');
-        });
-    </script>
+    
+<script>
+    function toggleContent() {
+        var isChecked = document.getElementById('toggle_equipe').checked;
+        var content = document.getElementById('equipe_content');
+        if(isChecked) { content.classList.remove('opacity-50', 'pointer-events-none'); }
+        else { content.classList.add('opacity-50', 'pointer-events-none'); }
+    }
+    
+    toggleContent();
+</script>
+
 </body>
 </html>

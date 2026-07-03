@@ -162,6 +162,19 @@ def process_xml_task(self, xml_file_path, tenant_schema, tenant_id):
                 if cidade_node is not None and cidade_node.text:
                     cidade_text = clean_text(cidade_node.text).title()
 
+            # Extrair Finalidade (Revenda, Lancamento, Aluguel)
+            finalidade = 'revenda'
+            transaction_node = listing.find('.//TransactionType')
+            if transaction_node is not None and transaction_node.text:
+                if 'Rent' in transaction_node.text:
+                    finalidade = 'aluguel'
+                elif 'Sale' in transaction_node.text:
+                    finalidade = 'revenda'
+            
+            # Tentar adivinhar lancamento pelo título
+            if 'lançamento' in titulo.lower() or 'lancamento' in titulo.lower():
+                finalidade = 'lancamento'
+
             imovel = Imovel.objects.create(
                 titulo=titulo[:250],
                 descricao=descricao,
@@ -171,7 +184,8 @@ def process_xml_task(self, xml_file_path, tenant_schema, tenant_id):
                 area_util=area,
                 tipo_imovel=tipo_imovel_obj,
                 bairro=bairro_obj,
-                cidade=cidade_text[:100]
+                cidade=cidade_text[:100],
+                finalidade=finalidade
             )
             
             # Baixar imagens

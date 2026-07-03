@@ -47,6 +47,7 @@ class Caracteristica(models.Model):
 class Corretor(models.Model):
     nome = models.CharField(max_length=80)
     email = models.EmailField(blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='corretor_profile')
     
     telefone_validator = RegexValidator(
         regex=r'^\(\d{2}\) 9\d{4}-\d{4}$',  
@@ -66,6 +67,24 @@ class Corretor(models.Model):
     
     foto = models.ImageField(upload_to='fotos_corretores/', blank=True, null=True)
     bio = models.TextField(blank=True, help_text="Uma breve biografia ou citação do corretor.")
+
+    # --- HIERARQUIA E PRIVACIDADE ---
+    CARGO_CHOICES = [
+        ('Corretor', 'Corretor de Imóveis'),
+        ('Gerente', 'Gerente de Vendas'),
+        ('Diretor', 'Diretor'),
+        ('Administrativo', 'Administrativo / Backoffice'),
+    ]
+    cargo = models.CharField(max_length=50, choices=CARGO_CHOICES, default='Corretor', help_text="Cargo/Hierarquia no CRM")
+    
+    exibir_no_site = models.BooleanField(default=True, help_text="Mostrar este membro na página pública de Equipe?")
+    exibir_email = models.BooleanField(default=True, help_text="Exibir o e-mail na página pública?")
+    exibir_whatsapp = models.BooleanField(default=True, help_text="Exibir o botão de WhatsApp na página pública?")
+
+    # --- CAMPOS FINANCEIROS E HIERARQUIA CRM ---
+    gerente_responsavel = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='equipe')
+    comissao_venda_direta = models.DecimalField(max_digits=5, decimal_places=2, default=1.50, help_text="Porcentagem de comissão em venda direta (%)")
+    comissao_equipe = models.DecimalField(max_digits=5, decimal_places=2, default=0.30, help_text="Porcentagem de bônus sobre vendas da equipe (%)")
 
     def __str__(self):
         return self.nome
@@ -92,7 +111,7 @@ class Imovel(models.Model):
     # --- Identificação e Classificação ---
     titulo = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
-    FINALIDADE_CHOICES = [('lancamento', 'Lançamento'), ('revenda', 'Revenda')]
+    FINALIDADE_CHOICES = [('lancamento', 'Lançamento'), ('revenda', 'Revenda'), ('aluguel', 'Locação')]
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES, default='revenda', help_text="Deduzido do Título (ex: 'lançamento') ou 'Revenda' como padrão")
     CATEGORIA_CHOICES = [('residencial', 'Residencial'), ('comercial', 'Comercial'),]
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='residencial', help_text="Baseado no <UsageType> do XML (Residencial/Comercial)")
@@ -173,6 +192,14 @@ class Lead(models.Model):
     corretor = models.ForeignKey(Corretor, on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
     
     data_criacao = models.DateTimeField(auto_now_add=True)
+    
+    # --- MÓDULO FINANCEIRO (Split de Comissões) ---
+    valor_venda = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Valor final fechado da negociação")
+    comissao_total = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Comissão Total da Imobiliária (Ex: 5%)")
+    comissao_gerada = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Comissão do corretor que atendeu")
+    comissao_gerente = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Comissão bônus do gerente")
+    comissao_diretor = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Comissão bônus do diretor")
+    comissao_imobiliaria = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Receita líquida da casa")
 
     def __str__(self):
         return f"Lead de {self.nome} em {self.data_criacao.strftime('%d/%m/%Y')}"
@@ -182,7 +209,7 @@ class Lead(models.Model):
 class Profile(models.Model):
     # Usamos DO_NOTHING para evitar que o Django tente deletar o profile (que é Tenant-specific)
     # quando um User (Shared) for deletado do schema public, causando erro de tabela inexistente.
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, db_constraint=False)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     
     # --- CAMPO ADICIONADO AQUI ---
@@ -217,6 +244,7 @@ class PostBlog(models.Model):
     TIPO_CONTEUDO_CHOICES = [
         ('link', 'Link Externo (Artigo, PDF, Notícia)'),
         ('embed', 'Conteúdo Incorporado (Vídeo, Gamma, Facebook)'),
+        ('arquivo', 'Upload de Arquivo (PDF, PPT, HTML, etc)'),
     ]    
     titulo = models.CharField(max_length=200)
     resumo = models.TextField(help_text="Um parágrafo curto sobre o conteúdo.")
@@ -229,6 +257,9 @@ class PostBlog(models.Model):
     
     embed_code = models.TextField(blank=True, null=True, 
                                   help_text="Se 'Tipo' for Conteúdo Incorporado, cole o código HTML (iframe, etc.) aqui.")
+                                  
+    arquivo = models.FileField(upload_to='blog_arquivos/', blank=True, null=True,
+                               help_text="Se 'Tipo' for Upload de Arquivo, selecione o arquivo aqui.")
     
     data_publicacao = models.DateTimeField(auto_now_add=True)
 
@@ -241,7 +272,7 @@ class PostBlog(models.Model):
         return self.titulo
 
 class AlertaBusca(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='alertas', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='alertas', null=True, blank=True, db_constraint=False)
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     

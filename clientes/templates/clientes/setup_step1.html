@@ -3,168 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passo 1 - Identidade - ImobGold</title>
+    <title>Passo 1 - Identidade Visual - Setup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/imask"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans min-h-screen flex items-center justify-center py-12">
     
-    <div class="max-w-2xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <!-- Progress Bar -->
+    <div class="w-full max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+        
         <div class="flex items-center justify-between mb-8 relative">
             <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/4 h-1 bg-[#C6A87C] -z-10"></div>
-            
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">1</div>
-            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">2</div>
-            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">3</div>
-            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">4</div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#C6A87C] -z-10 transition-all duration-500" style="width: 0.0%;"></div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white ring-4 ring-[#C6A87C]/30 flex items-center justify-center font-bold text-sm shrink-0">1</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">2</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">3</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">4</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">5</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">6</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">7</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">8</div>
         </div>
+    
 
-        <h1 class="text-3xl font-serif text-gray-900 mb-2">Sua Identidade</h1>
-        <p class="text-gray-500 mb-8">Precisamos dos dados oficiais da sua imobiliária para faturamento.</p>
+        <h1 class="text-4xl font-serif text-gray-900 mb-2">Identidade Visual</h1>
+        <p class="text-gray-500 mb-10 text-lg">Vamos configurar a cara do seu novo site e sistema.</p>
 
-        <form method="POST" action="{% url 'saas_setup' 1 %}">
+        <form method="POST" action="{% url 'saas_setup' 1 %}" enctype="multipart/form-data">
             {% csrf_token %}
             
             <div class="space-y-6">
-                <!-- Nome da Empresa -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Imobiliária / Empresa</label>
-                    <input type="text" name="nome_imobiliaria" value="{{ form.nome_imobiliaria.value|default:'' }}" required
-                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                </div>
                 
-                <!-- Documento e Telefone -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-sm font-medium text-gray-700">Documento</label>
-                            <div class="flex items-center gap-3 text-sm">
-                                <label class="flex items-center gap-1 cursor-pointer">
-                                    <input type="radio" name="tipo_documento" value="CNPJ" id="radio-cnpj" onchange="toggleDocMask()" checked class="text-[#C6A87C] focus:ring-[#C6A87C]"> CNPJ
-                                </label>
-                                <label class="flex items-center gap-1 cursor-pointer">
-                                    <input type="radio" name="tipo_documento" value="CPF" id="radio-cpf" onchange="toggleDocMask()" class="text-[#C6A87C] focus:ring-[#C6A87C]"> CPF
-                                </label>
-                            </div>
-                        </div>
-                        <input type="text" name="cpf_cnpj" id="input-doc" value="{{ form.cpf_cnpj.value|default:'' }}" required placeholder="00.000.000/0001-00"
-                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                        <input type="text" name="telefone" id="input-telefone" value="{{ form.telefone.value|default:'' }}" required placeholder="(00) 00000-0000"
-                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                    </div>
-                </div>
-
-                <!-- Divisor de Endereço -->
-                <div class="pt-6 border-t border-gray-100">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Endereço de Faturamento</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CEP</label>
-                            <input type="text" name="cep" id="input-cep" value="{{ form.cep.value|default:'' }}" required placeholder="00000-000" onblur="buscarCep(this.value)"
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rua / Logradouro</label>
-                            <input type="text" name="rua" id="input-rua" value="{{ form.rua.value|default:'' }}" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition bg-gray-50">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
-                            <input type="text" name="numero" value="{{ form.numero.value|default:'' }}" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Complemento <span class="text-gray-400 font-normal">(Opcional)</span></label>
-                            <input type="text" name="complemento" value="{{ form.complemento.value|default:'' }}"
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
-                            <input type="text" name="bairro" id="input-bairro" value="{{ form.bairro.value|default:'' }}" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition bg-gray-50">
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
-                            <input type="text" name="cidade" id="input-cidade" value="{{ form.cidade.value|default:'' }}" required
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition bg-gray-50">
-                        </div>
-                        <div class="md:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">UF</label>
-                            <input type="text" name="uf" id="input-uf" value="{{ form.uf.value|default:'' }}" required maxlength="2"
-                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition bg-gray-50 uppercase">
-                        </div>
-                    </div>
-                </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <label class="block text-sm font-bold text-gray-700 mb-2">Nome da Imobiliária / Empresa</label>
+            <input type="text" name="nome_imobiliaria" value="{{ form.nome_imobiliaria.value|default:'' }}" required class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition text-lg bg-gray-50 focus:bg-white" placeholder="Ex: Lotus Imobiliária">
+        </div>
+        
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Subdomínio Desejado</label>
+            <div class="flex rounded-xl overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-[#C6A87C] transition">
+                <input type="text" name="subdominio" value="{{ form.subdominio.value|default:'' }}" required class="w-full px-5 py-4 outline-none text-right bg-gray-50 focus:bg-white" placeholder="suaempresa">
+                <span class="px-5 py-4 bg-gray-100 text-gray-500 border-l border-gray-300 font-medium">.imobgold.com</span>
+            </div>
+        </div>
+        
+        <div>
+            <label class="block text-sm font-bold text-gray-700 mb-2">Cor Principal da Marca</label>
+            <select name="cor_primaria" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white cursor-pointer">
+                {% for val, name in form.cor_primaria.field.choices %}
+                <option value="{{ val }}" {% if form.cor_primaria.value == val %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="md:col-span-2 p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 text-center hover:bg-gray-100 transition cursor-pointer relative mt-4">
+            <input type="file" name="logo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 mb-3"></i>
+            <h3 class="text-lg font-bold text-gray-700">Logo da sua Empresa</h3>
+            <p class="text-sm text-gray-500 mt-1">Clique ou arraste sua logo (PNG transparente recomendado)</p>
+        </div>
+        
+        <div class="md:col-span-2 pt-6 border-t border-gray-100 mt-2">
+            <label class="block text-sm font-bold text-gray-700 mb-4">Quais tipos de imóveis você trabalha?</label>
+            <div class="flex gap-6">
+                <label class="flex items-center gap-3 cursor-pointer p-4 border border-gray-200 rounded-xl hover:border-[#C6A87C] transition flex-1 text-center justify-center">
+                    <input type="checkbox" name="portfolio_lancamento" {% if form.portfolio_lancamento.value or form.portfolio_lancamento.value is None %}checked{% endif %} class="w-5 h-5 text-[#C6A87C] rounded border-gray-300 focus:ring-[#C6A87C]">
+                    <span class="font-bold text-gray-700">Lançamentos</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer p-4 border border-gray-200 rounded-xl hover:border-[#C6A87C] transition flex-1 text-center justify-center">
+                    <input type="checkbox" name="portfolio_revenda" {% if form.portfolio_revenda.value or form.portfolio_revenda.value is None %}checked{% endif %} class="w-5 h-5 text-[#C6A87C] rounded border-gray-300 focus:ring-[#C6A87C]">
+                    <span class="font-bold text-gray-700">Revenda</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer p-4 border border-gray-200 rounded-xl hover:border-[#C6A87C] transition flex-1 text-center justify-center">
+                    <input type="checkbox" name="portfolio_aluguel" {% if form.portfolio_aluguel.value %}checked{% endif %} class="w-5 h-5 text-[#C6A87C] rounded border-gray-300 focus:ring-[#C6A87C]">
+                    <span class="font-bold text-gray-700">Aluguel</span>
+                </label>
+            </div>
+        </div>
+    </div>
 
             </div>
 
-            <div class="mt-10 flex justify-end">
-                <button type="submit" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition">
-                    Próximo Passo &rarr;
+            <div class="mt-12 flex justify-between items-center pt-6 border-t border-gray-100">
+                <div></div>
+                <button type="submit" id="btnSubmit" class="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-[#C6A87C] transition shadow-lg flex items-center gap-2" >
+                    Próximo Passo <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Máscaras e ViaCEP -->
-    <script>
-        // Mascara de Telefone
-        IMask(document.getElementById('input-telefone'), {
-            mask: '(00) 00000-0000'
-        });
-
-        // Mascara de CEP
-        IMask(document.getElementById('input-cep'), {
-            mask: '00000-000'
-        });
-
-        // Mascara de Documento
-        var docMask = IMask(document.getElementById('input-doc'), {
-            mask: '00.000.000/0001-00'
-        });
-
-        function toggleDocMask() {
-            var isCnpj = document.getElementById('radio-cnpj').checked;
-            var input = document.getElementById('input-doc');
-            docMask.destroy();
-            input.value = ''; // limpa ao trocar
-            if (isCnpj) {
-                docMask = IMask(input, { mask: '00.000.000/0000-00' });
-                input.placeholder = '00.000.000/0001-00';
-            } else {
-                docMask = IMask(input, { mask: '000.000.000-00' });
-                input.placeholder = '000.000.000-00';
-            }
-        }
-
-        // Buscar CEP via API
-        function buscarCep(cepVal) {
-            let cepLimpo = cepVal.replace(/\D/g, '');
-            if (cepLimpo.length === 8) {
-                fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.erro) {
-                        document.getElementById('input-rua').value = data.logradouro;
-                        document.getElementById('input-bairro').value = data.bairro;
-                        document.getElementById('input-cidade').value = data.localidade;
-                        document.getElementById('input-uf').value = data.uf;
-                    }
-                });
-            }
-        }
-    </script>
+    
 </body>
 </html>

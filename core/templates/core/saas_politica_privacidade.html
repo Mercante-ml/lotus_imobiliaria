@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidade - ImobGold SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0A0F1C',
+                            light: '#F8FAFC',
+                            gold: '#C6A87C',
+                            goldlight: '#E2CDAA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-dark text-white antialiased selection:bg-brand-gold selection:text-white flex flex-col min-h-screen">
+
+    <nav class="w-full z-50 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border-b border-white/10">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="{% url 'saas_landing' %}" class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                <span class="font-serif text-2xl font-bold tracking-wider">Imob<span class="text-brand-gold">Gold</span></span>
+            </a>
+            <div>
+                <a href="{% url 'saas_landing' %}" class="text-white/60 hover:text-brand-gold transition"><i class="fa-solid fa-arrow-left mr-2"></i>Voltar</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-6 py-20 max-w-4xl">
+        <h1 class="font-serif text-4xl md:text-5xl font-medium mb-12 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#C6A87C] to-[#E2CDAA]">Política de Privacidade</h1>
+        
+        <div class="space-y-8 text-white/80 leading-relaxed">
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">1. Coleta de Dados</h2>
+                <p>Nós da DS Prime Dev LTDA coletamos informações básicas para o funcionamento da plataforma, incluindo dados de faturamento, informações da imobiliária e perfis de corretores associados para prestação do serviço de SaaS.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">2. Dados de Terceiros (Leads)</h2>
+                <p>Nós atuamos apenas como processadores de dados em relação aos leads (clientes) captados através dos sites gerados pelo ImobGold. A imobiliária assinante atua como a controladora dos dados de seus respectivos clientes, em conformidade com a LGPD.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">3. Segurança</h2>
+                <p>Utilizamos infraestrutura em nuvem segura, com criptografia de ponta a ponta e bancos de dados isolados (arquitetura multi-tenant) para garantir que os dados da imobiliária A nunca se misturem com os dados da imobiliária B.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">4. Cancelamento e Exclusão</h2>
+                <p>Ao solicitar o cancelamento da assinatura e término do contrato de uso da plataforma ImobGold, o assinante pode solicitar a exclusão total e definitiva de sua instância (tenant), resultando no apagamento completo de seus imóveis e leads da nossa infraestrutura.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer repetido da landing page (simplificado) -->
+    <footer class="border-t border-white/10 pt-16 pb-8 bg-black/50 mt-auto">
+        <div class="container mx-auto px-6 max-w-6xl text-center">
+            <p class="text-white/80 font-bold mb-2">DS Prime Dev LTDA</p>
+            <p class="text-white/40 text-sm">&copy; {% now "Y" %} DS Prime Dev LTDA. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passo 7 - Seus Imóveis - Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen flex items-center justify-center py-12">
+    
+    <div class="w-full max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+        
+        <div class="flex items-center justify-between mb-8 relative">
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#C6A87C] -z-10 transition-all duration-500" style="width: 85.71428571428572%;"></div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">1</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">2</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">3</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">4</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">5</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">6</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white ring-4 ring-[#C6A87C]/30 flex items-center justify-center font-bold text-sm shrink-0">7</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">8</div>
+        </div>
+    
+
+        <h1 class="text-4xl font-serif text-gray-900 mb-2">Seus Imóveis</h1>
+        <p class="text-gray-500 mb-10 text-lg">O coração do seu negócio. Vamos trazer o seu estoque.</p>
+
+        <form method="POST" action="{% url 'saas_setup' 7 %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                
+    <div class="space-y-6">
+        <h4 class="font-bold text-xl text-gray-900 mb-6 text-center">Como deseja adicionar seus imóveis para inaugurar o site?</h4>
+        <input type="hidden" name="acao_imoveis" id="acao_imoveis" value="pular">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div onclick="selectAcao('upload')" id="card_upload" class="acao-card p-8 border-2 border-gray-200 rounded-3xl cursor-pointer hover:border-[#C6A87C] transition flex flex-col items-center text-center bg-white">
+                <i class="fa-solid fa-file-code text-4xl text-gray-400 mb-4"></i>
+                <h5 class="font-bold text-lg text-gray-800 mb-2">Importar XML Zap</h5>
+                <p class="text-sm text-gray-500 leading-relaxed">Transferir em massa seu estoque de outro sistema via XML Padrão Zap/VivaReal.</p>
+            </div>
+            
+            <div onclick="selectAcao('manual')" id="card_manual" class="acao-card p-8 border-2 border-gray-200 rounded-3xl cursor-pointer hover:border-[#C6A87C] transition flex flex-col items-center text-center bg-white">
+                <i class="fa-solid fa-house-medical text-4xl text-gray-400 mb-4"></i>
+                <h5 class="font-bold text-lg text-gray-800 mb-2">Cadastrar Manual</h5>
+                <p class="text-sm text-gray-500 leading-relaxed">Gosto de fazer o cadastro perfeito, com calma, direto no painel CRM.</p>
+            </div>
+            
+            <div onclick="selectAcao('pular')" id="card_pular" class="acao-card p-8 border-2 border-[#C6A87C] bg-[#C6A87C]/5 rounded-3xl cursor-pointer transition flex flex-col items-center text-center shadow-lg shadow-[#C6A87C]/10">
+                <i class="fa-solid fa-forward text-4xl text-[#C6A87C] mb-4"></i>
+                <h5 class="font-bold text-lg text-[#C6A87C] mb-2">Pular Etapa</h5>
+                <p class="text-sm text-[#C6A87C]/70 font-medium leading-relaxed">Deixar site temporariamente vazio por enquanto.</p>
+            </div>
+        </div>
+        
+        <div id="upload_box" class="hidden mt-8 p-8 bg-gray-50 rounded-3xl border border-gray-200 shadow-inner">
+            <label class="block text-base font-bold text-gray-800 mb-4 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-cloud-arrow-up text-[#C6A87C] text-2xl"></i> Envie seu arquivo XML
+            </label>
+            <input type="file" name="arquivo_xml" accept=".xml" class="w-full px-5 py-4 rounded-xl border border-gray-300 bg-white focus:ring-2 focus:ring-[#C6A87C] outline-none">
+            <p class="text-sm text-gray-500 mt-4 text-center">Os imóveis começarão a ser importados automaticamente em segundo plano após você finalizar a próxima etapa de Setup.</p>
+        </div>
+    </div>
+
+            </div>
+
+            <div class="mt-12 flex justify-between items-center pt-6 border-t border-gray-100">
+                <a href="{% url 'saas_setup' 6 %}" class="text-gray-500 hover:text-gray-900 font-medium px-4 py-2 transition">&larr; Voltar</a>
+                <button type="submit" id="btnSubmit" class="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-[#C6A87C] transition shadow-lg flex items-center gap-2" >
+                    Próximo Passo <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    
+<script>
+    function selectAcao(acao) {
+        document.getElementById('acao_imoveis').value = acao;
+        document.querySelectorAll('.acao-card').forEach(el => {
+            el.classList.remove('border-[#C6A87C]', 'bg-[#C6A87C]/5', 'shadow-lg', 'shadow-[#C6A87C]/10');
+            el.querySelector('i').classList.remove('text-[#C6A87C]');
+            el.querySelector('h5').classList.remove('text-[#C6A87C]');
+            el.querySelector('p').classList.remove('text-[#C6A87C]/70', 'font-medium');
+            
+            el.classList.add('border-gray-200', 'bg-white');
+            el.querySelector('i').classList.add('text-gray-400');
+            el.querySelector('h5').classList.add('text-gray-800');
+            el.querySelector('p').classList.add('text-gray-500');
+        });
+        
+        let activeCard = document.getElementById('card_' + acao);
+        activeCard.classList.add('border-[#C6A87C]', 'bg-[#C6A87C]/5', 'shadow-lg', 'shadow-[#C6A87C]/10');
+        activeCard.classList.remove('border-gray-200', 'bg-white');
+        activeCard.querySelector('i').classList.add('text-[#C6A87C]');
+        activeCard.querySelector('i').classList.remove('text-gray-400');
+        activeCard.querySelector('h5').classList.add('text-[#C6A87C]');
+        activeCard.querySelector('h5').classList.remove('text-gray-800');
+        activeCard.querySelector('p').classList.remove('text-gray-500');
+        activeCard.querySelector('p').classList.add('text-[#C6A87C]/70', 'font-medium');
+        
+        if(acao === 'upload') {
+            document.getElementById('upload_box').classList.remove('hidden');
+        } else {
+            document.getElementById('upload_box').classList.add('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,316 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Equipe | Helena High-Ticket</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'core/img/favicon.svg' %}">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --gold-primary: #B48C5A;
+            --surface-color: #ffffff;
+            --border-color: #E2E8F0;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+    </style>
+</head>
+<body class="bg-[var(--bg-dark)] font-sans text-[#142048] p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between gap-5 mb-10 pb-6 border-b border-[var(--border-color)]">
+            <div class="flex items-center gap-5">
+                <a href="{% url 'core:crm_kanban' %}" class="w-12 h-12 rounded-xl bg-white border border-[var(--border-color)] flex items-center justify-center hover:bg-gray-50 transition text-[#142048] shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-serif text-[#142048] tracking-wide">Gestão de Equipe</h1>
+                    <p class="text-[#475569] text-sm mt-1 font-medium">Helena AI • {{ imobiliaria.nome }}</p>
+                </div>
+            </div>
+            <a href="{% url 'core:crm_kanban' %}" class="px-5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm font-semibold hover:bg-gray-50 transition text-[#142048] shadow-sm">
+                <i class="fa-solid fa-gauge mr-2"></i>Ir para CRM
+            </a>
+        </div>
+
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %} shadow-sm">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Form Section -->
+        <div class="bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm mb-10">
+            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)]">
+                    <i class="fa-solid fa-user-plus text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-serif text-[#142048]" id="form-title">Adicionar Membro</h2>
+                    <p class="text-sm text-[#475569] mt-1">Cadastre sua equipe para que a IA possa distribuir os leads automaticamente ou permitir a atribuição manual no Kanban.</p>
+                </div>
+            </div>
+            
+            <form id="form-corretor" method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="corretor_id" id="corretor_id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Nome do Corretor</label>
+                        <input type="text" name="nome" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white" required placeholder="Ex: João Silva">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Email (Login)</label>
+                        <input type="email" name="email" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white" required placeholder="Ex: joao@imob.com">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">WhatsApp</label>
+                        <input type="text" name="whatsapp" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white" placeholder="Ex: 62982501403" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Foto de Perfil</label>
+                        <input type="file" name="foto" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white" accept="image/*">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Bio (Opcional)</label>
+                        <textarea name="bio" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white" rows="2" placeholder="Ex: Especialista em imóveis de alto padrão..."></textarea>
+                    </div>
+                    
+                    {% if is_owner %}
+                    <div>
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Hierarquia</label>
+                        <select name="role" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white">
+                            <option value="Corretor">Corretor</option>
+                            <option value="Gerente">Gerente de Vendas</option>
+                            <option value="Diretor">Diretor/Dono</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-[#142048] mb-2">Gerente (Opcional)</label>
+                        <select name="gerente_id" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] focus:border-[var(--gold-primary)] outline-none transition bg-white">
+                            <option value="">Nenhum (Direto ao Diretor)</option>
+                            {% for c in corretores %}
+                                {% if c.cargo == 'Gerente' %}
+                                    <option value="{{ c.id }}">{{ c.nome }} ({{ c.cargo }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-end gap-4 mt-6 pt-6 border-t border-gray-100">
+                    <button type="button" onclick="cancelEdit()" id="btn-cancel" class="px-6 py-3 bg-white border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition shadow-sm" style="display: none;">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btn-submit" class="px-8 py-3 bg-[var(--gold-primary)] text-white rounded-xl font-semibold hover:bg-opacity-90 transition shadow-md shadow-amber-900/10 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Salvar Membro
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Organograma Section -->
+        <div class="bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm mb-10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)]">
+                    <i class="fa-solid fa-sitemap text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-serif text-[#142048]">Organograma da Equipe</h2>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                {% if organograma_diretores %}
+                <div class="flex gap-4 flex-wrap mb-8 pb-6 border-b border-dashed border-gray-300">
+                    {% for d in organograma_diretores %}
+                    <div class="px-6 py-4 bg-amber-50 border border-amber-200 rounded-xl text-center shadow-sm">
+                        <i class="fa-solid fa-crown text-[var(--gold-primary)] text-2xl mb-2 block"></i>
+                        <span class="font-bold text-amber-900 block">{{ d.nome }}</span>
+                        <div class="text-xs text-amber-700 mt-1 uppercase font-semibold">Diretor</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="flex flex-col gap-6">
+                    {% for g_node in organograma_gerentes %}
+                    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                        <div class="inline-block px-4 py-2 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg font-semibold mb-4 text-sm">
+                            <i class="fa-solid fa-user-tie mr-2"></i> Gerente: {{ g_node.obj.nome }}
+                        </div>
+                        
+                        {% if g_node.corretores %}
+                            <div class="flex gap-3 flex-wrap ml-4">
+                                {% for c in g_node.corretores %}
+                                <div class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm flex items-center gap-2 text-gray-700 shadow-sm">
+                                    <i class="fa-solid fa-user text-gray-400"></i> {{ c.nome }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="ml-4 text-sm text-gray-500 italic">Nenhum corretor sob esta gerência.</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if organograma_soltos %}
+                    <div class="bg-white border border-dashed border-gray-300 rounded-xl p-5 opacity-90 shadow-sm">
+                        <div class="mb-4 text-sm font-semibold text-gray-600 flex items-center gap-2">
+                            <i class="fa-solid fa-users text-gray-400"></i> Corretores Independentes (Resposta Direta à Diretoria)
+                        </div>
+                        <div class="flex gap-3 flex-wrap ml-4">
+                            {% for c in organograma_soltos %}
+                            <div class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm flex items-center gap-2 text-gray-700 shadow-sm">
+                                <i class="fa-solid fa-user text-gray-400"></i> {{ c.nome }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not organograma_diretores and not organograma_gerentes and not organograma_soltos %}
+                        <p class="text-gray-500 text-sm text-center py-6">Nenhum membro cadastrado na equipe ainda.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela Corretores -->
+        <div class="bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm mb-10">
+            <div class="flex items-center gap-4 mb-2">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)]">
+                    <i class="fa-solid fa-users-viewfinder text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-serif text-[#142048]">Gerenciar Corretores</h2>
+                </div>
+            </div>
+            <p class="text-sm text-[#475569] mb-6 pl-16">A senha padrão para novos corretores é <strong>imob123!</strong>.</p>
+            
+            {% if corretores %}
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[800px] text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Nome</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Cargo</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Equipe de</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Email (Login)</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Link Pessoal</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide">Status</th>
+                            <th class="py-4 px-4 text-xs uppercase text-gray-500 font-semibold tracking-wide text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for corretor in corretores %}
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="py-4 px-4 font-semibold text-gray-800 flex items-center gap-3">
+                                {% if corretor.foto %}
+                                <img src="{{ corretor.foto.url }}" alt="{{ corretor.nome }}" class="w-8 h-8 rounded-full object-cover shadow-sm">
+                                {% else %}
+                                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-400">
+                                    <i class="fa-solid fa-user text-xs"></i>
+                                </div>
+                                {% endif %}
+                                {{ corretor.nome }}
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                    {{ corretor.cargo }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-4 text-gray-500 text-sm">{{ corretor.gerente_responsavel.nome|default:"-" }}</td>
+                            <td class="py-4 px-4 text-gray-600 text-sm">{{ corretor.user.email|default:"-" }}</td>
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-2">
+                                    <input type="text" readonly value="chat-ia.dsprime.org/{{ imobiliaria.slug }}/c/{{ corretor.slug|default:'novo' }}/" class="text-xs px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 w-48 truncate outline-none">
+                                    <button onclick="navigator.clipboard.writeText(`https://chat-ia.dsprime.org/{{ imobiliaria.slug }}/c/{{ corretor.slug|default:'novo' }}/`); alert('Link copiado!');" class="w-7 h-7 rounded-lg bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)] hover:text-white transition flex items-center justify-center border border-[var(--gold-primary)]/30" title="Copiar Link">
+                                        <i class="fa-regular fa-copy text-xs"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">Ativo</span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button type="button" onclick="editCorretor('{{ corretor.id }}', '{{ corretor.nome|escapejs }}', '{{ corretor.email }}', '{% if corretor.telefone %}{{ corretor.telefone }}{% endif %}', '{{ corretor.cargo }}', '{% if corretor.gerente_responsavel %}{{ corretor.gerente_responsavel.id }}{% endif %}', '{{ corretor.bio|escapejs }}')" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition flex items-center justify-center" title="Editar">
+                                        <i class="fa-solid fa-pen text-sm"></i>
+                                    </button>
+                                    <form action="#" method="post" onsubmit="return confirm('Tem certeza que deseja excluir o corretor {{ corretor.nome }}? Ele não poderá mais acessar o sistema.');" class="inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition flex items-center justify-center" title="Excluir">
+                                            <i class="fa-solid fa-trash text-sm"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-2xl">
+                <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-200 text-gray-400 text-2xl">
+                    <i class="fa-solid fa-user-xmark"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-1">Nenhum corretor cadastrado</h3>
+                <p class="text-gray-500 text-sm">Adicione membros no formulário acima para formar sua equipe.</p>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <script>
+        function editCorretor(id, nome, email, whatsapp, role, gerente_id, bio) {
+            document.getElementById('corretor_id').value = id;
+            document.querySelector('input[name="nome"]').value = nome;
+            document.querySelector('input[name="email"]').value = email;
+            document.querySelector('input[name="whatsapp"]').value = whatsapp || '';
+            document.querySelector('textarea[name="bio"]').value = bio || '';
+            
+            const roleSelect = document.querySelector('select[name="role"]');
+            if (roleSelect) roleSelect.value = role;
+            
+            const gerenteSelect = document.querySelector('select[name="gerente_id"]');
+            if (gerenteSelect) gerenteSelect.value = gerente_id;
+            
+            document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-save mr-2"></i> Atualizar Membro';
+            document.getElementById('btn-cancel').style.display = 'inline-flex';
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-pen"></i> Editar Membro';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function cancelEdit() {
+            document.getElementById('corretor_id').value = '';
+            document.getElementById('form-corretor').reset();
+            
+            document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-plus mr-2"></i> Salvar Membro';
+            document.getElementById('btn-cancel').style.display = 'none';
+            document.getElementById('form-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> Adicionar Membro';
+        }
+    </script>
+</body>
+</html>

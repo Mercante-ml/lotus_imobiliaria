@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Uso - ImobGold SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0A0F1C',
+                            light: '#F8FAFC',
+                            gold: '#C6A87C',
+                            goldlight: '#E2CDAA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-dark text-white antialiased selection:bg-brand-gold selection:text-white flex flex-col min-h-screen">
+
+    <nav class="w-full z-50 bg-[rgba(255,255,255,0.03)] backdrop-blur-md border-b border-white/10">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="{% url 'saas_landing' %}" class="flex items-center gap-2">
+                <svg class="w-8 h-8 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                <span class="font-serif text-2xl font-bold tracking-wider">Imob<span class="text-brand-gold">Gold</span></span>
+            </a>
+            <div>
+                <a href="{% url 'saas_landing' %}" class="text-white/60 hover:text-brand-gold transition"><i class="fa-solid fa-arrow-left mr-2"></i>Voltar</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-6 py-20 max-w-4xl">
+        <h1 class="font-serif text-4xl md:text-5xl font-medium mb-12 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#C6A87C] to-[#E2CDAA]">Termos de Uso</h1>
+        
+        <div class="space-y-8 text-white/80 leading-relaxed">
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">1. Aceitação dos Termos</h2>
+                <p>Ao contratar e utilizar a plataforma ImobGold SaaS, desenvolvida e operada pela DS Prime Dev LTDA, você concorda com as diretrizes e regras descritas nestes Termos de Uso.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">2. Licença e Uso do Software</h2>
+                <p>O ImobGold é um software como serviço (SaaS). O contratante adquire uma licença de uso intransferível durante o período de vigência da assinatura. A propriedade do código-fonte, arquitetura e design pertence exclusivamente à DS Prime Dev LTDA.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">3. Responsabilidade pelos Dados</h2>
+                <p>O contratante (Imobiliária ou Corretor) é o único responsável pelos anúncios, imagens, informações de clientes e dados trafegados dentro da sua instância do sistema. A DS Prime Dev LTDA fornece apenas a infraestrutura tecnológica.</p>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-serif text-brand-gold mb-4">4. Disponibilidade e Suporte</h2>
+                <p>Trabalhamos para garantir uma disponibilidade de 99,9% da plataforma. As atualizações sistêmicas ocorrem em background. O suporte técnico está disponível em horário comercial, conforme o plano contratado.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer repetido da landing page (simplificado) -->
+    <footer class="border-t border-white/10 pt-16 pb-8 bg-black/50 mt-auto">
+        <div class="container mx-auto px-6 max-w-6xl text-center">
+            <p class="text-white/80 font-bold mb-2">DS Prime Dev LTDA</p>
+            <p class="text-white/40 text-sm">&copy; {% now "Y" %} DS Prime Dev LTDA. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

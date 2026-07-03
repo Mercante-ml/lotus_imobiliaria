@@ -1,0 +1,74 @@
+{% load humanize %}
+<div class="bg-white rounded-2xl shadow-sm border border-cinza-claro/50 overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex flex-col">
+    <div class="relative h-72 overflow-hidden cursor-pointer" onclick="window.location.href='{% url 'core:detalhe_imovel' imovel.id %}'">
+        
+        {% if imovel.imagem_principal %}
+            <img src="{{ imovel.imagem_principal.url }}" 
+                 alt="{{ imovel.titulo }}" 
+                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out">
+        {% else %}
+            <img src="https://placehold.co/600x400/CCCCCC/142048?text=Sem+Foto" 
+                 alt="{{ imovel.titulo }}" 
+                 class="w-full h-full object-cover">
+        {% endif %}
+        
+        <!-- Gradiente sutil para garantir legibilidade dos selos -->
+        <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro/90 via-marinho-escuro/20 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-500"></div>
+        
+        <!-- Selo de Categoria -->
+        <div class="absolute top-5 left-5 bg-white text-marinho text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
+            {{ imovel.get_finalidade_display }}
+        </div>
+
+        <!-- Botão de Favorito -->
+        <button class="btn-favorito absolute top-4 right-4 p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white/20 transition duration-300 border border-white/20"
+                data-imovel-id="{{ imovel.id }}"
+                title="Adicionar aos Favoritos"
+                onclick="event.stopPropagation();">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+        </button>
+        
+        <!-- Preço sobre a imagem -->
+        <div class="absolute bottom-5 left-5 right-5 flex justify-between items-end">
+            <p class="font-serif text-3xl text-white font-medium drop-shadow-md">
+                R$ {{ imovel.valor|intcomma }}
+            </p>
+        </div>
+    </div>
+    
+    <div class="p-8 flex-1 flex flex-col">
+        <p class="text-ouro text-sm font-bold tracking-widest uppercase mb-3">
+            {{ imovel.bairro.nome }}
+        </p>
+        <h3 class="font-serif text-2xl font-semibold text-marinho-escuro line-clamp-2 leading-snug group-hover:text-ouro transition-colors flex-1" title="{{ imovel.titulo }}">
+            <a href="{% url 'core:detalhe_imovel' imovel.id %}">{{ imovel.titulo }}</a>
+        </h3>
+        
+        <div class="flex justify-between items-center mt-8 pt-6 border-t border-cinza-claro/80 text-graphite/80 text-sm font-medium">
+            <span class="flex flex-col items-center gap-1" title="Quartos">
+                <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 9h14c1.1 0 2 .9 2 2v6H3v-6c0-1.1.9-2 2-2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 17v2 M19 17v2 M7 9V7c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v2"/></svg>
+                <span>{{ imovel.quartos }}</span>
+            </span>
+            <div class="w-px h-8 bg-cinza-claro"></div>
+            <span class="flex flex-col items-center gap-1" title="Banheiros">
+                <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 10h16v4c0 3.3-2.7 6-6 6H10c-3.3 0-6-2.7-6-6v-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10V6c0-1.1.9-2 2-2h4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 20l-2 2 M18 20l2 2"/></svg>
+                <span>{{ imovel.banheiros }}</span>
+            </span>
+            <div class="w-px h-8 bg-cinza-claro"></div>
+            <span class="flex flex-col items-center gap-1" title="Vagas">
+                <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 10l2-4h10l2 4M3 10h18v6c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-6z"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="17" cy="15" r="1.5" fill="currentColor"/></svg>
+               <span>{{ imovel.vagas }}</span>
+           </span>
+            <div class="w-px h-8 bg-cinza-claro"></div>
+            <span class="flex flex-col items-center gap-1" title="Área Útil">
+                 <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 1v4m0 0h-4m4 0l-5-5"/></svg>
+                <span>{{ imovel.area_util|floatformat:0 }} m²</span>
+            </span>
+        </div>
+        <button type="button" class="btn-comparar mt-4 w-full px-4 py-3 bg-white border border-cinza-claro text-marinho font-medium rounded-lg hover:bg-cinza-fundo transition-colors text-sm" data-imovel-id="{{ imovel.id }}" onclick="event.stopPropagation(); window.toggleCompare(this);">
+            + Comparar
+        </button>
+    </div>
+</div>

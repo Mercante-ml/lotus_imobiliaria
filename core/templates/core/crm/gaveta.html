@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaveta e Arquivo | Helena CRM</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Helena CRM">
+    <link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Padrão Lotus Imobiliária - Light Theme */
+            --bg-dark: #F4F6F9; /* Fundo Cinza Claro */
+            --bg-glass: #ffffff; /* Fundo dos Cards Branco */
+            --bg-glass-hover: #F8FAFC;
+            --text-primary: #142048; /* Marinho Escuro */
+            --text-muted: #475569; /* Slate 600 */
+            --border-glass: #E2E8F0; /* Slate 200 */
+            --column-bg: #F1F5F9; /* Slate 100 */
+            
+            --gold-primary: #B48C5A; /* Ouro */
+            --gold-hover: #9c7748;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 40px;
+            background-image: radial-gradient(circle at 50% 0%, var(--column-bg) 0%, var(--bg-dark) 80%);
+            overflow-x: hidden;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        
+        .brand h1 { font-weight: 300; font-size: 2rem; }
+        .brand p { font-size: 0.8rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 4px; }
+        
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        
+        .action-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover { background: var(--bg-glass-hover); border-color: var(--border-glass); }
+
+        .filter-btn {
+            background: var(--bg-glass);
+            color: var(--text-muted);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+        .filter-btn:hover { background: var(--bg-glass-hover); }
+        .filter-btn.active { 
+            background: var(--gold-primary); 
+            color: white; 
+            border-color: var(--gold-primary);
+        }
+
+        .lead-row {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .lead-row:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--gold-primary);
+        }
+        .lead-info h3 { margin: 0 0 5px 0; font-size: 1.2rem; color: var(--gold-primary); }
+        .lead-info p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+        
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); display: none; }
+        
+        .btn-reabrir {
+            background: transparent; 
+            color: var(--text-primary); 
+            border: 1px solid var(--border-glass); 
+            border-radius: 6px; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        .btn-reabrir:hover { background: var(--bg-glass-hover); border-color: var(--gold-primary); color: var(--gold-primary); }
+        
+        .btn-lixeira {
+            background: rgba(239, 68, 68, 0.1); 
+            color: #ef4444; 
+            border: 1px solid transparent; 
+            border-radius: 6px; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+        .btn-lixeira:hover { border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.2); }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <div class="header">
+        <div class="brand" style="display: flex; align-items: center; gap: 15px;">
+            <img src="{% static 'core/img/logo.png' %}" alt="Logo" style="height: 40px; border-radius: 4px; object-fit: contain;">
+            <div>
+                <h1 style="margin: 0; font-size: 1.2rem; font-weight: 600;">CRM</h1>
+                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); letter-spacing: 1px;">Arquivo Morto</p>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <a href="{% url 'core:crm_kanban' %}" class="action-btn"><i class="fa-solid fa-arrow-left"></i> Voltar ao Funil</a>
+        </div>
+    </div>
+    
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border-glass); padding-bottom: 20px;">
+            <div>
+                <h1 style="margin: 0; font-size: 2rem; font-weight: 600;">Gaveta & Arquivo Morto</h1>
+                <p style="margin: 5px 0 0 0; color: var(--text-muted);">Gerencie leads em espera, vendas concluídas e lixeira.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="filtrar('standby')" class="filter-btn active" data-status="standby"><i class="fa-regular fa-clock"></i> Standby</button>
+                {% if is_owner or is_gerente %}
+                <button onclick="filtrar('arquivado')" class="filter-btn" data-status="arquivado"><i class="fa-solid fa-box-archive"></i> Arquivados</button>
+                <button onclick="filtrar('lixeira')" class="filter-btn" data-status="lixeira"><i class="fa-solid fa-trash-can"></i> Lixeira</button>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="lista-leads">
+            {% for lead in leads %}
+            <div class="lead-row" data-status="{{ lead.status }}">
+                <div class="lead-info">
+                    <h3>{{ lead.nome }}</h3>
+                    <p><i class="fa-solid fa-phone"></i> {{ lead.telefone }} | <i class="fa-solid fa-house"></i> {{ lead.imovel.titulo|default:"Genérico" }}</p>
+                    <p style="margin-top: 5px; font-size: 0.8rem;">
+                        <i class="fa-solid fa-calendar-alt"></i> Atualizado em: {{ lead.data_criacao|date:"d/m/Y H:i" }}
+                        {% if lead.status == 'lixeira' %}
+                        <span style="color: #ef4444; margin-left: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> Exclusão automática em {{ lead.dias_para_excluir }} dias</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="lead-actions" style="display: flex; gap: 10px;">
+                    <button class="btn-reabrir" onclick="reabrirLead({{ lead.id }}, '{{ lead.status }}')">
+                        <i class="fa-solid fa-rotate-left"></i> Reabrir (Voltar ao Funil)
+                    </button>
+                    {% if lead.status == 'standby' %}
+                    <button class="btn-lixeira" onclick="moverParaLixeira({{ lead.id }})">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state" style="display: block;">
+                <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>Nenhum lead encontrado.</p>
+            </div>
+            {% endfor %}
+            
+            <div id="no-results" class="empty-state">
+                <i class="fa-solid fa-folder-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                <p>Nenhum lead nesta pasta.</p>
+            </div>
+        </div>
+        
+    </div>
+
+<script>
+    function filtrar(status) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.filter-btn[data-status="${status}"]`).classList.add('active');
+        
+        let count = 0;
+        document.querySelectorAll('.lead-row').forEach(row => {
+            if (row.getAttribute('data-status') === status) {
+                row.style.display = 'flex';
+                count++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        const noResults = document.getElementById('no-results');
+        if (count === 0 && document.querySelectorAll('.lead-row').length > 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    // Auto-filtrar para standby ao carregar
+    window.onload = () => filtrar('standby');
+    
+    async function reabrirLead(leadId, currentStatus) {
+        let novoStatus = 'atendimento';
+        let msg = "Deseja reabrir este lead no Funil (status: Em Atendimento)?";
+        
+        if (currentStatus === 'arquivado') {
+            novoStatus = 'proposta';
+            msg = "Deseja reabrir esta venda? O lead voltará para Proposta/Negociação.";
+        }
+        
+        if(!confirm(msg)) return;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const res = await fetch(`/crm/api/leads/update/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ lead_id: leadId, status: novoStatus })
+            });
+            if(res.ok) {
+                window.location.reload();
+            } else {
+                alert("Erro ao reabrir lead");
+            }
+        } catch (e) { console.error(e); }
+    }
+    
+    async function moverParaLixeira(leadId) {
+        if(!confirm("Mover este lead para a lixeira?")) return;
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const res = await fetch(`/crm/api/leads/update/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ lead_id: leadId, status: 'lixeira' })
+            });
+            if(res.ok) {
+                window.location.reload();
+            } else {
+                alert("Erro ao mover lead");
+            }
+        } catch (e) { console.error(e); }
+    }
+</script>
+</body>
+</html>

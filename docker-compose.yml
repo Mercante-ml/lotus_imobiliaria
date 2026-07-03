@@ -24,6 +24,13 @@ services:
     ports:
       - "6380:6379"
       
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - web
+      
   celery:
     build: .
     command: celery -A lotus_imobiliaria worker -l info

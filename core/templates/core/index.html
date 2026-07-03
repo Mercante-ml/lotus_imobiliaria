@@ -31,51 +31,33 @@
 <section class="relative h-screen min-h-[800px] flex items-center justify-center text-center px-6 overflow-hidden">
     <!-- Background Image with Parallax effect (simulated) and gradient overlay -->
     <div class="absolute inset-0 z-0 bg-marinho-escuro">
-        <img src="{% static 'core/images/hero_premium.png' %}" 
-             alt="Imóvel de Luxo" 
-             class="w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-100 opacity-90">
+        {% if request.tenant.home_hero_bg_preset == 'custom' and request.tenant.home_hero_bg_custom %}
+            <img src="{{ request.tenant.home_hero_bg_custom.url }}" 
+                 alt="Imóvel de Luxo" 
+                 class="w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-100 opacity-90">
+        {% else %}
+            {% with preset=request.tenant.home_hero_bg_preset|default:"preset_1" %}
+            <img src="{% static 'core/images/hero_presets/'|add:preset|add:'.png' %}" 
+                 alt="Imóvel de Luxo" 
+                 class="w-full h-full object-cover object-center scale-105 transition-transform duration-[20s] hover:scale-100 opacity-90">
+            {% endwith %}
+        {% endif %}
         <div class="absolute inset-0 bg-gradient-to-b from-marinho-escuro/70 via-marinho-escuro/30 to-marinho-escuro/90 mix-blend-multiply"></div>
     </div>
 
     <div class="relative z-10 flex flex-col items-center w-full max-w-5xl pt-20">
-        <div class="inline-flex items-center justify-center px-5 py-2 mb-8 border border-ouro/40 rounded-full bg-white/5 backdrop-blur-md animate-fade-in-up opacity-0">
-            <span class="text-ouro text-xs tracking-[0.25em] uppercase font-semibold">O Padrão Lotus de Viver</span>
+        <div class="inline-flex items-center justify-center px-5 py-2 mb-8 border border-ouro/40 rounded-full bg-white/5 backdrop-blur-md animate-fade-in-up">
+            <span class="text-ouro text-xs tracking-[0.25em] uppercase font-semibold">{{ request.tenant.home_hero_tag|default:'O Padrão de Viver' }}</span>
         </div>
         
-        <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white leading-tight animate-fade-in-up delay-100 opacity-0 drop-shadow-2xl">
-            O Seu Espaço de <br/><span class="text-ouro italic font-light">Renascimento.</span>
+        <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl font-medium tracking-tight text-white leading-tight animate-fade-in-up delay-100 drop-shadow-2xl">
+            {{ request.tenant.home_hero_titulo|default:'O Seu Espaço de' }} <br/><span class="text-ouro italic font-light drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ request.tenant.home_hero_destaque|default:'Renascimento.' }}</span>
         </h1>
         
-        <p class="mt-8 text-lg md:text-xl max-w-2xl text-white/90 font-light tracking-wide animate-fade-in-up delay-200 opacity-0 drop-shadow-md leading-relaxed">
-            Curadoria especializada para transformar a complexidade do mercado na simplicidade do extraordinário. Descubra propriedades que transcendem o comum.
+        <p class="mt-8 text-lg md:text-xl max-w-2xl text-white/90 font-light tracking-wide animate-fade-in-up delay-200 drop-shadow-md leading-relaxed">
+            {{ request.tenant.home_hero_subtitulo|default:'Curadoria especializada para transformar a complexidade do mercado na simplicidade do extraordinário. Descubra propriedades que transcendem o comum.' }}
         </p>
 
-        <!-- Glassmorphism Search Bar -->
-        <form action="{% url 'core:lista_imoveis' %}" method="GET" class="mt-14 w-full max-w-3xl bg-white/10 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-white/20 animate-fade-in-up delay-300 opacity-0">
-            <div class="flex flex-col md:flex-row items-center gap-4">
-                <div class="relative w-full flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                        <svg class="h-6 w-6 text-ouro/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <select name="bairro" class="hero-select w-full text-white border-0 focus:ring-0 transition duration-300 pl-14 pr-4 py-4 appearance-none cursor-pointer text-lg outline-none">
-                        <option value="" class="text-graphite">Selecione uma localização exclusiva...</option>
-                        {% for b in bairros %}
-                            <option value="{{ b.id }}">{{ b.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <button type="submit" class="w-full md:w-auto flex items-center justify-center bg-ouro text-white font-medium px-10 py-4 rounded-xl shadow-[0_0_15px_rgba(180,140,90,0.5)] hover:bg-[#cba471] hover:shadow-[0_0_25px_rgba(180,140,90,0.7)] transition-all duration-300 transform hover:-translate-y-1">
-                    <span>Explorar</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-        </form>
     </div>
     
     <!-- Scroll Indicator -->
@@ -90,16 +72,17 @@
     <div class="container mx-auto px-6 max-w-4xl text-center">
         <svg class="w-12 h-12 mx-auto text-ouro mb-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
         <h2 class="font-serif text-4xl md:text-5xl lg:text-6xl font-medium text-marinho-escuro leading-tight mb-8">
-            Não vendemos imóveis. <br/>
-            <span class="text-ouro italic font-light">Apresentamos novos começos.</span>
+            {{ request.tenant.home_manifesto_titulo|default:'Não vendemos imóveis.' }} <br/>
+            <span class="text-ouro italic font-light">{{ request.tenant.home_manifesto_destaque|default:'Apresentamos novos começos.' }}</span>
         </h2>
         <p class="text-graphite/80 text-lg md:text-xl font-light leading-relaxed">
-            A Lotus Imobiliária nasceu com o propósito de elevar a experiência de encontrar o seu lar. Trabalhamos apenas com uma seleção criteriosa de propriedades que oferecem design imponente, conforto absoluto e exclusividade.
+            {{ request.tenant.home_manifesto_texto|default:'Nascemos com o propósito de elevar a experiência de encontrar o seu lar. Trabalhamos apenas com uma seleção criteriosa de propriedades que oferecem design imponente, conforto absoluto e exclusividade.' }}
         </p>
     </div>
 </section>
 
 <!-- LANÇAMENTOS EXCLUSIVOS -->
+{% if request.tenant.portfolio_lancamento %}
 <section id="lancamentos" class="py-24 bg-cinza-fundo">
     <div class="container mx-auto px-6">
         
@@ -117,80 +100,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             
-            {% for imovel in destaques %}
-            <div class="bg-white rounded-2xl shadow-sm border border-cinza-claro/50 overflow-hidden group transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 flex flex-col">
-                <div class="relative h-72 overflow-hidden cursor-pointer" onclick="window.location.href='{% url 'core:detalhe_imovel' imovel.id %}'">
-                    
-                    {% if imovel.imagem_principal %}
-                        <img src="{{ imovel.imagem_principal.url }}" 
-                             alt="{{ imovel.titulo }}" 
-                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out">
-                    {% else %}
-                        <img src="https://placehold.co/600x400/CCCCCC/142048?text=Sem+Foto" 
-                             alt="{{ imovel.titulo }}" 
-                             class="w-full h-full object-cover">
-                    {% endif %}
-                    
-                    <!-- Gradiente sutil para garantir legibilidade dos selos -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-marinho-escuro/90 via-marinho-escuro/20 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-500"></div>
-                    
-                    <!-- Selo de Categoria -->
-                    <div class="absolute top-5 left-5 bg-white text-marinho text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
-                        {{ imovel.get_finalidade_display }}
-                    </div>
-
-                    <!-- Botão de Favorito -->
-                    <button class="btn-favorito absolute top-4 right-4 p-2.5 rounded-full bg-black/20 backdrop-blur-md hover:bg-white/20 transition duration-300 border border-white/20"
-                            data-imovel-id="{{ imovel.id }}"
-                            title="Adicionar aos Favoritos"
-                            onclick="event.stopPropagation();">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                    </button>
-                    
-                    <!-- Preço sobre a imagem -->
-                    <div class="absolute bottom-5 left-5 right-5 flex justify-between items-end">
-                        <p class="font-serif text-3xl text-white font-medium drop-shadow-md">
-                            R$ {{ imovel.valor|intcomma }}
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="p-8 flex-1 flex flex-col">
-                    <p class="text-ouro text-sm font-bold tracking-widest uppercase mb-3">
-                        {{ imovel.bairro.nome }}
-                    </p>
-                    <h3 class="font-serif text-2xl font-semibold text-marinho-escuro line-clamp-2 leading-snug group-hover:text-ouro transition-colors flex-1" title="{{ imovel.titulo }}">
-                        <a href="{% url 'core:detalhe_imovel' imovel.id %}">{{ imovel.titulo }}</a>
-                    </h3>
-                    
-                    <div class="flex justify-between items-center mt-8 pt-6 border-t border-cinza-claro/80 text-graphite/80 text-sm font-medium">
-                        <span class="flex flex-col items-center gap-1" title="Quartos">
-                            <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 9h14c1.1 0 2 .9 2 2v6H3v-6c0-1.1.9-2 2-2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 17v2 M19 17v2 M7 9V7c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v2"/></svg>
-                            <span>{{ imovel.quartos }}</span>
-                        </span>
-                        <div class="w-px h-8 bg-cinza-claro"></div>
-                        <span class="flex flex-col items-center gap-1" title="Banheiros">
-                            <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 10h16v4c0 3.3-2.7 6-6 6H10c-3.3 0-6-2.7-6-6v-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10V6c0-1.1.9-2 2-2h4"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 20l-2 2 M18 20l2 2"/></svg>
-                            <span>{{ imovel.banheiros }}</span>
-                        </span>
-                        <div class="w-px h-8 bg-cinza-claro"></div>
-                        <span class="flex flex-col items-center gap-1" title="Vagas">
-                            <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 10l2-4h10l2 4M3 10h18v6c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-6z"/><circle cx="7" cy="15" r="1.5" fill="currentColor"/><circle cx="17" cy="15" r="1.5" fill="currentColor"/></svg>
-                           <span>{{ imovel.vagas }}</span>
-                       </span>
-                        <div class="w-px h-8 bg-cinza-claro"></div>
-                        <span class="flex flex-col items-center gap-1" title="Área Útil">
-                             <svg class="h-6 w-6 text-marinho-claro" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l-5-5m11 1v4m0 0h-4m4 0l-5-5"/></svg>
-                            <span>{{ imovel.area_util|floatformat:0 }} m²</span>
-                        </span>
-                    </div>
-                    <button type="button" class="btn-comparar mt-4 w-full px-4 py-3 bg-white border border-cinza-claro text-marinho font-medium rounded-lg hover:bg-cinza-fundo transition-colors text-sm" data-imovel-id="{{ imovel.id }}" onclick="event.stopPropagation(); window.toggleCompare(this);">
-                        + Comparar
-                    </button>
-                </div>
-            </div>
+            {% for imovel in destaques_lancamento %}
+            {% include 'core/partials/_imovel_card.html' with imovel=imovel %}
             
             {% empty %}
             <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white p-16 rounded-2xl text-center border border-cinza-claro shadow-sm">
@@ -202,7 +113,7 @@
 
         </div> 
         
-        {% if destaques %}
+        {% if destaques_lancamento %}
         <div class="mt-16 text-center md:hidden">
             <a href="{% url 'core:lista_imoveis' %}?finalidade=lancamento" class="inline-flex items-center justify-center w-full bg-white text-marinho-escuro border border-marinho-escuro font-bold py-4 rounded-xl hover:bg-marinho-escuro hover:text-white transition-colors">
                 Ver Coleção Completa
@@ -211,6 +122,93 @@
         {% endif %}
     </div>
 </section>
+{% endif %}
+
+<!-- IMÓVEIS À VENDA -->
+{% if request.tenant.portfolio_revenda %}
+<section id="venda" class="py-24 bg-white">
+    <div class="container mx-auto px-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div class="max-w-2xl">
+                <span class="text-ouro uppercase tracking-widest text-sm font-bold">Prontos para Morar</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-marinho-escuro mt-3">Imóveis à Venda</h2>
+                <p class="mt-4 text-graphite/70 text-lg">Residências extraordinárias esperando para se tornarem o seu novo lar.</p>
+            </div>
+            <a href="{% url 'core:lista_imoveis' %}?finalidade=venda" class="hidden md:inline-flex items-center text-marinho hover:text-ouro font-medium group transition-colors text-lg">
+                Ver todos à venda
+                <svg class="w-6 h-6 ml-2 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            
+            {% for imovel in destaques_revenda %}
+            {% include 'core/partials/_imovel_card.html' with imovel=imovel %}
+            
+            {% empty %}
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-cinza-fundo p-16 rounded-2xl text-center border border-cinza-claro shadow-sm">
+                <svg class="w-20 h-20 mx-auto text-graphite/20 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <p class="text-2xl text-marinho-escuro font-serif">Aguardando novas captações.</p>
+                <p class="text-graphite/60 mt-4 max-w-md mx-auto text-lg">Nossa equipe está sempre buscando os melhores imóveis para você.</p>
+            </div>
+            {% endfor %}
+
+        </div> 
+        
+        {% if destaques_revenda %}
+        <div class="mt-16 text-center md:hidden">
+            <a href="{% url 'core:lista_imoveis' %}?finalidade=venda" class="inline-flex items-center justify-center w-full bg-white text-marinho-escuro border border-marinho-escuro font-bold py-4 rounded-xl hover:bg-marinho-escuro hover:text-white transition-colors">
+                Ver Imóveis à Venda
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- IMÓVEIS PARA ALUGAR -->
+{% if request.tenant.portfolio_aluguel %}
+<section id="aluguel" class="py-24 bg-cinza-fundo">
+    <div class="container mx-auto px-6">
+        
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div class="max-w-2xl">
+                <span class="text-ouro uppercase tracking-widest text-sm font-bold">Oportunidades Únicas</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-marinho-escuro mt-3">Para Alugar</h2>
+                <p class="mt-4 text-graphite/70 text-lg">Sofisticação e conforto na medida certa, pelo tempo que você precisar.</p>
+            </div>
+            <a href="{% url 'core:lista_imoveis' %}?finalidade=aluguel" class="hidden md:inline-flex items-center text-marinho hover:text-ouro font-medium group transition-colors text-lg">
+                Ver todos para alugar
+                <svg class="w-6 h-6 ml-2 transform group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            
+            {% for imovel in destaques_aluguel %}
+            {% include 'core/partials/_imovel_card.html' with imovel=imovel %}
+            
+            {% empty %}
+            <div class="col-span-1 md:col-span-2 lg:col-span-3 bg-white p-16 rounded-2xl text-center border border-cinza-claro shadow-sm">
+                <svg class="w-20 h-20 mx-auto text-graphite/20 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <p class="text-2xl text-marinho-escuro font-serif">Aguardando novas propriedades.</p>
+                <p class="text-graphite/60 mt-4 max-w-md mx-auto text-lg">Acompanhe as novidades e não perca as próximas oportunidades de locação.</p>
+            </div>
+            {% endfor %}
+
+        </div> 
+        
+        {% if destaques_aluguel %}
+        <div class="mt-16 text-center md:hidden">
+            <a href="{% url 'core:lista_imoveis' %}?finalidade=aluguel" class="inline-flex items-center justify-center w-full bg-white text-marinho-escuro border border-marinho-escuro font-bold py-4 rounded-xl hover:bg-marinho-escuro hover:text-white transition-colors">
+                Ver Imóveis para Alugar
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
 
 {% if ultimos_posts %}
 <section id="blog" class="py-20 md:py-28 bg-white"> 

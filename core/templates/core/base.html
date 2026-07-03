@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>{% block title %}{{ request.tenant.nome|default:"Lotus Imobiliária" }}{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{% static 'core/img/favicon.png' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
         tailwind.config = {
@@ -59,20 +60,23 @@
 
     <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="{% url 'core:index' %}" class="flex-shrink-0 flex items-center gap-2">
+            <a href="{% url 'core:index' %}" class="flex-shrink-0 flex items-center gap-4">
                 {% if request.tenant.logo %}
                     <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.nome }} Logo" class="h-[60px] w-auto">
-                {% else %}
-                    <div class="font-serif text-2xl font-bold tracking-wider text-marinho">
-                        {{ request.tenant.nome|default:"Lotus" }}
-                    </div>
                 {% endif %}
+                <div class="font-serif text-2xl font-bold tracking-wider text-marinho">
+                    {{ request.tenant.nome|default:"Lotus" }}
+                </div>
             </a>
             <div class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'core:lista_imoveis' %}" class="text-marinho hover:text-ouro transition duration-300">Imóveis</a>
                 <a href="{% url 'core:sobre' %}" class="text-marinho hover:text-ouro transition duration-300">Sobre Nós</a>
+                {% if request.tenant.exibir_blog %}
                 <a href="{% url 'core:lista_blog' %}" class="text-marinho hover:text-ouro transition duration-300">Blog</a>
+                {% endif %}
+                {% if request.tenant.exibir_equipe %}
                 <a href="{% url 'core:lista_corretores' %}" class="text-marinho hover:text-ouro transition duration-300">Equipe</a>
+                {% endif %}
                 <a href="{% url 'core:contato' %}" class="text-marinho hover:text-ouro transition duration-300">Contato</a>
             </div>
             
@@ -96,6 +100,11 @@
                         <a href="{% url 'core:minha_conta' %}" class="block px-4 py-3 text-sm text-graphite hover:bg-cinza-fundo hover:text-ouro transition-colors">
                             Minha Conta
                         </a>
+                        {% if request.user.is_superuser or request.user.corretor %}
+                        <a href="{% url 'core:crm_kanban' %}" class="block px-4 py-3 text-sm font-semibold text-marinho bg-ouro/10 hover:bg-ouro/20 hover:text-marinho transition-colors">
+                            <i class="fa-solid fa-lock mr-1"></i> Área Restrita (CRM)
+                        </a>
+                        {% endif %}
                         <a href="#" id="link-favoritos-dropdown" class="block px-4 py-3 text-sm text-graphite hover:bg-cinza-fundo hover:text-ouro transition-colors">
                             Meus Favoritos
                         </a>
@@ -129,7 +138,12 @@
         <div class="flex flex-col space-y-6 px-8 py-4">
             <a href="{% url 'core:lista_imoveis' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Imóveis</a>
             <a href="{% url 'core:sobre' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Sobre Nós</a>
+            {% if request.tenant.exibir_blog %}
+            <a href="{% url 'core:lista_blog' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Blog</a>
+            {% endif %}
+            {% if request.tenant.exibir_equipe %}
             <a href="{% url 'core:lista_corretores' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Equipe</a>
+            {% endif %}
             <a href="{% url 'core:contato' %}" class="text-marinho font-serif text-3xl border-b border-cinza-claro pb-4 hover:text-ouro transition-colors">Contato</a>
             
             <div class="mt-8 pt-6 flex flex-col space-y-5 pb-12">
@@ -178,7 +192,13 @@
         <div class="container mx-auto px-6 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="md:col-span-1">
-                    <img src="{% static 'core/images/logo_lotus.png' %}" alt="Lotus Imobiliária Logo" class="h-12 w-auto mb-4 opacity-90">
+                    {% if request.tenant.logo %}
+                        <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.nome }} Logo" class="h-12 w-auto mb-4 opacity-90">
+                    {% else %}
+                        <div class="font-serif text-2xl font-bold tracking-wider text-white mb-4">
+                            {{ request.tenant.nome|default:"Lotus" }}
+                        </div>
+                    {% endif %}
                     <p class="text-sm text-cinza-claro/70">Elegância e clareza na busca pelo imóvel extraordinário.</p>
                 </div>
                 <div>
@@ -196,19 +216,38 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="{% url 'core:termos_uso' %}" class="hover:text-ouro transition-colors">Termos de Uso</a></li>
                         <li><a href="{% url 'core:politica_privacidade' %}" class="hover:text-ouro transition-colors">Política de Privacidade</a></li>
+                        <li class="pt-4"><a href="{% url 'core:crm_kanban' %}" class="text-ouro hover:text-white font-medium transition-colors"><i class="fa-solid fa-lock mr-2"></i>Área Restrita</a></li>
                     </ul>
                 </div>
                 <div>
                     <h3 class="text-white font-serif font-bold text-lg mb-4">Contato</h3>
                     <ul class="space-y-2 text-sm">
-                        <li>contato@dsprime.com</li>
-                        <li>(62) 98318-8400</li>
-                        <li>Goiânia - GO</li>
+                        {% if request.tenant.empresa_email %}<li>{{ request.tenant.empresa_email }}</li>{% endif %}
+                        {% if request.tenant.telefone %}<li>{{ request.tenant.telefone }}</li>{% endif %}
+                        {% if request.tenant.rua %}
+                            <li>{{ request.tenant.rua }}, {{ request.tenant.numero }} - {{ request.tenant.cidade }}/{{ request.tenant.uf }}</li>
+                        {% endif %}
+                        {% if request.tenant.empresa_creci %}<li>CRECI: {{ request.tenant.empresa_creci }}</li>{% endif %}
                     </ul>
+                    
+                    {% if request.tenant.empresa_instagram or request.tenant.empresa_facebook %}
+                    <div class="flex gap-4 mt-6">
+                        {% if request.tenant.empresa_instagram %}
+                        <a href="{{ request.tenant.empresa_instagram }}" target="_blank" class="text-white hover:text-ouro transition-colors">
+                            <i class="fa-brands fa-instagram text-xl"></i>
+                        </a>
+                        {% endif %}
+                        {% if request.tenant.empresa_facebook %}
+                        <a href="{{ request.tenant.empresa_facebook }}" target="_blank" class="text-white hover:text-ouro transition-colors">
+                            <i class="fa-brands fa-facebook-f text-xl"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="border-t border-white/10 mt-12 pt-8 text-center text-sm">
-                <p>&copy; 2026 Lotus Imobiliária. Todos os direitos reservados.</p>
+                <p>&copy; {% now "Y" %} {{ request.tenant.schema_name|title }}. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

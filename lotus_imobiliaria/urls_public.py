@@ -18,6 +18,8 @@ urlpatterns = [
     
     # Landing Page
     path('', core_views.saas_landing, name='saas_landing'),
+    path('termos-de-uso/', core_views.termos_uso, name='termos_uso'),
+    path('politica-de-privacidade/', core_views.politica_privacidade, name='politica_privacidade'),
     
     # Webhooks Globais (Stripe)
     path('webhooks/stripe/', stripe_views.stripe_webhook, name='stripe_webhook'),

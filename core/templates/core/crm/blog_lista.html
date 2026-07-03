@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Blog - CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --gold-primary: #B48C5A;
+            --surface-color: #ffffff;
+            --border-color: #E2E8F0;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+        
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg-dark)] font-sans text-[#142048] p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-5 mb-10 pb-6 border-b border-[var(--border-color)]">
+            <div class="flex items-center gap-5 w-full md:w-auto">
+                <a href="{% url 'core:configuracoes_site' %}#blog" class="w-12 h-12 rounded-xl bg-white border border-[var(--border-color)] flex items-center justify-center hover:bg-gray-50 transition text-[#142048] shadow-sm flex-shrink-0">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-serif text-[#142048] tracking-wide">Gestão do Blog</h1>
+                    <p class="text-[#475569] text-sm mt-1 font-medium">Cadastre artigos, notícias ou vídeos para seus clientes.</p>
+                </div>
+            </div>
+            <button onclick="openModal()" class="w-full md:w-auto px-6 py-3 bg-[var(--gold-primary)] text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg shadow-[var(--gold-primary)]/20 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-plus"></i> Novo Artigo
+            </button>
+        </div>
+
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Listagem de Posts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for post in posts %}
+            <div class="bg-white rounded-3xl overflow-hidden border border-[var(--border-color)] shadow-sm hover:shadow-md transition group flex flex-col h-full">
+                <div class="h-48 bg-gray-100 relative shrink-0">
+                    {% if post.imagem_card %}
+                        <img src="{{ post.imagem_card.url }}" alt="{{ post.titulo }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                            <i class="fa-solid fa-image text-4xl opacity-50"></i>
+                        </div>
+                    {% endif %}
+                    <div class="absolute top-4 left-4">
+                        <span class="px-3 py-1 bg-white/90 backdrop-blur text-xs font-bold rounded-full text-[#142048] shadow-sm">
+                            {% if post.tipo_conteudo == 'link' %}<i class="fa-solid fa-link text-[var(--gold-primary)] mr-1"></i> Link Externo
+                            {% elif post.tipo_conteudo == 'embed' %}<i class="fa-solid fa-code text-[var(--gold-primary)] mr-1"></i> Vídeo / Embed
+                            {% else %}<i class="fa-solid fa-file text-[var(--gold-primary)] mr-1"></i> Arquivo
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-6 flex flex-col flex-1">
+                    <div class="text-xs text-gray-500 mb-2 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar"></i> {{ post.data_publicacao|date:"d/m/Y" }}
+                    </div>
+                    <h3 class="text-lg font-bold text-[#142048] mb-2 line-clamp-2">{{ post.titulo }}</h3>
+                    <p class="text-sm text-[#475569] line-clamp-3 mb-6 flex-1">{{ post.resumo }}</p>
+                    
+                    <div class="flex items-center justify-between border-t border-gray-100 pt-4 mt-auto">
+                        {% if post.tipo_conteudo == 'link' and post.link_url %}
+                        <a href="{{ post.link_url }}" target="_blank" class="text-sm text-[var(--gold-primary)] hover:underline font-semibold flex items-center gap-1">
+                            Acessar <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                        </a>
+                        {% elif post.tipo_conteudo == 'arquivo' and post.arquivo %}
+                        <a href="{{ post.arquivo.url }}" target="_blank" class="text-sm text-[var(--gold-primary)] hover:underline font-semibold flex items-center gap-1">
+                            Ver Arquivo <i class="fa-solid fa-download text-xs"></i>
+                        </a>
+                        {% else %}
+                        <span class="text-sm text-gray-400 font-semibold"><i class="fa-solid fa-play"></i> Embutido</span>
+                        {% endif %}
+                        
+                        <div class="flex gap-2">
+                            <button onclick="editPost('{{ post.id }}', '{{ post.titulo|escapejs }}', '{{ post.resumo|escapejs }}', '{{ post.tipo_conteudo }}', '{{ post.link_url|default:''|escapejs }}', '{{ post.embed_code|default:''|escapejs }}')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition" title="Editar">
+                                <i class="fa-solid fa-pen text-sm"></i>
+                            </button>
+                            
+                            <form method="POST" action="{% url 'core:crm_blog' %}" onsubmit="return confirm('Tem certeza que deseja excluir este artigo?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="post_id" value="{{ post.id }}">
+                                <button type="submit" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition" title="Excluir">
+                                    <i class="fa-regular fa-trash-can text-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-16 text-center border-2 border-dashed border-gray-200 rounded-3xl bg-white">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <i class="fa-solid fa-newspaper text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#142048] mb-2">Nenhum artigo publicado</h3>
+                <p class="text-[#475569] mb-6 max-w-md mx-auto">Atraia mais visitantes para o seu site publicando novidades, notícias ou vídeos.</p>
+                <button onclick="openModal()" class="px-6 py-2 border-2 border-[var(--gold-primary)] text-[var(--gold-primary)] font-bold rounded-xl hover:bg-[var(--gold-primary)] hover:text-white transition">
+                    Criar meu primeiro post
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- Modal Novo Post -->
+    <div id="modalPost" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden modal-enter max-h-[90vh] flex flex-col">
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h2 class="text-2xl font-serif text-[#142048]" id="modalTitle">Novo Artigo</h2>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto">
+                <form method="POST" action="{% url 'core:crm_blog' %}" enctype="multipart/form-data" id="postForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" id="formAction" value="create">
+                    <input type="hidden" name="post_id" id="formPostId" value="">
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Título do Artigo</label>
+                            <input type="text" name="titulo" id="input_titulo" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" placeholder="Ex: Tendências...">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Resumo (Subtítulo)</label>
+                            <textarea name="resumo" id="input_resumo" required rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" placeholder="Um breve parágrafo..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Imagem de Capa (Obrigatória na criação)</label>
+                            <input type="file" name="imagem_card" id="input_imagem" accept="image/*" required class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none bg-white">
+                        </div>
+                        
+                        <div class="border-t border-gray-100 pt-5 mt-2">
+                            <label class="block text-sm font-semibold text-[#142048] mb-3">Tipo de Conteúdo</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <label class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[var(--gold-primary)] transition flex flex-col items-center gap-1 text-center" id="lbl-link">
+                                    <input type="radio" name="tipo_conteudo" value="link" checked onchange="toggleTipo()" class="hidden">
+                                    <i class="fa-solid fa-link text-[var(--gold-primary)] text-xl mb-1"></i>
+                                    <div class="font-bold text-xs text-[#142048]">Link Externo</div>
+                                </label>
+                                <label class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[var(--gold-primary)] transition flex flex-col items-center gap-1 text-center" id="lbl-embed">
+                                    <input type="radio" name="tipo_conteudo" value="embed" onchange="toggleTipo()" class="hidden">
+                                    <i class="fa-solid fa-code text-[var(--gold-primary)] text-xl mb-1"></i>
+                                    <div class="font-bold text-xs text-[#142048]">Mídia Embutida</div>
+                                </label>
+                                <label class="border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[var(--gold-primary)] transition flex flex-col items-center gap-1 text-center" id="lbl-arquivo">
+                                    <input type="radio" name="tipo_conteudo" value="arquivo" onchange="toggleTipo()" class="hidden">
+                                    <i class="fa-solid fa-file-arrow-up text-[var(--gold-primary)] text-xl mb-1"></i>
+                                    <div class="font-bold text-xs text-[#142048]">Upload de Arquivo</div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="box-link">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">URL de Destino</label>
+                            <input type="url" name="link_url" id="input_link_url" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" placeholder="https://...">
+                        </div>
+                        
+                        <div id="box-embed" class="hidden">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Código de Incorporação (Embed HTML)</label>
+                            <textarea name="embed_code" id="input_embed_code" rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none font-mono text-sm bg-gray-50" placeholder='<iframe src="..." width="100%" height="400"></iframe>'></textarea>
+                        </div>
+                        
+                        <div id="box-arquivo" class="hidden">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Selecione o Arquivo (PDF, PPT, DOC, HTML)</label>
+                            <input type="file" name="arquivo" id="input_arquivo" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none bg-white">
+                        </div>
+                        
+                    </div>
+                </form>
+            </div>
+            
+            <div class="px-8 py-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button type="button" onclick="closeModal()" class="px-6 py-2.5 rounded-xl text-gray-600 hover:bg-gray-200 font-bold transition">Cancelar</button>
+                <button type="button" onclick="document.getElementById('postForm').submit()" class="px-6 py-2.5 bg-[var(--gold-primary)] text-white rounded-xl hover:opacity-90 font-bold transition shadow-md shadow-[var(--gold-primary)]/20" id="btnSubmit">Publicar Artigo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('postForm').reset();
+            document.getElementById('formAction').value = 'create';
+            document.getElementById('formPostId').value = '';
+            document.getElementById('modalTitle').innerText = 'Novo Artigo';
+            document.getElementById('btnSubmit').innerText = 'Publicar Artigo';
+            document.getElementById('input_imagem').setAttribute('required', 'required');
+            
+            toggleTipo();
+            
+            document.getElementById('modalPost').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function editPost(id, titulo, resumo, tipo, link, embed) {
+            document.getElementById('formAction').value = 'edit';
+            document.getElementById('formPostId').value = id;
+            document.getElementById('modalTitle').innerText = 'Editar Artigo';
+            document.getElementById('btnSubmit').innerText = 'Salvar Alterações';
+            document.getElementById('input_imagem').removeAttribute('required'); // Not required on edit
+            
+            document.getElementById('input_titulo').value = titulo;
+            document.getElementById('input_resumo').value = resumo;
+            
+            // Set radio button
+            document.querySelector(`input[name="tipo_conteudo"][value="${tipo}"]`).checked = true;
+            toggleTipo();
+            
+            document.getElementById('input_link_url').value = link;
+            document.getElementById('input_embed_code').value = embed;
+            
+            document.getElementById('modalPost').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            document.getElementById('modalPost').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function toggleTipo() {
+            const isLink = document.querySelector('input[name="tipo_conteudo"][value="link"]').checked;
+            const isEmbed = document.querySelector('input[name="tipo_conteudo"][value="embed"]').checked;
+            const isArquivo = document.querySelector('input[name="tipo_conteudo"][value="arquivo"]').checked;
+            
+            const boxLink = document.getElementById('box-link');
+            const boxEmbed = document.getElementById('box-embed');
+            const boxArquivo = document.getElementById('box-arquivo');
+            
+            const inputLink = document.getElementById('input_link_url');
+            const inputEmbed = document.getElementById('input_embed_code');
+            const inputArquivo = document.getElementById('input_arquivo');
+            
+            // Reset visually all
+            ['link', 'embed', 'arquivo'].forEach(id => {
+                document.getElementById('lbl-'+id).classList.remove('border-[var(--gold-primary)]', 'bg-[var(--gold-primary)]', 'bg-opacity-5');
+            });
+            
+            if (isLink) {
+                boxLink.classList.remove('hidden');
+                boxEmbed.classList.add('hidden');
+                boxArquivo.classList.add('hidden');
+                inputLink.setAttribute('required', 'required');
+                inputEmbed.removeAttribute('required');
+                
+                document.getElementById('lbl-link').classList.add('border-[var(--gold-primary)]', 'bg-[var(--gold-primary)]', 'bg-opacity-5');
+            } else if (isEmbed) {
+                boxLink.classList.add('hidden');
+                boxEmbed.classList.remove('hidden');
+                boxArquivo.classList.add('hidden');
+                inputEmbed.setAttribute('required', 'required');
+                inputLink.removeAttribute('required');
+                
+                document.getElementById('lbl-embed').classList.add('border-[var(--gold-primary)]', 'bg-[var(--gold-primary)]', 'bg-opacity-5');
+            } else if (isArquivo) {
+                boxLink.classList.add('hidden');
+                boxEmbed.classList.add('hidden');
+                boxArquivo.classList.remove('hidden');
+                inputLink.removeAttribute('required');
+                inputEmbed.removeAttribute('required');
+                
+                document.getElementById('lbl-arquivo').classList.add('border-[var(--gold-primary)]', 'bg-[var(--gold-primary)]', 'bg-opacity-5');
+            }
+        }
+        
+        // Initialize state
+        document.addEventListener('DOMContentLoaded', toggleTipo);
+    </script>
+</body>
+</html>

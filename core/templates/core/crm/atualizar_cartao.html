@@ -1,0 +1,122 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Atualizar Cartão | Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<div style="padding: 30px; max-width: 600px; margin: 0 auto;">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+        <h1 style="color: var(--text-primary); font-size: 1.8rem; margin: 0;"><i class="fa-regular fa-credit-card mr-2" style="color: var(--gold-primary);"></i> Atualizar Cartão</h1>
+        <a href="{% url 'core:assinatura' %}" style="color: var(--text-muted); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </div>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border-glass); border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        
+        <p style="color: var(--text-muted); margin-bottom: 25px; line-height: 1.6;">
+            Insira os dados do seu novo cartão de crédito. Ele passará a ser utilizado para as próximas cobranças da sua assinatura.
+        </p>
+
+        <!-- Formulário Stripe Elements -->
+        <form id="payment-form">
+            <div id="payment-element" style="margin-bottom: 25px;">
+                <!-- Stripe injeta os inputs aqui -->
+            </div>
+            
+            <div id="error-message" style="color: #ef4444; margin-bottom: 15px; font-size: 0.9rem; display: none;"></div>
+            
+            <button id="submit" class="btn-primary" style="width: 100%; padding: 14px; border-radius: 8px; font-weight: bold; font-size: 1rem; border: none; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <div class="spinner hidden" id="spinner"></div>
+                <span id="button-text">Atualizar Método de Pagamento</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Stripe.js -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('{{ stripe_public_key }}');
+    
+    const appearance = {
+        theme: 'stripe',
+        variables: {
+            colorPrimary: '#c99b3b', /* Gold/Bronze to match Upgrade button */
+            colorBackground: '#ffffff',
+            colorText: '#334155',
+            colorDanger: '#ef4444',
+            fontFamily: 'Inter, system-ui, sans-serif',
+            spacingUnit: '4px',
+            borderRadius: '8px',
+        },
+        rules: {
+            '.Input': {
+                border: '1px solid #e2e8f0',
+                boxShadow: 'none',
+            },
+            '.Input:focus': {
+                border: '1px solid #c99b3b',
+                boxShadow: '0 0 0 1px #c99b3b',
+            }
+        }
+    };
+    
+    const options = {
+        clientSecret: '{{ client_secret }}',
+        appearance: appearance,
+    };
+    
+    const elements = stripe.elements(options);
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    const form = document.getElementById('payment-form');
+    
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        // Bloqueia botão e exibe loading
+        const submitBtn = document.getElementById('submit');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('button-text');
+        
+        submitBtn.disabled = true;
+        btnText.innerText = "Processando...";
+        submitBtn.style.opacity = "0.7";
+        
+        const {error} = await stripe.confirmSetup({
+            elements,
+            confirmParams: {
+                return_url: window.location.origin + "{% url 'core:assinatura' %}?cartao=atualizado",
+            }
+        });
+        
+        if (error) {
+            const messageContainer = document.getElementById('error-message');
+            messageContainer.textContent = error.message;
+            messageContainer.style.display = 'block';
+            
+            // Restaura o botão
+            submitBtn.disabled = false;
+            btnText.innerText = "Atualizar Método de Pagamento";
+            submitBtn.style.opacity = "1";
+        }
+    });
+</script>
+
+<style>
+    .btn-primary {
+        background: var(--gold-primary);
+        color: #fff;
+    }
+    .btn-primary:hover {
+        opacity: 0.8;
+        transform: translateY(-2px);
+    }
+    .btn-primary:disabled {
+        cursor: not-allowed;
+        transform: none;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}

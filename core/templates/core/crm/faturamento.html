@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    :root {
+        --bg-main: #F4F6F9;
+        --bg-glass: #ffffff;
+        --text-primary: #142048;
+        --text-muted: #475569;
+        --border-glass: #E2E8F0;
+        --gold-primary: #B48C5A;
+        --gold-hover: #9c7748;
+    }
+</style>
+<div style="background: var(--bg-main); min-height: 100vh; padding: 40px 20px; font-family: 'Inter', sans-serif;">
+    <div style="max-width: 800px; margin: 0 auto; background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); backdrop-filter: blur(10px);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-glass); padding-bottom: 20px;">
+            <h1 style="color: var(--text-primary); font-size: 1.8rem; margin: 0;"><i class="fa-solid fa-file-invoice-dollar mr-2" style="color: var(--gold-primary);"></i> Histórico de Faturamento</h1>
+            <a href="{% url 'core:crm_kanban' %}" style="color: var(--text-muted); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar ao CRM</a>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Acompanhe todo o histórico de faturas e compras adicionais processadas pela plataforma.</p>
+            
+            {% if invoices %}
+            <div style="border: 1px solid var(--border-glass); border-radius: 8px; overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: rgba(244, 246, 249, 1); border-bottom: 1px solid var(--border-glass);">
+                            <th style="padding: 15px; color: var(--text-primary); font-size: 0.9rem;">Data</th>
+                            <th style="padding: 15px; color: var(--text-primary); font-size: 0.9rem;">Descrição</th>
+                            <th style="padding: 15px; color: var(--text-primary); font-size: 0.9rem;">Status</th>
+                            <th style="padding: 15px; color: var(--text-primary); font-size: 0.9rem;">Valor</th>
+                            <th style="padding: 15px; color: var(--text-primary); font-size: 0.9rem; text-align: right;">Recibo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoice in invoices %}
+                        <tr style="border-bottom: 1px solid var(--border-glass);">
+                            <td style="padding: 15px; color: var(--text-muted); font-size: 0.9rem;">{{ invoice.data }}</td>
+                            <td style="padding: 15px; color: var(--text-muted); font-size: 0.9rem;">
+                                {% for line in invoice.linhas %}
+                                    <div style="margin-bottom: 4px;">- {{ line }}</div>
+                                {% empty %}
+                                    Fatura Stripe
+                                {% endfor %}
+                            </td>
+                            <td style="padding: 15px; font-size: 0.9rem;">
+                                {% if invoice.status == 'paid' %}
+                                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-weight: bold;"><i class="fa-solid fa-check"></i> Pago</span>
+                                {% elif invoice.status == 'open' %}
+                                    <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 4px 8px; border-radius: 4px; font-weight: bold;"><i class="fa-solid fa-clock"></i> Pendente</span>
+                                {% else %}
+                                    <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 8px; border-radius: 4px; font-weight: bold;"><i class="fa-solid fa-xmark"></i> {{ invoice.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px; color: var(--text-primary); font-weight: bold; font-size: 0.95rem;">{{ invoice.valor }}</td>
+                            <td style="padding: 15px; text-align: right;">
+                                {% if invoice.url_recibo %}
+                                <a href="{{ invoice.url_recibo }}" target="_blank" style="display: inline-block; padding: 6px 12px; background: rgba(180, 140, 90, 0.1); color: var(--gold-primary); text-decoration: none; border-radius: 4px; font-size: 0.8rem; font-weight: bold; transition: all 0.2s;" onmouseover="this.style.background='var(--gold-primary)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(180, 140, 90, 0.1)'; this.style.color='var(--gold-primary)';">
+                                    <i class="fa-solid fa-download"></i> PDF
+                                </a>
+                                {% else %}
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="background: rgba(0,0,0,0.02); border: 1px dashed var(--border-glass); border-radius: 8px; padding: 40px; text-align: center;">
+                <i class="fa-solid fa-file-invoice-dollar" style="font-size: 3rem; color: var(--border-glass); margin-bottom: 15px;"></i>
+                <h3 style="color: var(--text-muted); margin: 0 0 10px 0;">Nenhuma fatura encontrada</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">O histórico de compras e assinaturas aparecerá aqui.</p>
+            </div>
+            {% endif %}
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="{% url 'core:stripe_portal' %}" style="display: inline-block; padding: 12px 25px; border-radius: 6px; text-decoration: none; background: #f1f5f9; color: var(--text-primary); font-size: 0.9rem; font-weight: bold; border: 1px solid var(--border-glass); transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0';" onmouseout="this.style.background='#f1f5f9';">
+                    <i class="fa-solid fa-credit-card"></i> Gerenciar Cartão de Crédito
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

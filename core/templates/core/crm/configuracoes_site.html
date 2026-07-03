@@ -1,0 +1,476 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações do Site - CRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --gold-primary: #B48C5A;
+            --surface-color: #ffffff;
+            --border-color: #E2E8F0;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+        .hub-card {
+            transition: all 0.3s ease;
+        }
+        .hub-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(180,140,90,0.2);
+            border-color: var(--gold-primary);
+        }
+    </style>
+</head>
+<body class="bg-[var(--bg-dark)] font-sans text-[#142048] p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Main Header -->
+        <div class="flex items-center gap-5 mb-10 pb-6 border-b border-[var(--border-color)]">
+            <a href="{% url 'core:crm_kanban' %}" id="btn-voltar-kanban" class="w-12 h-12 rounded-xl bg-white border border-[var(--border-color)] flex items-center justify-center hover:bg-gray-50 transition text-[#142048] shadow-sm">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <button id="btn-voltar-hub" class="hidden w-12 h-12 rounded-xl bg-white border border-[var(--border-color)] flex items-center justify-center hover:bg-gray-50 transition text-[#142048] shadow-sm" onclick="showHub()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-3xl font-serif text-[#142048] tracking-wide" id="page-title">Hub de Configurações</h1>
+                <p class="text-[#475569] text-sm mt-1 font-medium" id="page-subtitle">Escolha qual módulo do seu site você deseja editar.</p>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="mb-8">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- HUB VIEW -->
+        <div id="hub-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('identidade', 'Identidade Visual')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-paint-roller text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Identidade Visual</h3>
+                <p class="text-xs text-[#475569]">Nome da empresa, logotipo e cores principais.</p>
+            </div>
+
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('home', 'Página Inicial (Home)')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-home text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Página Inicial (Home)</h3>
+                <p class="text-xs text-[#475569]">Textos da primeira dobra (Hero) e manifesto da marca.</p>
+            </div>
+
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('sobre', 'Sobre a Imobiliária')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-building text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Sobre a Imobiliária</h3>
+                <p class="text-xs text-[#475569]">História, missão, visão e citação principal.</p>
+            </div>
+
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('equipe', 'Nossa Equipe')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-users text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Nossa Equipe</h3>
+                <p class="text-xs text-[#475569]">Textos e visibilidade da listagem de corretores.</p>
+            </div>
+
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('blog', 'Blog / Artigos')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-newspaper text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Blog / Artigos</h3>
+                <p class="text-xs text-[#475569]">Ativar ou desativar o módulo de notícias.</p>
+            </div>
+
+            <div class="bg-white border border-[var(--border-color)] p-6 rounded-3xl shadow-sm hub-card cursor-pointer" onclick="openSection('contato', 'Contatos e Endereço')">
+                <div class="w-12 h-12 rounded-xl bg-[var(--bg-dark)] flex items-center justify-center text-[var(--gold-primary)] border border-[var(--border-color)] mb-4">
+                    <i class="fa-solid fa-address-book text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-[#142048] mb-1">Contatos e Endereço</h3>
+                <p class="text-xs text-[#475569]">Telefones, e-mail, CRECI, endereço e redes sociais.</p>
+            </div>
+
+        </div>
+
+        <!-- FORM VIEW -->
+        <div id="form-view" class="hidden">
+            <form method="POST" action="{% url 'core:configuracoes_site' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="active_tab" id="active_tab" value="">
+                
+                <!-- Section Identidade Visual -->
+                <div id="section-identidade" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Nome da Imobiliária</label>
+                            <input type="text" name="nome" value="{{ request.tenant.nome|default:'' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Logo</label>
+                            <input type="file" name="logo" accept="image/png, image/jpeg, image/svg+xml" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none bg-white">
+                            {% if request.tenant.logo %}
+                            <div class="mt-2 text-sm text-gray-500">
+                                Logo atual: <a href="{{ request.tenant.logo.url }}" target="_blank" class="text-[var(--gold-primary)] hover:underline">Ver Imagem</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Home -->
+                <div id="section-home" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <div class="mb-6 p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                        <h3 class="text-md font-bold text-gray-800 mb-4 border-b pb-2">Seção Principal (Hero)</h3>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Imagem de Fundo (Exclusividade Lotus)</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <label class="cursor-pointer group relative">
+                                    <input type="radio" name="home_hero_bg_preset" value="preset_1" class="peer sr-only" {% if request.tenant.home_hero_bg_preset == 'preset_1' or not request.tenant.home_hero_bg_preset %}checked{% endif %}>
+                                    <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[var(--gold-primary)] peer-checked:ring-2 peer-checked:ring-[var(--gold-primary)] peer-checked:ring-opacity-50 transition-all">
+                                        <img src="{% static 'core/images/hero_presets/preset_1.png' %}" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[var(--gold-primary)]">Mansão Clássica</span>
+                                </label>
+                                <label class="cursor-pointer group relative">
+                                    <input type="radio" name="home_hero_bg_preset" value="preset_2" class="peer sr-only" {% if request.tenant.home_hero_bg_preset == 'preset_2' %}checked{% endif %}>
+                                    <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[var(--gold-primary)] peer-checked:ring-2 peer-checked:ring-[var(--gold-primary)] peer-checked:ring-opacity-50 transition-all">
+                                        <img src="{% static 'core/images/hero_presets/preset_2.png' %}" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[var(--gold-primary)]">Cobertura Noturna</span>
+                                </label>
+                                <label class="cursor-pointer group relative">
+                                    <input type="radio" name="home_hero_bg_preset" value="preset_3" class="peer sr-only" {% if request.tenant.home_hero_bg_preset == 'preset_3' %}checked{% endif %}>
+                                    <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[var(--gold-primary)] peer-checked:ring-2 peer-checked:ring-[var(--gold-primary)] peer-checked:ring-opacity-50 transition-all">
+                                        <img src="{% static 'core/images/hero_presets/preset_3.png' %}" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[var(--gold-primary)]">Mansão Piscina</span>
+                                </label>
+                                <label class="cursor-pointer group relative">
+                                    <input type="radio" name="home_hero_bg_preset" value="preset_4" class="peer sr-only" {% if request.tenant.home_hero_bg_preset == 'preset_4' %}checked{% endif %}>
+                                    <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[var(--gold-primary)] peer-checked:ring-2 peer-checked:ring-[var(--gold-primary)] peer-checked:ring-opacity-50 transition-all">
+                                        <img src="{% static 'core/images/hero_presets/preset_4.png' %}" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[var(--gold-primary)]">Casa de Praia</span>
+                                </label>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <label class="flex items-center space-x-3 cursor-pointer mb-2">
+                                    <input type="radio" name="home_hero_bg_preset" value="custom" class="w-4 h-4 text-[var(--gold-primary)] focus:ring-[var(--gold-primary)]" {% if request.tenant.home_hero_bg_preset == 'custom' %}checked{% endif %}>
+                                    <span class="text-sm font-medium text-gray-700">Fazer upload de fundo próprio</span>
+                                </label>
+                                <input type="file" name="home_hero_bg_custom" accept="image/png, image/jpeg" class="w-full px-4 py-2 mt-2 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none bg-white">
+                                <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-triangle-exclamation text-yellow-500"></i> Recomendação: Utilize imagens em altíssima resolução com iluminação "dark" (escura) para não atrapalhar a leitura do texto dourado.</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 mt-6 border-t border-gray-200 pt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+                            <input type="text" name="home_hero_tag" value="{{ request.tenant.home_hero_tag|default:'O Padrão de Viver' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Título Inicial</label>
+                                <input type="text" name="home_hero_titulo" value="{{ request.tenant.home_hero_titulo|default:'O Seu Espaço de' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Palavra de Destaque (Dourado)</label>
+                                <input type="text" name="home_hero_destaque" value="{{ request.tenant.home_hero_destaque|default:'Renascimento.' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Subtítulo Principal</label>
+                            <textarea name="home_hero_subtitulo" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.home_hero_subtitulo|default:'Curadoria especializada para...' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                        <h3 class="text-md font-bold text-gray-800 mb-4 border-b pb-2">Manifesto (Rolagem)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                                <input type="text" name="home_manifesto_titulo" value="{{ request.tenant.home_manifesto_titulo|default:'Não vendemos imóveis.' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Destaque do Título (Dourado)</label>
+                                <input type="text" name="home_manifesto_destaque" value="{{ request.tenant.home_manifesto_destaque|default:'Apresentamos novos começos.' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Texto do Manifesto</label>
+                            <textarea name="home_manifesto_texto" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.home_manifesto_texto|default:'Nascemos com o propósito...' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Sobre -->
+                <div id="section-sobre" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Título da Página (Hero)</label>
+                            <input type="text" name="sobre_titulo" value="{{ request.tenant.sobre_titulo|default:'A Nossa História' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Subtítulo da Página (Hero)</label>
+                            <input type="text" name="sobre_subtitulo" value="{{ request.tenant.sobre_subtitulo|default:'Descubra o propósito que nos move e a curadoria que nos define.' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Citação / Frase de Impacto</label>
+                        <textarea name="sobre_citacao" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.sobre_citacao|default:'Tal como a flor de lótus, florescemos onde poucos imaginam...' }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Texto Quem Somos</label>
+                        <textarea name="texto_quem_somos" rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.texto_quem_somos|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nossa Missão</label>
+                        <textarea name="sobre_missao" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.sobre_missao|default:'' }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nossa Visão</label>
+                        <textarea name="sobre_visao" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">{{ request.tenant.sobre_visao|default:'' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Section Equipe -->
+                <div id="section-equipe" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <label class="flex items-center space-x-3 cursor-pointer mb-6">
+                        <input type="checkbox" name="exibir_equipe" {% if request.tenant.exibir_equipe %}checked{% endif %} class="w-5 h-5 text-[var(--gold-primary)] rounded border-gray-300 focus:ring-[var(--gold-primary)]">
+                        <span class="text-gray-700 font-medium">Exibir seção "Nossa Equipe" no site público</span>
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Título da Seção Equipe</label>
+                            <input type="text" name="titulo_equipe" value="{{ request.tenant.titulo_equipe|default:'' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Subtítulo da Seção Equipe</label>
+                            <input type="text" name="subtitulo_equipe" value="{{ request.tenant.subtitulo_equipe|default:'' }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[var(--gold-primary)] outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Blog -->
+                <div id="section-blog" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" name="exibir_blog" {% if request.tenant.exibir_blog %}checked{% endif %} class="w-5 h-5 text-[var(--gold-primary)] rounded border-gray-300 focus:ring-[var(--gold-primary)]">
+                        <span class="text-gray-700 font-medium">Ativar Módulo de Blog / Notícias no site</span>
+                    </label>
+                    <div class="mt-8 border-t border-[var(--border-color)] pt-6">
+                        <h4 class="font-bold text-[#142048] mb-2">Gerenciar Conteúdo</h4>
+                        <p class="text-sm text-[#475569] mb-4">Publique ou edite artigos, notícias ou vídeos para seus visitantes.</p>
+                        <a href="{% url 'core:crm_blog' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-[var(--bg-dark)] hover:bg-[var(--gold-primary)] hover:text-white transition text-[#142048] rounded-xl font-bold border border-[var(--border-color)] shadow-sm">
+                            <i class="fa-solid fa-pen-to-square"></i> Gerenciar Artigos
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Section Contato -->
+                <div id="section-contato" class="config-section hidden bg-white border border-[var(--border-color)] p-8 rounded-3xl shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Telefone de Contato</label>
+                            <input type="text" name="telefone" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.telefone|default:'' }}" placeholder="(00) 00000-0000" oninput="maskPhone(this)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">E-mail de Contato</label>
+                            <input type="email" name="empresa_email" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.empresa_email|default:'' }}">
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 md:col-span-2">
+                            <div class="col-span-1">
+                                <label class="block text-sm font-semibold text-[#142048] mb-2">Tipo de Doc</label>
+                                <select name="tipo_documento" id="tipo_documento" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" onchange="updateDocMask()">
+                                    <option value="CNPJ" {% if request.tenant.tipo_documento == 'CNPJ' %}selected{% endif %}>CNPJ</option>
+                                    <option value="CPF" {% if request.tenant.tipo_documento == 'CPF' %}selected{% endif %}>CPF</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-sm font-semibold text-[#142048] mb-2">Documento</label>
+                                <input type="text" name="cpf_cnpj" id="cpf_cnpj" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.cpf_cnpj|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">CRECI da Imobiliária</label>
+                            <input type="text" name="empresa_creci" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.empresa_creci|default:'' }}">
+                        </div>
+                        
+                        <div class="md:col-span-2 border-t border-[var(--border-color)] pt-6 mt-2">
+                            <h3 class="text-sm font-bold text-[#142048] mb-4">Endereço Completo</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div class="md:col-span-1">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">CEP</label>
+                                    <input type="text" name="cep" id="cep" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.cep|default:'' }}" oninput="maskCEP(this)" onblur="buscaCep(this.value)">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Rua / Logradouro</label>
+                                    <input type="text" name="rua" id="rua" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.rua|default:'' }}">
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Número</label>
+                                    <input type="text" name="numero" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.numero|default:'' }}">
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Complemento</label>
+                                    <input type="text" name="complemento" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.complemento|default:'' }}">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Bairro</label>
+                                    <input type="text" name="bairro" id="bairro" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.bairro|default:'' }}">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">Cidade</label>
+                                    <input type="text" name="cidade" id="cidade" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.cidade|default:'' }}">
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1">UF</label>
+                                    <input type="text" name="uf" id="uf" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.uf|default:'' }}" maxlength="2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:col-span-1 mt-4">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Instagram (URL)</label>
+                            <input type="url" name="empresa_instagram" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.empresa_instagram|default:'' }}">
+                        </div>
+                        <div class="md:col-span-1 mt-4">
+                            <label class="block text-sm font-semibold text-[#142048] mb-2">Facebook (URL)</label>
+                            <input type="url" name="empresa_facebook" class="w-full border border-[var(--border-color)] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--gold-primary)] outline-none" value="{{ request.tenant.empresa_facebook|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end sticky bottom-8 mt-6">
+                    <button type="submit" class="px-8 py-4 bg-[var(--gold-primary)] text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i> Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <script src="https://unpkg.com/imask"></script>
+        <script>
+            function openSection(sectionId, title) {
+                // Hide Hub
+                document.getElementById('hub-view').classList.add('hidden');
+                document.getElementById('btn-voltar-kanban').classList.add('hidden');
+                
+                // Show Form View & specific section
+                document.getElementById('form-view').classList.remove('hidden');
+                document.getElementById('btn-voltar-hub').classList.remove('hidden');
+                
+                // Update Headers
+                document.getElementById('page-title').innerText = title;
+                document.getElementById('page-subtitle').innerText = "Edite as configurações e clique em salvar.";
+                
+                // Hide all sections, show target
+                document.querySelectorAll('.config-section').forEach(el => el.classList.add('hidden'));
+                document.getElementById('section-' + sectionId).classList.remove('hidden');
+                
+                // Keep track of active tab for redirect on save if needed (optional)
+                document.getElementById('active_tab').value = sectionId;
+                
+                // URL hash for deep linking
+                window.location.hash = sectionId;
+            }
+
+            function showHub() {
+                // Show Hub
+                document.getElementById('hub-view').classList.remove('hidden');
+                document.getElementById('btn-voltar-kanban').classList.remove('hidden');
+                
+                // Hide Form View
+                document.getElementById('form-view').classList.add('hidden');
+                document.getElementById('btn-voltar-hub').classList.add('hidden');
+                
+                // Restore Headers
+                document.getElementById('page-title').innerText = "Hub de Configurações";
+                document.getElementById('page-subtitle').innerText = "Escolha qual módulo do seu site você deseja editar.";
+                
+                window.location.hash = '';
+            }
+
+            // Masks and API
+            function maskPhone(input) {
+                let val = input.value.replace(/\D/g, '');
+                if (val.length > 11) val = val.slice(0, 11);
+                if (val.length > 2) val = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+                if (val.length > 10) val = `${val.slice(0, 10)}-${val.slice(10)}`;
+                input.value = val;
+            }
+            
+            function maskCEP(input) {
+                let val = input.value.replace(/\D/g, '');
+                if (val.length > 8) val = val.slice(0, 8);
+                if (val.length > 5) val = `${val.slice(0, 5)}-${val.slice(5)}`;
+                input.value = val;
+            }
+
+            let docMask;
+            function updateDocMask() {
+                const tipo = document.getElementById('tipo_documento').value;
+                const input = document.getElementById('cpf_cnpj');
+                input.value = '';
+                if (docMask) docMask.destroy();
+                if (tipo === 'CPF') {
+                    docMask = IMask(input, { mask: '000.000.000-00' });
+                } else {
+                    docMask = IMask(input, { mask: '00.000.000/0000-00' });
+                }
+            }
+            
+            function buscaCep(cep) {
+                const num = cep.replace(/\D/g, '');
+                if (num.length === 8) {
+                    fetch(`https://viacep.com.br/ws/${num}/json/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.erro) {
+                            document.getElementById('rua').value = data.logradouro;
+                            document.getElementById('bairro').value = data.bairro;
+                            document.getElementById('cidade').value = data.localidade;
+                            document.getElementById('uf').value = data.uf;
+                        }
+                    });
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                updateDocMask();
+                const docInput = document.getElementById('cpf_cnpj');
+                docInput.value = "{{ request.tenant.cpf_cnpj|default:'' }}";
+                docMask.updateValue();
+                
+                // Deep link from hash
+                if(window.location.hash) {
+                    const hash = window.location.hash.substring(1);
+                    const mapping = {
+                        'identidade': 'Identidade Visual',
+                        'home': 'Página Inicial (Home)',
+                        'sobre': 'Sobre a Imobiliária',
+                        'equipe': 'Nossa Equipe',
+                        'blog': 'Blog / Artigos',
+                        'contato': 'Contatos e Endereço'
+                    };
+                    if (mapping[hash]) {
+                        openSection(hash, mapping[hash]);
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

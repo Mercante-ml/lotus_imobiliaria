@@ -90,7 +90,15 @@
                             </div>
                             <div>
                                 <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">Endereço</p>
-                                <p class="text-white/90 text-lg leading-snug">Rua C-259, 519<br>Setor Nova Suiça<br>Goiânia - GO</p>
+                                <p class="text-white/90 text-lg leading-snug">
+                                    {% if request.tenant.rua %}
+                                        {{ request.tenant.rua }}, {{ request.tenant.numero }}
+                                        {% if request.tenant.complemento %} - {{ request.tenant.complemento }}{% endif %}
+                                        <br>{{ request.tenant.bairro }}<br>{{ request.tenant.cidade }} - {{ request.tenant.uf }}
+                                    {% else %}
+                                        Endereço não cadastrado
+                                    {% endif %}
+                                </p>
                             </div>
                         </div>
                         
@@ -100,7 +108,7 @@
                             </div>
                             <div>
                                 <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">Telefone</p>
-                                <p class="text-white/90 text-lg">(62) 98250-1403</p>
+                                <p class="text-white/90 text-lg">{{ request.tenant.telefone|default:"Telefone não cadastrado" }}</p>
                             </div>
                         </div>
                         
@@ -110,16 +118,47 @@
                             </div>
                             <div>
                                 <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">E-mail</p>
-                                <p class="text-white/90 text-lg">contato@lotusimob.com.br</p>
+                                <p class="text-white/90 text-lg">{{ request.tenant.empresa_email|default:"E-mail não cadastrado" }}</p>
                             </div>
                         </div>
+
+                        {% if request.tenant.empresa_creci %}
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-ouro" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold mb-1">CRECI</p>
+                                <p class="text-white/90 text-lg">{{ request.tenant.empresa_creci }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if request.tenant.empresa_instagram or request.tenant.empresa_facebook %}
+                        <div class="flex items-center gap-4 mt-6 border-t border-white/10 pt-6">
+                            <p class="text-white/50 text-xs uppercase tracking-[0.15em] font-bold">Redes Sociais:</p>
+                            <div class="flex gap-3">
+                                {% if request.tenant.empresa_instagram %}
+                                <a href="{{ request.tenant.empresa_instagram }}" target="_blank" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-ouro hover:border-ouro hover:text-marinho-escuro transition-all">
+                                    <i class="fa-brands fa-instagram"></i>
+                                </a>
+                                {% endif %}
+                                {% if request.tenant.empresa_facebook %}
+                                <a href="{{ request.tenant.empresa_facebook }}" target="_blank" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-ouro hover:border-ouro hover:text-marinho-escuro transition-all">
+                                    <i class="fa-brands fa-facebook-f"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
                 <!-- Mapa -->
+                {% if request.tenant.rua and request.tenant.cidade %}
                 <div class="w-full h-64 md:h-80 rounded-3xl shadow-lg overflow-hidden border-4 border-white bg-cinza-claro">
                     <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3821.571441617117!2d-49.28448732509172!3d-16.70014348405527!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x935ef12973167b7b%3A0x6a1d4b6f4e6e6a1!2sR.%20C-259%2C%20519%20-%20Setor%20Nova%20Sui%C3%A7a%2C%20Goi%C3%A2nia%20-%20GO%2C%2074280-220!5e0!3m2!1spt-BR!2sbr!4v1730521481656!5m2!1spt-BR!2sbr" 
+                        src="https://maps.google.com/maps?q={{ request.tenant.rua|urlencode }},{{ request.tenant.numero|urlencode }},{{ request.tenant.bairro|urlencode }},{{ request.tenant.cidade|urlencode }}-{{ request.tenant.uf|urlencode }}&t=&z=15&ie=UTF8&iwloc=&output=embed" 
                         width="100%" 
                         height="100%" 
                         style="border:0; filter: grayscale(0.5) contrast(1.1);" 
@@ -128,6 +167,7 @@
                         referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
                 </div>
+                {% endif %}
 
             </div>
 

@@ -34,8 +34,19 @@
                     }
                 </style>
 
+            {% elif post.tipo_conteudo == 'arquivo' %}
+                <p class="text-center text-lg text-graphite mb-6">
+                    Este artigo possui um material de apoio para visualização e download (PDF, PPT, DOC).
+                </p>
+                {% if post.arquivo %}
+                <a href="{{ post.arquivo.url }}" 
+                   target="_blank"
+                   class="mt-6 flex items-center justify-center w-full max-w-md mx-auto text-center bg-ouro text-white font-medium px-5 py-4 rounded-lg shadow-lg hover:bg-ouro/90 transition duration-300">
+                    Abrir / Baixar Material
+                </a>
+                {% endif %}
             {% else %}
-                <p class="text-center text-lg text-graphite">
+                <p class="text-center text-lg text-graphite mb-6">
                     Este é um link para um conteúdo externo.
                 </p>
                 <a href="{{ post.link_url }}" 

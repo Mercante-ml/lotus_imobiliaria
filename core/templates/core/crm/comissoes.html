@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração de Comissões | Helena High-Ticket</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'core/img/favicon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'core/img/favicon.svg' %}">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Padrão Lotus Imobiliária - Light Theme */
+            --bg-dark: #F4F6F9; /* Fundo Cinza Claro */
+            --bg-glass: #ffffff; /* Fundo dos Cards Branco */
+            --bg-glass-hover: #F8FAFC;
+            --text-primary: #142048; /* Marinho Escuro */
+            --text-muted: #475569; /* Slate 600 */
+            --border-glass: #E2E8F0; /* Slate 200 */
+            --column-bg: #F1F5F9; /* Slate 100 */
+            
+            --gold-primary: #B48C5A; /* Ouro */
+            --gold-hover: #9c7748;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 40px;
+            background-image: radial-gradient(circle at 50% 0%, var(--column-bg) 0%, var(--bg-dark) 80%);
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand h1 { font-weight: 300; font-size: 2rem; margin: 0; }
+        .brand p { font-size: 0.8rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 4px; margin: 0; }
+        
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+
+        .action-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover { background: var(--bg-glass-hover); border-color: rgba(0,0,0,0.1); }
+        .action-btn.primary { color: #fff; background: var(--gold-primary); border: none; }
+        .action-btn.primary:hover { background: var(--gold-hover); }
+
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        .section-title {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
+        .form-input { 
+            width: 100%; padding: 12px 15px; background: #f8fafc; border: 1px solid var(--border-glass); 
+            border-radius: 8px; color: var(--text-primary); font-family: 'Outfit', sans-serif;
+        }
+        .form-input:focus { outline: none; border-color: var(--gold-primary); background: #ffffff; box-shadow: 0 0 0 3px rgba(180, 140, 90, 0.1); }
+
+        .form-row { display: flex; gap: 20px; }
+        .form-row > * { flex: 1; }
+
+        .messages {
+            margin-bottom: 20px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        .message.success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; }
+        .message.error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="brand">
+            {% if imobiliaria.logo %}
+                <img src="{{ imobiliaria.logo.url }}" alt="{{ imobiliaria.nome }}" style="height: 40px; border-radius: 4px; object-fit: contain;">
+            {% else %}
+                <div style="width: 40px; height: 40px; background: var(--gold-primary); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; font-size: 1.2rem;">
+                    {{ imobiliaria.nome|make_list|first|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h1>Gestão de Comissões</h1>
+                <p>Helena AI • {{ imobiliaria.nome }}</p>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <a href="{% url 'core:crm_kanban' %}" class="action-btn"><i class="fa-solid fa-arrow-left"></i> Voltar ao CRM</a>
+        </div>
+    </div>
+
+    <div class="content-container">
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'core:crm_comissoes' %}">
+            {% csrf_token %}
+            
+            <h2 class="section-title"><i class="fa-solid fa-building mr-2"></i> 1. Taxa da Casa</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Essa é a porcentagem padrão cobrada pela imobiliária em cima do VGV total de cada venda fechada.</p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Comissão Padrão (Ex: 5.0 ou 6.0%)</label>
+                    <input type="number" step="0.01" name="comissao_padrao" class="form-input" value="{{ imobiliaria.comissao_padrao|stringformat:'f' }}" required>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 30px;"><i class="fa-solid fa-users mr-2"></i> 2. Repasses por Hierarquia</h2>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Defina como a comissão da venda (os 5% acima) é fatiada entre a equipe envolvida no fechamento. Essas métricas serão aplicadas automaticamente a toda a sua equipe atual e futura.</p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-user-tie"></i> Taxa do Corretor (%)</label>
+                    <input type="number" step="0.01" name="taxa_corretor" class="form-input" value="{{ imobiliaria.taxa_corretor|stringformat:'f' }}" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">Vai para o corretor que capturou/atendeu o Lead.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-user-group"></i> Bônus do Gerente (%)</label>
+                    <input type="number" step="0.01" name="taxa_gerente" class="form-input" value="{{ imobiliaria.taxa_gerente|stringformat:'f' }}" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">Vai para o gerente da equipe onde o lead foi vendido.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-building-user"></i> Bônus do Diretor (%)</label>
+                    <input type="number" step="0.01" name="taxa_diretor" class="form-input" value="{{ imobiliaria.taxa_diretor|stringformat:'f' }}" required>
+                    <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 5px;">Vai para o diretor geral da equipe.</small>
+                </div>
+            </div>
+            
+            <div style="background: rgba(180, 140, 90, 0.05); border: 1px dashed var(--gold-primary); padding: 15px; border-radius: 8px; margin-top: 10px; margin-bottom: 25px;">
+                <p style="margin: 0; font-size: 0.9rem; color: var(--gold-primary);"><i class="fa-solid fa-lightbulb"></i> <strong>Aviso Importante:</strong> Ao salvar, estas métricas substituirão todas as taxas individualizadas configuradas na aba "Equipe". Elas passarão a ser a regra padrão para toda a Imobiliária.</p>
+            </div>
+
+            <div style="text-align: right;">
+                <button type="submit" class="action-btn primary" style="display: inline-flex; padding: 12px 30px; font-size: 1.1rem;"><i class="fa-solid fa-check"></i> Salvar e Aplicar a Todos</button>
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>

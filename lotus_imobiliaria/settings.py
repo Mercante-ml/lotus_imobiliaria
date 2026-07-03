@@ -10,7 +10,7 @@ env = environ.Env()
 
 # --- CONFIGURAÇÃO DO ENVIRON ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
 
 
 # --- CHAVES DO .ENV ---
@@ -19,7 +19,10 @@ DEBUG = os.getenv('DEBUG') == 'True'
 ALLOWED_HOSTS = ['*']
 
 # --- CONFIGURAÇÃO CLOUDFLARE (PROXY) ---
-CSRF_TRUSTED_ORIGINS = ['https://imob.dsprime.org', 'https://*.imob.dsprime.org']
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{os.environ.get("ROOT_DOMAIN", "dsprime.org")}', 
+    f'https://*.{os.environ.get("ROOT_DOMAIN", "dsprime.org")}'
+]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # --- APPS MULTI-TENANT ---
@@ -175,6 +178,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'   # 🔑 confirmação de email obrigatória
 
+# Desabilita a proteção contra enumeração no signup para mostrar erro na tela
+ACCOUNT_PREVENT_ENUMERATION = False
+
 # Desativa login por código (passwordless)
 ACCOUNT_LOGIN_BY_CODE_ENABLED = False
 ACCOUNT_LOGIN_BY_CODE_REQUIRED = False
@@ -192,8 +198,11 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Lotus Imobiliária] '
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # Compartilhar Sessão de Login entre todos os subdomínios (SSO)
-SESSION_COOKIE_DOMAIN = '.dsprime.org'
-CSRF_COOKIE_DOMAIN = '.dsprime.org'
+ROOT_DOMAIN = os.environ.get('ROOT_DOMAIN', '.dsprime.org')
+if not ROOT_DOMAIN.startswith('.'):
+    ROOT_DOMAIN = f'.{ROOT_DOMAIN}'
+SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
+CSRF_COOKIE_DOMAIN = ROOT_DOMAIN
 
 # --- STRIPE CONFIG ---
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')

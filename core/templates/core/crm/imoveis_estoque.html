@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque de Imóveis - CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #F4F6F9;
+            --text-primary: #142048;
+            --gold-primary: #B48C5A;
+            --border-color: #E2E8F0;
+        }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <a href="{% url 'core:crm_kanban' %}" class="text-[var(--gold-primary)] hover:text-[#9c7748] text-sm font-semibold mb-2 inline-block">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Voltar ao Kanban
+                </a>
+                <h1 class="text-3xl font-bold text-[#142048]">Estoque de Imóveis</h1>
+                <p class="text-gray-500 mt-1">Gerencie seus imóveis, defina os destaques da Home Page e exclua imóveis vendidos.</p>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'core:imovel_criar' %}" class="bg-[var(--gold-primary)] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#9c7748] transition-colors shadow-sm">
+                    <i class="fa-solid fa-plus mr-1"></i> Novo Imóvel
+                </a>
+                <a href="{% url 'core:importar_xml' %}" class="bg-white border border-[var(--border-color)] text-[#142048] px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Importar XML
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-xl {% if message.tags == 'error' %}bg-red-100 text-red-700 border border-red-200{% else %}bg-green-100 text-green-700 border border-green-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Filtros -->
+        <div class="bg-white p-5 rounded-2xl border border-[var(--border-color)] shadow-sm mb-6">
+            <form method="GET" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Busca</label>
+                    <input type="text" name="busca" value="{{ busca }}" placeholder="Título ou Código..." class="w-full bg-gray-50 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-xl outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] transition">
+                </div>
+                
+                <div class="w-40">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Finalidade</label>
+                    <select name="finalidade" class="w-full bg-gray-50 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-xl outline-none focus:border-[var(--gold-primary)] transition">
+                        <option value="">Todas</option>
+                        <option value="revenda" {% if finalidade == 'revenda' %}selected{% endif %}>Revenda</option>
+                        <option value="lancamento" {% if finalidade == 'lancamento' %}selected{% endif %}>Lançamento</option>
+                        <option value="aluguel" {% if finalidade == 'aluguel' %}selected{% endif %}>Locação</option>
+                    </select>
+                </div>
+
+                <div class="w-48">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bairro</label>
+                    <select name="bairro" class="w-full bg-gray-50 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-xl outline-none focus:border-[var(--gold-primary)] transition">
+                        <option value="">Todos</option>
+                        {% for b in bairros %}
+                            <option value="{{ b.id }}" {% if bairro_id == b.id|stringformat:"s" %}selected{% endif %}>{{ b.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="w-40">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Exibir</label>
+                    <select name="destaque" class="w-full bg-gray-50 border border-gray-200 text-gray-800 px-4 py-2.5 rounded-xl outline-none focus:border-[var(--gold-primary)] transition">
+                        <option value="">Todos os Imóveis</option>
+                        <option value="1" {% if destaque == '1' %}selected{% endif %}>Apenas Destaques</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="bg-[#142048] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-gray-800 transition shadow-sm h-[46px]">
+                    Filtrar
+                </button>
+                <a href="{% url 'core:crm_imoveis' %}" class="bg-gray-100 text-gray-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-gray-200 transition h-[46px] flex items-center">
+                    Limpar
+                </a>
+            </form>
+        </div>
+
+        <!-- Tabela -->
+        <div class="bg-white rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-[#F8FAFC] border-b border-[var(--border-color)] text-gray-500 text-xs uppercase tracking-wider">
+                        <th class="p-4 font-bold">Imóvel</th>
+                        <th class="p-4 font-bold">Finalidade</th>
+                        <th class="p-4 font-bold">Localização</th>
+                        <th class="p-4 font-bold">Valor</th>
+                        <th class="p-4 font-bold text-center">Destaque na Home</th>
+                        <th class="p-4 font-bold text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border-color)]">
+                    {% for imovel in imoveis %}
+                    <tr class="hover:bg-[#F8FAFC] transition-colors">
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                    {% if imovel.imagem_principal %}
+                                        <img src="{{ imovel.imagem_principal.url }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-image"></i></div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-[#142048] text-sm line-clamp-1 max-w-[300px]" title="{{ imovel.titulo }}">{{ imovel.titulo }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">ID: {{ imovel.id }} {% if imovel.codigo %} | Cód: {{ imovel.codigo }}{% endif %}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            {% if imovel.finalidade == 'lancamento' %}
+                                <span class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">Lançamento</span>
+                            {% elif imovel.finalidade == 'aluguel' %}
+                                <span class="bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full text-xs font-bold">Locação</span>
+                            {% else %}
+                                <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-bold">Revenda</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <p class="text-sm text-gray-700 font-medium">{{ imovel.bairro.nome|default:"-" }}</p>
+                            <p class="text-xs text-gray-500">{{ imovel.cidade }}</p>
+                        </td>
+                        <td class="p-4">
+                            <p class="text-sm font-bold text-[#142048]">{% if imovel.valor %}R$ {{ imovel.valor|floatformat:"2g" }}{% else %}Sob Consulta{% endif %}</p>
+                        </td>
+                        <td class="p-4 text-center">
+                            <form method="POST" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="toggle_destaque">
+                                <input type="hidden" name="imovel_id" value="{{ imovel.id }}">
+                                <button type="submit" class="text-xl transition-colors focus:outline-none {% if imovel.em_destaque %}text-yellow-400 hover:text-yellow-500 drop-shadow-md{% else %}text-gray-300 hover:text-gray-400{% endif %}" title="{% if imovel.em_destaque %}Remover Destaque{% else %}Destacar na Home{% endif %}">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'core:detalhe_imovel' imovel.id %}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition" title="Ver no Site">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </a>
+                                <!-- Edit Button placeholder
+                                <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Editar Imóvel">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </a>
+                                -->
+                                <form method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir permanentemente o imóvel {{ imovel.id }}? Isso não pode ser desfeito.');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="acao" value="excluir">
+                                    <input type="hidden" name="imovel_id" value="{{ imovel.id }}">
+                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition" title="Excluir Imóvel (Vendido)">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-12 text-center text-gray-500">
+                            <i class="fa-solid fa-house-circle-xmark text-4xl mb-4 text-gray-300"></i>
+                            <p class="text-lg">Nenhum imóvel encontrado.</p>
+                            <p class="text-sm">Tente limpar os filtros ou faça a importação do seu XML.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if imoveis.has_other_pages %}
+            <div class="p-4 border-t border-[var(--border-color)] bg-gray-50 flex justify-center gap-2">
+                {% if imoveis.has_previous %}
+                    <a href="?page={{ imoveis.previous_page_number }}&busca={{ busca }}&finalidade={{ finalidade }}&bairro={{ bairro_id }}&destaque={{ destaque }}" class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-100">&laquo;</a>
+                {% endif %}
+                
+                <span class="px-4 py-1 bg-[#142048] text-white rounded-lg text-sm font-bold">
+                    Página {{ imoveis.number }} de {{ imoveis.paginator.num_pages }}
+                </span>
+                
+                {% if imoveis.has_next %}
+                    <a href="?page={{ imoveis.next_page_number }}&busca={{ busca }}&finalidade={{ finalidade }}&bairro={{ bairro_id }}&destaque={{ destaque }}" class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-100">&raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

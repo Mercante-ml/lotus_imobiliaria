@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Cancelar Assinatura | Lotus Imobiliária{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; padding: 20px;">
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border-glass); border-radius: 12px; padding: 40px; max-width: 500px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center;">
+        
+        <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; color: #ef4444;"></i>
+        </div>
+        
+        <h2 style="color: var(--text-primary); margin: 0 0 15px 0; font-size: 1.8rem;">Cancelar Assinatura</h2>
+        
+        <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px;">
+            Tem certeza que deseja cancelar sua assinatura? Você perderá acesso a todas as funcionalidades avançadas, e seu armazenamento será reduzido para os limites da conta gratuita.
+        </p>
+
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin-bottom: 30px; text-align: left;">
+            <p style="margin: 0; color: #d97706; font-size: 0.9rem;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 5px;"></i>
+                Seus imóveis não serão excluídos, mas você não poderá cadastrar novos imóveis até regularizar seu plano de armazenamento.
+            </p>
+        </div>
+
+        <form method="post" action="{% url 'core:stripe_cancel' %}">
+            {% csrf_token %}
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <a href="{% url 'core:assinatura' %}" class="btn-cancel" style="padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 1rem; color: var(--text-primary); background: transparent; border: 1px solid var(--border-glass); transition: all 0.3s ease;">
+                    Voltar e Manter Plano
+                </a>
+                
+                <button type="submit" class="btn-danger" style="padding: 12px 25px; border-radius: 8px; font-weight: 500; font-size: 1rem; color: #fff; background: #ef4444; border: none; cursor: pointer; transition: all 0.3s ease;">
+                    Sim, Cancelar Plano
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
+    .btn-danger:hover {
+        background: #dc2626 !important;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

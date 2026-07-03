@@ -1,7 +1,7 @@
 import stripe
 import logging
 from django.conf import settings
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
@@ -235,7 +235,7 @@ def upgrade_plan(request):
         
     try:
         # 1. Fetch all active subscriptions for this customer
-        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='active')
+        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='all')
         
         PRICE_BOUTIQUE = getattr(settings, 'STRIPE_PRICE_BOUTIQUE', '')
         PRICE_CORPORATE = getattr(settings, 'STRIPE_PRICE_CORPORATE', '')
@@ -244,13 +244,20 @@ def upgrade_plan(request):
         target_item_id = None
         
         # 2. Find which subscription is the Base Plan (Boutique)
-        for sub in subs.auto_paging_iter():
-            for item in getattr(getattr(sub, 'items', None), 'data', []):
-                price_id = getattr(getattr(item, 'price', None), 'id', None)
-                if price_id in [PRICE_BOUTIQUE, PRICE_CORPORATE]:
-                    target_sub = sub
-                    target_item_id = getattr(item, 'id', None)
-                    break
+        all_subs = list(subs.auto_paging_iter())
+        
+        print(f"DEBUG upgrade_plan: Found {len(all_subs)} subscriptions for customer {tenant.stripe_customer_id}")
+        
+        for sub in all_subs:
+            print(f"DEBUG upgrade_plan: checking sub {sub.id}")
+            if hasattr(sub, 'items') and hasattr(sub.items, 'data'):
+                for item in sub.items.data:
+                    price_id = item.price.id if hasattr(item, 'price') and hasattr(item.price, 'id') else None
+                    print(f"DEBUG upgrade_plan: item {item.id}, price_id {price_id} vs {PRICE_BOUTIQUE} / {PRICE_CORPORATE}")
+                    if price_id in [PRICE_BOUTIQUE, PRICE_CORPORATE]:
+                        target_sub = sub
+                        target_item_id = item.id
+                        break
             if target_sub:
                 break
                 
@@ -269,11 +276,30 @@ def upgrade_plan(request):
             # 4. Update local DB immediately for better UX
             tenant.plano_ativo = 'corporate'
             tenant.save()
+            from django.contrib import messages
+            messages.success(request, 'Upgrade realizado com sucesso!')
+        else:
+            if tenant.plano_ativo == 'boutique':
+                pass
+            
+            # DEBUG: collect what we saw
+            seen_prices = []
+            for sub in all_subs:
+                if hasattr(sub, 'items') and hasattr(sub.items, 'data'):
+                    for item in sub.items.data:
+                        pid = item.price.id if hasattr(item, 'price') and hasattr(item.price, 'id') else str(getattr(item, 'price', 'none'))
+                        seen_prices.append(pid)
+                        
+            from django.contrib import messages
+            msg = f'Não foi possível encontrar a assinatura base no Stripe para realizar o upgrade. Esperado: {PRICE_BOUTIQUE}. Vistos: {", ".join(seen_prices)}'
+            messages.warning(request, msg)
             
     except Exception as e:
         print(f"Erro no Upgrade: {str(e)}")
+        from django.contrib import messages
+        messages.error(request, f"Erro no Upgrade: {str(e)}")
         
-    return redirect('/crm/assinatura/?upgrade=success')
+    return redirect('core:assinatura')
 
 @login_required
 def downgrade_plan(request):
@@ -286,7 +312,7 @@ def downgrade_plan(request):
         return redirect('core:assinatura')
         
     try:
-        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='active')
+        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='all')
         
         PRICE_BOUTIQUE = getattr(settings, 'STRIPE_PRICE_BOUTIQUE', '')
         PRICE_CORPORATE = getattr(settings, 'STRIPE_PRICE_CORPORATE', '')
@@ -295,12 +321,13 @@ def downgrade_plan(request):
         target_item_id = None
         
         for sub in subs.auto_paging_iter():
-            for item in getattr(getattr(sub, 'items', None), 'data', []):
-                price_id = getattr(getattr(item, 'price', None), 'id', None)
-                if price_id == PRICE_CORPORATE:
-                    target_sub = sub
-                    target_item_id = getattr(item, 'id', None)
-                    break
+            if hasattr(sub, 'items') and hasattr(sub.items, 'data'):
+                for item in sub.items.data:
+                    price_id = item.price.id if hasattr(item, 'price') and hasattr(item.price, 'id') else None
+                    if price_id == PRICE_CORPORATE:
+                        target_sub = sub
+                        target_item_id = item.id
+                        break
             if target_sub:
                 break
                 
@@ -315,11 +342,22 @@ def downgrade_plan(request):
             )
             tenant.plano_ativo = 'boutique'
             tenant.save()
+            from django.contrib import messages
+            messages.success(request, 'Downgrade realizado com sucesso!')
+        else:
+            # Fix desync: If they don't have corporate in Stripe but local is corporate, force local to boutique
+            if tenant.plano_ativo == 'corporate':
+                tenant.plano_ativo = 'boutique'
+                tenant.save()
+            from django.contrib import messages
+            messages.warning(request, 'O seu plano já estava como Boutique no Stripe. Sincronizamos o sistema.')
             
     except Exception as e:
         print(f"Erro no Downgrade: {str(e)}")
+        from django.contrib import messages
+        messages.error(request, f"Erro no Downgrade: {str(e)}")
         
-    return redirect('/crm/assinatura/?downgrade=success')
+    return redirect('core:assinatura')
 
 @login_required
 def cancel_plan(request):
@@ -331,28 +369,112 @@ def cancel_plan(request):
     if not tenant.stripe_customer_id:
         return redirect('core:assinatura')
         
+    if request.method == 'GET':
+        return render(request, 'core/crm/cancelar_assinatura.html')
+        
     try:
-        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='active')
+        # 1. Fetch all active subscriptions for this customer
+        subs = stripe.Subscription.list(customer=tenant.stripe_customer_id, status='all')
         
-        PRICE_BOUTIQUE = getattr(settings, 'STRIPE_PRICE_BOUTIQUE', '')
-        PRICE_CORPORATE = getattr(settings, 'STRIPE_PRICE_CORPORATE', '')
-        
-        target_sub = None
+        canceled_any = False
         for sub in subs.auto_paging_iter():
-            for item in getattr(getattr(sub, 'items', None), 'data', []):
-                price_id = getattr(getattr(item, 'price', None), 'id', None)
-                if price_id in [PRICE_BOUTIQUE, PRICE_CORPORATE]:
-                    target_sub = sub
-                    break
-            if target_sub:
-                break
-                
-        if target_sub:
-            stripe.Subscription.delete(target_sub.id)
-            tenant.status_assinatura = 'canceled'
+            stripe.Subscription.modify(sub.id, cancel_at_period_end=True)
+            canceled_any = True
+            
+        from django.contrib import messages
+        if canceled_any:
+            # We keep their current plan active, but mark it as canceling
+            tenant.status_assinatura = 'canceling'
             tenant.save()
+            messages.success(request, 'Sua assinatura foi programada para cancelamento. Você poderá continuar utilizando todos os recursos Premium até o fim do ciclo já pago. Sentiremos sua falta!')
+        else:
+            tenant.status_assinatura = 'canceled'
+            tenant.plano_ativo = 'free'
+            tenant.save()
+            messages.success(request, 'Seu plano foi redefinido para a versão gratuita. Sentiremos sua falta!')
             
     except Exception as e:
         print(f"Erro no Cancelamento: {str(e)}")
+        from django.contrib import messages
+        messages.error(request, f"Erro no Cancelamento: {str(e)}")
         
-    return redirect('/crm/assinatura/?cancel=success')
+    return redirect('core:assinatura')
+
+@login_required
+def update_card(request):
+    tenant = request.tenant
+    
+    if not tenant.stripe_customer_id:
+        return redirect('core:assinatura')
+        
+    try:
+        intent = stripe.SetupIntent.create(
+            customer=tenant.stripe_customer_id,
+            payment_method_types=['card'],
+            usage='off_session',
+        )
+        
+        context = {
+            'client_secret': intent.client_secret,
+            'stripe_public_key': getattr(settings, 'STRIPE_PUBLISHABLE_KEY', '')
+        }
+        return render(request, 'core/crm/atualizar_cartao.html', context)
+        
+    except Exception as e:
+        print(f"Erro ao gerar SetupIntent: {str(e)}")
+        from django.contrib import messages
+        messages.error(request, "Erro ao acessar o sistema de pagamento.")
+        return redirect('core:assinatura')
+
+@login_required
+def faturamento_view(request):
+    """
+    Renders a custom HTML page showing the billing history from Stripe.
+    """
+    tenant = request.tenant
+    
+    invoices_data = []
+    
+    if tenant.stripe_customer_id:
+        try:
+            # Fetch all invoices for the customer
+            invoices = stripe.Invoice.list(customer=tenant.stripe_customer_id, limit=100)
+            
+            for inv in invoices.auto_paging_iter():
+                from datetime import datetime
+                # Format date
+                date_str = datetime.fromtimestamp(inv.created).strftime('%d/%m/%Y')
+                
+                # Get lines descriptions
+                linhas = []
+                for line in getattr(getattr(inv, 'lines', None), 'data', []):
+                    desc = getattr(line, 'description', '')
+                    if desc:
+                        import re
+                        # Remove "(at R$ X.XX / month)" or "(a R$ X.XX / month)"
+                        desc = re.sub(r'\s*\((a|at)\s*R\$.*?\)', '', desc)
+                        linhas.append(desc)
+                
+                # Format amount
+                valor = getattr(inv, 'amount_paid', 0)
+                if not valor and getattr(inv, 'status') != 'paid':
+                    valor = getattr(inv, 'amount_due', 0)
+                    
+                valor_str = f"R$ {valor / 100:.2f}".replace('.', ',')
+                
+                invoices_data.append({
+                    'data': date_str,
+                    'linhas': linhas,
+                    'status': getattr(inv, 'status', 'unknown'),
+                    'valor': valor_str,
+                    'url_recibo': getattr(inv, 'hosted_invoice_url', '')
+                })
+        except Exception as e:
+            logger.error(f"Error fetching invoices for faturamento view: {str(e)}")
+            
+    context = {
+        'invoices': invoices_data,
+        'tenant': tenant
+    }
+    from django.shortcuts import render
+    return render(request, 'core/crm/faturamento.html', context)

@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Política de Privacidade - Lotus Imobiliária{% endblock %}
+{% block title %}Política de Privacidade - {{ request.tenant.nome|default:"A Imobiliária" }}{% endblock %}
 
 {% block content %}
 <section class="bg-marinho-escuro text-white pt-24 pb-16 relative overflow-hidden">
@@ -11,7 +11,7 @@
     </div>
     <div class="container mx-auto px-6 relative z-10">
         <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-center font-medium mb-6">Política de Privacidade</h1>
-        <p class="text-ouro text-center font-medium text-lg tracking-widest uppercase">Lotus Imobiliária</p>
+        <p class="text-ouro text-center font-medium text-lg tracking-widest uppercase">{{ request.tenant.nome|default:"A Imobiliária" }}</p>
     </div>
 </section>
 

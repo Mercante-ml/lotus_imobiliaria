@@ -3,46 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passo 3 - Quem Somos - ImobGold</title>
+    <title>Passo 3 - Textos da Página Inicial - Setup</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/imask"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        .font-serif { font-family: 'Playfair Display', serif !important; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 font-sans min-h-screen flex items-center justify-center py-12">
     
-    <div class="max-w-2xl mx-auto mt-12 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <!-- Progress Bar -->
+    <div class="w-full max-w-4xl mx-auto bg-white p-8 md:p-12 rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100">
+        
         <div class="flex items-center justify-between mb-8 relative">
             <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 w-3/4 h-1 bg-[#C6A87C] -z-10"></div>
-            
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">✓</div>
-            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm">3</div>
-            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">4</div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#C6A87C] -z-10 transition-all duration-500" style="width: 28.571428571428573%;"></div>
+            <div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">1</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white flex items-center justify-center font-bold text-sm shrink-0">2</div><div class="w-8 h-8 rounded-full bg-[#C6A87C] text-white ring-4 ring-[#C6A87C]/30 flex items-center justify-center font-bold text-sm shrink-0">3</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">4</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">5</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">6</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">7</div><div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm shrink-0">8</div>
         </div>
+    
 
-        <h1 class="text-3xl font-serif text-gray-900 mb-2">Quem Somos</h1>
-        <p class="text-gray-500 mb-8">Conte um pouco da sua história. Isso aparecerá na página inicial e no sobre.</p>
+        <h1 class="text-4xl font-serif text-gray-900 mb-2">Textos da Página Inicial</h1>
+        <p class="text-gray-500 mb-10 text-lg">Cause a melhor primeira impressão com chamadas matadoras.</p>
 
-        <form method="POST" action="{% url 'saas_setup' 3 %}">
+        <form method="POST" action="{% url 'saas_setup' 3 %}" >
             {% csrf_token %}
             
             <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.texto_quem_somos.label }}</label>
-                    <textarea name="{{ form.texto_quem_somos.name }}" rows="6" placeholder="Somos a imobiliária referência em alto padrão..."
-                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] focus:border-[#C6A87C] outline-none transition">{{ form.texto_quem_somos.value|default:'' }}</textarea>
-                    <p class="text-xs text-gray-400 mt-2">Você poderá alterar ou usar Inteligência Artificial para melhorar este texto depois.</p>
+                
+    <div class="space-y-6">
+        <div class="bg-blue-50 border border-blue-100 p-5 rounded-2xl flex gap-4 text-blue-800">
+            <i class="fa-solid fa-circle-info text-2xl"></i>
+            <p class="text-sm">Estes são os textos que aparecerão no <strong>topo do seu site</strong>, a primeira coisa que o cliente lerá.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2 mb-2">
+                <label class="block text-sm font-bold text-gray-700 mb-3">Imagem de Fundo (Exclusividade Lotus)</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <label class="cursor-pointer group relative">
+                        <input type="radio" name="home_hero_bg_preset" value="preset_1" class="peer sr-only" {% if form.home_hero_bg_preset.value == 'preset_1' or not form.home_hero_bg_preset.value %}checked{% endif %}>
+                        <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[#C6A87C] peer-checked:ring-2 peer-checked:ring-[#C6A87C] peer-checked:ring-opacity-50 transition-all">
+                            <img src="/static/core/images/hero_presets/preset_1.png" class="w-full h-full object-cover">
+                        </div>
+                        <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[#C6A87C]">Mansão Clássica</span>
+                    </label>
+                    <label class="cursor-pointer group relative">
+                        <input type="radio" name="home_hero_bg_preset" value="preset_2" class="peer sr-only" {% if form.home_hero_bg_preset.value == 'preset_2' %}checked{% endif %}>
+                        <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[#C6A87C] peer-checked:ring-2 peer-checked:ring-[#C6A87C] peer-checked:ring-opacity-50 transition-all">
+                            <img src="/static/core/images/hero_presets/preset_2.png" class="w-full h-full object-cover">
+                        </div>
+                        <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[#C6A87C]">Cobertura Noturna</span>
+                    </label>
+                    <label class="cursor-pointer group relative">
+                        <input type="radio" name="home_hero_bg_preset" value="preset_3" class="peer sr-only" {% if form.home_hero_bg_preset.value == 'preset_3' %}checked{% endif %}>
+                        <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[#C6A87C] peer-checked:ring-2 peer-checked:ring-[#C6A87C] peer-checked:ring-opacity-50 transition-all">
+                            <img src="/static/core/images/hero_presets/preset_3.png" class="w-full h-full object-cover">
+                        </div>
+                        <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[#C6A87C]">Mansão Piscina</span>
+                    </label>
+                    <label class="cursor-pointer group relative">
+                        <input type="radio" name="home_hero_bg_preset" value="preset_4" class="peer sr-only" {% if form.home_hero_bg_preset.value == 'preset_4' %}checked{% endif %}>
+                        <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-transparent peer-checked:border-[#C6A87C] peer-checked:ring-2 peer-checked:ring-[#C6A87C] peer-checked:ring-opacity-50 transition-all">
+                            <img src="/static/core/images/hero_presets/preset_4.png" class="w-full h-full object-cover">
+                        </div>
+                        <span class="block text-center text-xs mt-1 text-gray-500 peer-checked:font-bold peer-checked:text-[#C6A87C]">Casa de Praia</span>
+                    </label>
                 </div>
             </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Tagline (Texto pequeno no topo)</label>
+                <input type="text" name="home_hero_tag" value="{{ form.home_hero_tag.value|default:'O Padrão de Viver' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
+            </div>
+            
+            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Título Principal (Texto normal)</label>
+                    <input type="text" name="home_hero_titulo" value="{{ form.home_hero_titulo.value|default:'O Seu Espaço de' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Destaque (Aparece Dourado)</label>
+                    <input type="text" name="home_hero_destaque" value="{{ form.home_hero_destaque.value|default:'Renascimento.' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
+                </div>
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Subtítulo Principal (Texto de apoio descritivo)</label>
+                <textarea name="home_hero_subtitulo" rows="2" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">{{ form.home_hero_subtitulo.value|default:'Curadoria especializada para transformar a complexidade do mercado na simplicidade do extraordinário.' }}</textarea>
+            </div>
+        </div>
+        
+        <div class="pt-8 border-t border-gray-100 mt-4">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Sessão Manifesto</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Título do Manifesto (Normal)</label>
+                    <input type="text" name="home_manifesto_titulo" value="{{ form.home_manifesto_titulo.value|default:'Não vendemos imóveis.' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Destaque do Manifesto (Dourado)</label>
+                    <input type="text" name="home_manifesto_destaque" value="{{ form.home_manifesto_destaque.value|default:'Apresentamos novos começos.' }}" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Texto do Manifesto</label>
+                    <textarea name="home_manifesto_texto" rows="3" class="w-full px-5 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#C6A87C] outline-none transition bg-gray-50 focus:bg-white">{{ form.home_manifesto_texto.value|default:'Nascemos com o propósito de elevar a experiência de encontrar o seu lar. Trabalhamos apenas com uma seleção criteriosa de propriedades que oferecem design imponente, conforto absoluto e exclusividade.' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <div class="mt-10 flex justify-between">
-                <a href="{% url 'saas_setup' 2 %}" class="text-gray-500 px-6 py-3 hover:text-gray-900 transition">Voltar</a>
-                <button type="submit" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition">
-                    Próximo Passo &rarr;
+            </div>
+
+            <div class="mt-12 flex justify-between items-center pt-6 border-t border-gray-100">
+                <a href="{% url 'saas_setup' 2 %}" class="text-gray-500 hover:text-gray-900 font-medium px-4 py-2 transition">&larr; Voltar</a>
+                <button type="submit" id="btnSubmit" class="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-[#C6A87C] transition shadow-lg flex items-center gap-2" >
+                    Próximo Passo <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
         </form>
     </div>
 
+    
 </body>
 </html>

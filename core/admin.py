@@ -33,11 +33,26 @@ class AlertaBuscaAdmin(admin.ModelAdmin):
 
 @admin.register(Corretor)
 class CorretorAdmin(admin.ModelAdmin):
-    # ... (seu CorretorAdmin sem mudança)
-    list_display = ('nome', 'creci', 'telefone', 'get_foto_preview') 
-    search_fields = ('nome', 'creci')
+    list_display = ('nome', 'cargo', 'creci', 'telefone', 'exibir_no_site', 'get_foto_preview') 
+    list_filter = ('cargo', 'exibir_no_site')
+    search_fields = ('nome', 'creci', 'email')
     readonly_fields = ('get_foto_preview',) 
-    fields = ('nome', 'email', 'telefone', 'creci', 'foto', 'get_foto_preview', 'bio')
+    
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('nome', 'cargo', 'creci', 'bio')
+        }),
+        ('Contato', {
+            'fields': ('email', 'telefone')
+        }),
+        ('Mídia', {
+            'fields': ('foto', 'get_foto_preview')
+        }),
+        ('Configurações de Privacidade (Site Público)', {
+            'fields': ('exibir_no_site', 'exibir_email', 'exibir_whatsapp'),
+            'description': 'Controle quais dados deste membro aparecerão na página "Equipe" do site.'
+        }),
+    )
 
 
 # --- Painel do Imóvel (EVOLUÍDO) ---
